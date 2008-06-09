@@ -28,6 +28,7 @@ Uint32 ticks = 0;
 //prototypes
 void render();
 void setvideo(int w,int h);
+void command(const char *s);
 void cleanup();
 
 
@@ -66,7 +67,7 @@ int main(int argc,char **argv)
       case SDL_VIDEORESIZE:
         setvideo(event.resize.w,event.resize.h);
         break;
-      case SDL_KEYUP:
+      case SDL_KEYDOWN:
         sym = event.key.keysym.sym;
         switch(sym)
         {
@@ -77,7 +78,10 @@ int main(int argc,char **argv)
             if(sym>31 && sym<128)
               SJC_Put((char)sym);
             else if(sym==SDLK_RETURN)
+            {
               SJC_Submit();
+              command(SJC.buf[1]);
+            }
             else if(sym==SDLK_BACKSPACE)
               SJC_Rub();
             break;
@@ -113,7 +117,7 @@ void render()
   //display console
   x = 10;
   y = 200;
-  if( (ticks/500)%2 )
+  if( (ticks/200)%2 )
     SJF_DrawChar( screen, x+SJF_TextExtents(SJC.buf[0]), y, '_');
   for(i=0;i<20;i++)
   {
@@ -132,8 +136,28 @@ void setvideo(int w,int h)
 }
 
 
+void command(const char *s)
+{
+  char *p, *q;
+  p = malloc(strlen(s)+1);
+  strcpy(p,s);
+  q = strtok(p," ");
+  if( q==NULL )
+    ;
+  else if( strcmp(q,"exit")==0 || strcmp(q,"quit")==0 )
+    cleanup();
+  else if( strcmp(q,"listen")==0 )
+    SJC_Write("Whoa doggy!");
+  else
+    SJC_Write("Huh?");
+
+  free(p);
+}
+
+
 void cleanup()
 {
+  SDLNet_Quit();
   SDL_Quit();
   exit(0);
 }

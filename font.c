@@ -8,21 +8,43 @@
 #include "font.h"
 
 SJF_t SJF = {NULL,8,12,128,
-  { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   //non-printable
+  { 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   //non-printable
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   //non-printable
-    7, 4, 6, 8, 8, 7, 8, 4, 6, 6, 7, 8, 4, 7, 4, 7,   //<space> - </>
-    7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 4, 4, 6, 7, 6, 8,   //<0> - <?>
-    8, 7, 7, 7, 7, 7, 7, 7, 7, 6, 7, 7, 7, 8, 8, 7,   //<@> - <O>
-    7, 7, 7, 7, 8, 7, 8, 8, 8, 8, 7, 6, 7, 6, 8, 8,   //<P> - <_>
-    5, 7, 7, 7, 7, 7, 6, 7, 7, 5, 6, 7, 5, 8, 7, 7,   //<`> - <o>
-    7, 7, 6, 7, 6, 7, 8, 8, 8, 7, 7, 6, 4, 6, 7, 7,   //<p> - <127>
-    6, 7,10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   //special chars
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   //unused
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   //unused
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, //unused
-  {
-"                                                                                                                             O  "
-"                                                                                                                             O  "
+    6, 3, 5, 7, 7, 6, 7, 3, 5, 5, 6, 7, 3, 6, 3, 6,   //<space> - </>
+    6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 3, 3, 5, 6, 5, 7,   //<0> - <?>
+    7, 6, 6, 6, 6, 6, 6, 6, 6, 5, 6, 6, 6, 7, 7, 6,   //<@> - <O>
+    6, 6, 6, 6, 7, 6, 7, 7, 7, 7, 6, 5, 6, 5, 7, 7,   //<P> - <_>
+    4, 6, 6, 6, 6, 6, 5, 6, 6, 4, 5, 6, 4, 7, 6, 6,   //<`> - <o>
+    6, 6, 5, 6, 5, 6, 7, 7, 7, 6, 6, 5, 3, 5, 6, 0 }, //<p> - <127>
+{
+"                                                                                                                                "
+"                                                                                                                                "
+" OOOO            OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO   "
+" O  O            O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O   "
+" O  O    OOO     O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O   "
+" O  O    OOO     O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O   "
+" O  O    OOO     O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O   "
+" O  O            O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O   "
+" OOOO            OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO   "
+"                                                                                                                                "
+"                                                                                                                                "
+"                                                                                                                                "
+
+"                                                                                                                                "
+"                                                                                                                                "
+" OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO   "
+" O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O   "
+" O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O   "
+" O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O   "
+" O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O   "
+" O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O   "
+" OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO   "
+"                                                                                                                                "
+"                                                                                                                                "
+"                                                                                                                                "
+
+"                                                                                                                                "
+"                                                                                                                                "
 "         O       O O               O                     O         O     O                                                  O   "
 "         O       O O      O O     OOO             OO     O        O       O      O  O      O                                O   "
 "         O               OOOOO   O O             O  O            O         O      OO       O                               O    "
@@ -33,11 +55,12 @@ SJF_t SJF = {NULL,8,12,128,
 "                                                                                                 O                       O      "
 "                                                                                                                                "
 "                                                                                                                                "
+
 "                                                                                                                                "
 "                                                                                                                                "
 "                                                                                                                          OOO   "
-"  OO       O      OO      OO       OO    OOOO     OO     OOOO     OO      OO                       O             O       O   O  "
-" O  O     OO     O  O    O  O     O O    O       O          O    O  O    O  O                     O      OOOO     O          O  "
+"  OO       O      OO      OO     O       OOOO     OO     OOOO     OO      OO                       O             O       O   O  "
+" O  O     OO     O  O    O  O    O  O    O       O          O    O  O    O  O                     O      OOOO     O          O  "
 " O OO      O        O      O     O  O    OOO     OOO       O      OO     O  O    O       O       O                 O        O   "
 " OO O      O      OO        O    OOOO       O    O  O      O     O  O     OOO                     O      OOOO     O        O    "
 " O  O      O     O       O  O       O    O  O    O  O     O      O  O       O                      O             O              "
@@ -45,6 +68,7 @@ SJF_t SJF = {NULL,8,12,128,
 "                                                                                         O                                      "
 "                                                                                                                                "
 "                                                                                                                                "
+
 "                                                                                                                                "
 "                                                                                                                                "
 "  OOO     OO     OOO      OO     OOO     OOOO    OOOO     OO     O  O    OOO       OO    O  O    O       O   O   O   O    OO    "
@@ -57,6 +81,7 @@ SJF_t SJF = {NULL,8,12,128,
 "                                                                                                                                "
 "                                                                                                                                "
 "                                                                                                                                "
+
 "                                                                                                                                "
 "                                                                                                                                "
 " OOO      OO     OOO      OOO    OOOOO   O  O    O   O   O   O   O   O   O   O   OOOO    OOO     O       OOO       O            "
@@ -69,6 +94,7 @@ SJF_t SJF = {NULL,8,12,128,
 "            O                                                                                       O                    OOOOO  "
 "                                                                                                                                "
 "                                                                                                                                "
+
 "                                                                                                                                "
 "                                                                                                                                "
 " O               O                  O              O             O        O        O     O       OO                             "
@@ -81,72 +107,20 @@ SJF_t SJF = {NULL,8,12,128,
 "                                                            O                      O                                            "
 "                                                          OO                     OO                                             "
 "                                                                                                                                "
+
 "                                                                                                                                "
 "                                                                                                                                "
-"                                                                                           O     O       O        O O           "
-"                                  O                                                       O      O        O      O O            "
-" OOO      OOO    O O      OOO    OOO     O  O    O   O   O O O   O   O   O  O    OOOO     O      O        O                     "
-" O  O    O  O    OO      O        O      O  O    O   O   O O O    O O    O  O       O    O       O         O                    "
-" O  O    O  O    O        OO      O      O  O     O O    O O O     O     O  O     OO      O               O                     "
-" O  O    O  O    O          O     O      O  O     O O    O O O    O O    O  O    O        O      O        O                     "
-" OOO      OOO    O       OOO      OO      OOO      O      OOOO   O   O    OOO    OOOO      O     O       O                      "
+"                                                                                           O     O       O        O O    OOOO   "
+"                                  O                                                       O      O        O      O O     O  O   "
+" OOO      OOO    O O      OOO    OOO     O  O    O   O   O O O   O   O   O  O    OOOO     O      O        O              O  O   "
+" O  O    O  O    OO      O        O      O  O    O   O   O O O    O O    O  O       O    O       O         O             O  O   "
+" O  O    O  O    O        OO      O      O  O     O O    O O O     O     O  O     OO      O               O              O  O   "
+" O  O    O  O    O          O     O      O  O     O O    O O O    O O    O  O    O        O      O        O              O  O   "
+" OOO      OOO    O       OOO      OO      OOO      O      OOOO   O   O    OOO    OOOO      O     O       O               OOOO   "
 " O          O                                                               O                    O                              "
 " O          O                                                             OO                     O                              "
 "                                                                                                                                "
-"                                                                                                                                "
-"           O        OOO                                                                                                         "
-"           OO       OOOO         OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO   "
-"         O  O        OOO         O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O   "
-" OOOO    OO      OOO             O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O   "
-" OOOO     O O    OOOO OOO        O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O   "
-" OOOO       OO    OOO OOOO       O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O   "
-" OOOO     O  O         OOO       O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O   "
-"          OO       OOO           OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO   "
-"           O       OOOO                                                                                                         "
-"                    OOO                                                                                                         "
-"                                                                                                                                "
-"                                                                                                                                "
-"                                                                                                                                "
-" OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO   "
-" O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O   "
-" O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O   "
-" O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O   "
-" O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O   "
-" O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O   "
-" OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO   "
-"                                                                                                                                "
-"                                                                                                                                "
-"                                                                                                                                "
-"                                                                                                                                "
-"                                                                                                                                "
-" OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO   "
-" O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O   "
-" O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O   "
-" O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O   "
-" O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O   "
-" O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O   "
-" OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO   "
-"                                                                                                                                "
-"                                                                                                                                "
-"                                                                                                                                "
-"                                                                                                                                "
-"                                                                                                                                "
-" OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO   "
-" O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O   "
-" O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O   "
-" O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O   "
-" O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O   "
-" O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O    O  O   "
-" OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO    OOOO   "
-"                                                                                                                                "
-"                                                                                                                                "
-"                                                                                                                                "
-"                                                                                                                                "
-"                                                                                                                                "
-"                                                                                                                                "
-"                                                                                                                                "
-"                                                                                                                                "
-"                                                                                                                                "
+
 "                                                                                                                                "
 "                                                                                                                                "
   }};
@@ -190,7 +164,7 @@ inline void SJF_DrawChar(SDL_Surface *surf, int x, int y, char c)
   SDL_Rect dst;
 
   src.x = (c%16)*SJF.w;
-  src.y = ((c-32)/16)*SJF.h;
+  src.y = ((c)/16)*SJF.h;
   src.w = 8;
   src.h = 12;
 
@@ -217,11 +191,11 @@ inline void SJF_DrawText(SDL_Surface *surf, int x, int y, const char *s)
   while( *s )
   {
     src.x = (*s%16)*SJF.w;
-    src.y = ((*s-32)/16)*SJF.h;
-        src.w = SJF.space[(Uint8)*s]-1;
+    src.y = ((*s)/16)*SJF.h;
+        src.w = SJF.space[(Uint8)*s];
         dst.w = src.w;
     SDL_UpperBlit(SJF.surf,&src,surf,&dst);
-    dst.x += src.w;
+    dst.x += src.w-1;
     s++;
   }
 }
