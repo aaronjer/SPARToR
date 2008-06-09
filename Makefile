@@ -1,5 +1,5 @@
 EXE_NAME = core
-OBJS = main.o
+OBJS = main.o font.o console.o
 CC = gcc
 FLAGS = -g
 LIBS =
@@ -10,3 +10,6 @@ LIBS =
 
 $(EXE_NAME): $(OBJS)
 	$(CC) -o $@ $(OBJS) $(FLAGS) $(INC) $(LIBS) $(XLIBS) -lm -lSDL -lSDL_net
+
+clean:
+	rm $(OBJS)
