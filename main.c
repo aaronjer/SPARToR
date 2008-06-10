@@ -10,26 +10,18 @@
 
 #include "SDL/SDL.h"
 #include "SDL/SDL_net.h"
+#include "main.h"
 #include "font.h"
 #include "console.h"
-
-
-//macros
-#define MIN(a,b) ((a)<(b)?(a):(b))
-#define MAX(a,b) ((a)>(b)?(a):(b))
-#define SWAP(t,a,b) {t SWAP_temp = a;a = b;b = SWAP_temp;}
+#include "host.h"
+#include "client.h"
 
 
 //globals
 SDL_Surface *screen;
+UDPsocket hostsock = NULL;
+UDPsocket clientsock = NULL;
 Uint32 ticks = 0;
-
-
-//prototypes
-void render();
-void setvideo(int w,int h);
-void command(const char *s);
-void cleanup();
 
 
 int main(int argc,char **argv)
@@ -90,6 +82,8 @@ int main(int argc,char **argv)
       case SDL_QUIT:
         cleanup();
     }
+    if(hostsock) host();
+    if(clientsock) client();
     render();
     SDL_Delay(10);
   }
@@ -112,13 +106,13 @@ void render()
   rect.y = 0;
   rect.w = w;
   rect.h = h;
-  SDL_FillRect(screen,&rect,0x0000FF);
+  SDL_FillRect(screen,&rect,0x000088);
 
   //display console
   x = 10;
   y = 200;
   if( (ticks/200)%2 )
-    SJF_DrawChar( screen, x+SJF_TextExtents(SJC.buf[0]), y, '_');
+    SJF_DrawChar(screen, x+SJF_TextExtents(SJC.buf[0]), y, '_');
   for(i=0;i<20;i++)
   {
     if(SJC.buf[i])
@@ -133,25 +127,6 @@ void render()
 void setvideo(int w,int h)
 {
   screen = SDL_SetVideoMode(w,h,SDL_GetVideoInfo()->vfmt->BitsPerPixel,SDL_RESIZABLE|SDL_DOUBLEBUF);
-}
-
-
-void command(const char *s)
-{
-  char *p, *q;
-  p = malloc(strlen(s)+1);
-  strcpy(p,s);
-  q = strtok(p," ");
-  if( q==NULL )
-    ;
-  else if( strcmp(q,"exit")==0 || strcmp(q,"quit")==0 )
-    cleanup();
-  else if( strcmp(q,"listen")==0 )
-    SJC_Write("Whoa doggy!");
-  else
-    SJC_Write("Huh?");
-
-  free(p);
 }
 
 
