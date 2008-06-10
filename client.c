@@ -4,6 +4,8 @@
 #include "main.h"
 #include "console.h"
 #include "command.h"
+#include "client.h"
+#include "net.h"
 
 
 void client(){

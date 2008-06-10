@@ -13,14 +13,13 @@
 #include "main.h"
 #include "font.h"
 #include "console.h"
+#include "net.h"
 #include "host.h"
 #include "client.h"
 
 
 //globals
 SDL_Surface *screen;
-UDPsocket hostsock = NULL;
-UDPsocket clientsock = NULL;
 Uint32 ticks = 0;
 
 

@@ -12,8 +12,6 @@
 
 //externs
 extern SDL_Surface *screen;
-extern UDPsocket hostsock;
-extern UDPsocket clientsock;
 extern Uint32 ticks;
 
 //prototypes

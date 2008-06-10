@@ -4,6 +4,8 @@
 #include "main.h"
 #include "console.h"
 #include "command.h"
+#include "host.h"
+#include "net.h"
 
 
 void host(){
