@@ -1,5 +1,8 @@
+#Required packages:
+#  libsdl1.2-dev
+#  libsdl-net1.2-dev
 EXE_NAME = core
-OBJS = main.o font.o console.o
+OBJS = main.o font.o console.o sjstring.o
 CC = gcc
 FLAGS = -g
 LIBS =
