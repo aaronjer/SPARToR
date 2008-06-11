@@ -8,18 +8,21 @@ UDPsocket hostsock = NULL;
 UDPsocket clientsock = NULL;
 IPaddress ipaddr;
 
-int ip2num(const char *ip){
-  int a,b,c,d;
-  a = atoi(ip);
-  while(*ip)
-    if(*ip++=='.') {ip++;break;}
-  b = atoi(ip);
-  while(*ip)
-    if(*ip++=='.') {ip++;break;}
-  c = atoi(ip);
-  while(*ip)
-    if(*ip++=='.') {ip++;break;}
-  d = atoi(ip);
-  return (a*16777216 + b*65536 + c*256 + d);
+
+void disconnect(){
+  if( hostsock ){
+    //TODO: close lots of stuff
+    SDLNet_UDP_Close(hostsock);
+    hostsock = NULL;
+    SJC_Write("Host stopped.");
+  }else if( clientsock ){
+    //TODO: maybe missing something
+    SDLNet_UDP_Close(clientsock);
+    clientsock = NULL;
+    SJC_Write("Disconnected from host.");
+  }else{
+    SJC_Write("Nothing to disconnect from.");
+  }
 }
+
 

@@ -72,8 +72,8 @@ int main(int argc,char **argv)
               SJC_Put((char)sym);
             else if(sym==SDLK_RETURN)
             {
-              SJC_Submit();
-              command(SJC.buf[1]);
+              if( SJC_Submit() )
+                command(SJC.buf[1]);
             }
             else if(sym==SDLK_BACKSPACE)
               SJC_Rub();

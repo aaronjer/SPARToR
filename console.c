@@ -68,13 +68,16 @@ void SJC_Rub()
 }
 
 
-void SJC_Submit()
+int SJC_Submit()
 {
+  if(!SJC.buf[0] || !SJC.size[0])
+    return 0;
   free(SJC.buf[199]);
   memmove(SJC.buf+1,SJC.buf,sizeof(char*)*199);
   memmove(SJC.size+1,SJC.size,sizeof(int)*199);
   SJC.size[0] = 0;
   SJC.buf[0] = NULL;
+  return 1;
 }
 
 

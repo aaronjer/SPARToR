@@ -21,7 +21,7 @@ void SJC_Init();
 void SJC_Put(char c);
 void SJC_Write(const char *s,...);
 void SJC_Rub();
-void SJC_Submit();
+int SJC_Submit();
 
 #endif
 
