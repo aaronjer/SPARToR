@@ -4,9 +4,11 @@
 #include <stdlib.h>
 #include "net.h"
 
+
 UDPsocket hostsock = NULL;
 UDPsocket clientsock = NULL;
 IPaddress ipaddr;
+int maxclients = 32;
 
 
 void disconnect(){

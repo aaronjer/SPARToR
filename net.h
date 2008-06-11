@@ -11,6 +11,7 @@
 extern UDPsocket hostsock;
 extern UDPsocket clientsock;
 extern IPaddress ipaddr;
+extern int maxclients;
 
 
 void disconnect();

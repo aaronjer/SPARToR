@@ -15,6 +15,7 @@ typedef struct{
 void host_start(int port);
 void host_stop();
 void host();
+void host_welcome();
 
 #endif
 
