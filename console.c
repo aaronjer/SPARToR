@@ -36,16 +36,23 @@ void SJC_Put(char c)
 }
 
 
-void SJC_Write(const char *s)
+void SJC_Write(const char *s,...)
 {
+  static char buf[256];
   free(SJC.buf[199]);
   memmove(SJC.buf+2,SJC.buf+1,sizeof(char*)*198);
   memmove(SJC.size+2,SJC.size+1,sizeof(int)*198);
-  SJC.size[1] = strlen(s)+3;
+
+  va_list args;
+  va_start(args,s);
+  vsnprintf(buf,255,s,args);
+  va_end(args);
+
+  SJC.size[1] = strlen(buf)+3;
   SJC.buf[1] = malloc(SJC.size[1]);
   SJC.buf[1][0] = (char)1;
   SJC.buf[1][1] = (char)32;
-  strcpy(SJC.buf[1]+2,s);
+  strcpy(SJC.buf[1]+2,buf);
 }
 
 

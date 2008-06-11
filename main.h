@@ -2,6 +2,8 @@
 #ifndef __MAIN_H__
 #define __MAIN_H__
 
+#define VERSION "0.1a"
+
 
 //macros
 #define MIN(a,b) ((a)<(b)?(a):(b))

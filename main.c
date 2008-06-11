@@ -47,6 +47,8 @@ int main(int argc,char **argv)
 
   SJF_Init();
 
+  SJC_Write("SPARToR CORE v%s",VERSION);
+
   //main loop
   while(1)
   {
