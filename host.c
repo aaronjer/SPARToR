@@ -1,4 +1,5 @@
 
+
 #include "SDL/SDL.h"
 #include "SDL/SDL_net.h"
 #include "main.h"
@@ -6,8 +7,6 @@
 #include "command.h"
 #include "host.h"
 #include "net.h"
-
-
 
 
 static UDPpacket *pkt;
@@ -25,8 +24,7 @@ void host_start(int port){
 }
 
 
-void host_stop()
-{
+void host_stop(){
   SDLNet_FreePacket(pkt);
   free(clients);
 }

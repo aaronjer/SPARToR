@@ -19,25 +19,32 @@
 
 
 //globals
+size_t maxfr = 360;
+size_t maxobjs = 100;
+FRAME_t *fr;
 SDL_Surface *screen;
 Uint32 ticks = 0;
 
 
-int main(int argc,char **argv)
-{
+int main(int argc,char **argv){
   SDL_Event event;
   const SDL_VideoInfo *vidinfo;
   int sym;
+  int i;
+
+  fr = malloc(sizeof(FRAME_t)*maxfr);
+  for(i=0;i<maxfr;i++){
+    fr[i].cmds = malloc(sizeof(FCMD_t)*maxclients);
+    fr[i].objs = malloc(sizeof(FOBJ_t)*maxobjs);
+  }
 
   printf("SDLNET_MAX_UDPCHANNELS=%d\n",SDLNET_MAX_UDPCHANNELS);
 
-  if( SDL_Init(SDL_INIT_TIMER|SDL_INIT_AUDIO|SDL_INIT_VIDEO)<0 || !SDL_GetVideoInfo() )
-  {
+  if( SDL_Init(SDL_INIT_TIMER|SDL_INIT_AUDIO|SDL_INIT_VIDEO)<0 || !SDL_GetVideoInfo() ){
     fprintf(stderr,"SDL_Init: %s\n",SDL_GetError());
     exit(-1);
   }
-  if( SDLNet_Init()<0 )
-  {
+  if( SDLNet_Init()<0 ){
     fprintf(stderr,"SDLNet_Init: %s\n",SDL_GetError());
     exit(-2);
   }
@@ -50,11 +57,9 @@ int main(int argc,char **argv)
   SJC_Write("SPARToR CORE v%s",VERSION);
 
   //main loop
-  while(1)
-  {
+  while(1){
     ticks = SDL_GetTicks();
-    while( SDL_PollEvent(&event) ) switch(event.type)
-    {
+    while( SDL_PollEvent(&event) ) switch(event.type){
       case SDL_VIDEOEXPOSE:
         break;
       case SDL_VIDEORESIZE:
@@ -62,16 +67,14 @@ int main(int argc,char **argv)
         break;
       case SDL_KEYDOWN:
         sym = event.key.keysym.sym;
-        switch(sym)
-        {
+        switch(sym){
           case SDLK_ESCAPE:
             cleanup();
             break;
           default:
             if(sym>31 && sym<128)
               SJC_Put((char)sym);
-            else if(sym==SDLK_RETURN)
-            {
+            else if(sym==SDLK_RETURN){
               if( SJC_Submit() )
                 command(SJC.buf[1]);
             }
@@ -92,8 +95,7 @@ int main(int argc,char **argv)
 }
 
 
-void render()
-{
+void render(){
   const SDL_VideoInfo *vidinfo;
   SDL_Rect rect;
   Uint32 x,y,w,h;
@@ -109,13 +111,16 @@ void render()
   rect.h = h;
   SDL_FillRect(screen,&rect,0x000088);
 
+  for(i=0;i<maxfr;i++){
+    ;//TODO TODO TODO
+  }
+
   //display console
   x = 10;
   y = 200;
   if( (ticks/200)%2 )
     SJF_DrawChar(screen, x+SJF_TextExtents(SJC.buf[0]), y, '_');
-  for(i=0;i<20;i++)
-  {
+  for(i=0;i<20;i++){
     if(SJC.buf[i])
       SJF_DrawText(screen,x,y,SJC.buf[i]);
     y -= 10;
@@ -125,16 +130,20 @@ void render()
 }
 
 
-void setvideo(int w,int h)
-{
+void setvideo(int w,int h){
   screen = SDL_SetVideoMode(w,h,SDL_GetVideoInfo()->vfmt->BitsPerPixel,SDL_RESIZABLE|SDL_DOUBLEBUF);
 }
 
 
-void cleanup()
-{
+void cleanup(){
+  int i;
   SDLNet_Quit();
   SDL_Quit();
+  for(i=0;i<maxfr;i++){
+    free(fr[i].cmds);
+    free(fr[i].objs);
+  }
+  free(fr);
   exit(0);
 }
 
