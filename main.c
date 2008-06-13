@@ -16,6 +16,7 @@
 #include "net.h"
 #include "host.h"
 #include "client.h"
+#include "sjui.h"
 
 
 //globals
@@ -53,6 +54,11 @@ int main(int argc,char **argv){
   vidinfo = SDL_GetVideoInfo();
 
   SJF_Init();
+
+  //UI
+  SJUI_Init();
+  SJUI_HANDLE h = SJUI_NewControl(0,50,90,0);
+  SJUI_SetPos(h,10,10);
 
   SJC_Write("SPARToR CORE v%s",VERSION);
 
@@ -126,6 +132,9 @@ void render(){
     y -= 10;
   }
 
+  //display ui
+  SJUI_Paint(screen);
+
   SDL_Flip(screen);
 }
 
@@ -137,6 +146,7 @@ void setvideo(int w,int h){
 
 void cleanup(){
   int i;
+  SJUI_Destroy();
   SDLNet_Quit();
   SDL_Quit();
   for(i=0;i<maxfr;i++){
