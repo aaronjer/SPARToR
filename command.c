@@ -5,6 +5,7 @@
 #include "console.h"
 #include "command.h"
 #include "net.h"
+//#include "unit_tests.h"
 
 
 void command(const char *s){
@@ -30,6 +31,10 @@ void command(const char *s){
     }else if( strcmp(q,"reconnect")==0 ){
       disconnect();
       SJC_Write("Not implemented."); //TODO
+    }else if( strcmp(q,"test")==0 ){
+      SJC_Write("Running unit tests...");
+      run_unit_tests();
+      SJC_Write("Done.");
     }else{
       SJC_Write("Huh?");
     }

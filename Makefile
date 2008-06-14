@@ -2,7 +2,7 @@
 #  libsdl1.2-dev
 #  libsdl-net1.2-dev
 EXE_NAME = core
-OBJS = main.o font.o console.o sjstring.o command.o net.o host.o client.o sjui.o
+OBJS = main.o font.o console.o sjstring.o command.o net.o host.o client.o sjui.o unit_tests.o
 CC = gcc
 FLAGS = -g
 LIBS =

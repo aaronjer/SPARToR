@@ -115,7 +115,7 @@ void render(){
   rect.y = 0;
   rect.w = w;
   rect.h = h;
-  SDL_FillRect(screen,&rect,0x000088);
+  //SDL_FillRect(screen,&rect,0x000088);
 
   for(i=0;i<maxfr;i++){
     ;//TODO TODO TODO
