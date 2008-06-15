@@ -17,6 +17,7 @@
 #include "host.h"
 #include "client.h"
 #include "sjui.h"
+#include "mod.h"
 
 
 //globals
@@ -28,6 +29,7 @@ Uint32 metafr;
 Uint32 curfr;
 Uint32 drawnfr;
 Uint32 hotfr;
+Uint32 cmdfr;
 int creatables;
 
 SDL_Surface *screen;
@@ -48,6 +50,8 @@ int main(int argc,char **argv) {
     fr[i].cmds = calloc(sizeof(FCMD_t),maxclients);
     fr[i].objs = calloc(sizeof(OBJ_t),maxobjs);
   }
+  //server is a client
+  fr[1].cmds[0].flags = CMDF_LIV|CMDF_NEW;
 
   if( SDL_Init(SDL_INIT_TIMER|SDL_INIT_AUDIO|SDL_INIT_VIDEO)<0 || !SDL_GetVideoInfo() ) {
     fprintf(stderr,"SDL_Init: %s\n",SDL_GetError());
@@ -73,7 +77,7 @@ int main(int argc,char **argv) {
   //main loop
   while(1) {
     ticks = SDL_GetTicks();
-    metafr = ticks/50;
+    metafr = ticks/40;
     curfr = metafr%maxframes;
     while( SDL_PollEvent(&event) ) switch(event.type) {
       case SDL_VIDEOEXPOSE:
@@ -120,11 +124,13 @@ int main(int argc,char **argv) {
 
 void advance() {
   int i;
-  int adv_nul = 0;
-  int adv_cpy = 0;
   while(hotfr < metafr) {
     Uint32 a = (hotfr+0)%maxframes;
     Uint32 b = (hotfr+1)%maxframes;
+    if( cmdfr<hotfr+1 ) { //need to clear out the cmds in the frame since it hasn't been done yet!
+      memset(fr[b].cmds,0,sizeof(FCMD_t)*maxclients);
+      cmdfr = hotfr+1;
+    }
     for(i=0;i<maxobjs;i++) {
       OBJ_t *oa = fr[a].objs+i;
       OBJ_t *ob = fr[b].objs+i;
@@ -135,41 +141,42 @@ void advance() {
         ob->size = oa->size;
         ob->data = malloc(oa->size);
         memcpy(ob->data,oa->data,oa->size);
-        if(ob->flags & OBJF_POS){
+        if(ob->type==OBJT_DUMMY){
           V *pos = flexpos(ob);
-          pos->x += (float)(metafr%50) - 25.0f;
+          pos->x += (float)(metafr%50) - 24.5f;
         }
-        adv_cpy++;
+        mod_adv(a,b,oa,ob);
       } else {
         ob->type = 0;
         ob->data = NULL;
-        adv_nul++;
       }
     }
     for(i=0;i<maxobjs && creatables>0;i++) {
       OBJ_t *ob = fr[b].objs+i;
       if(!ob->type) {
-        ob->type = 1;
+        ob->type = OBJT_DUMMY;
         ob->flags = OBJF_POS|OBJF_VIS;
         ob->size = sizeof(V);
         ob->data = malloc(ob->size);
         V *pos = flexpos(ob);
-        *pos = (V){320.0f,280.0f,0.0f};
+        *pos = (V){320.0f,20.0f+(float)(rand()%440),0.0f};
         creatables--;
         SJC_Write("Created new OBJ_t at frame %d, obj %d, addr %X",b,i,&ob);
       }
     }
+    if( creatables>0 ){
+      SJC_Write("Could not create %d objects!",creatables);
+      creatables = 0;
+    }
     hotfr++;
   }
-  //if( adv_nul || adv_cpy )
-  //  SJC_Write("advance(): %d nulled, %d copied",adv_nul,adv_cpy);
 }
 
 
 void render() {
   const SDL_VideoInfo *vidinfo;
   SDL_Rect rect;
-  Uint32 x,y,w,h;
+  int x,y,w,h;
   int i;
   char buf[1000];
 
@@ -180,7 +187,7 @@ void render() {
   //display objects
   for(i=0;i<maxobjs;i++) {
     OBJ_t *o = fr[curfr].objs+i;
-    if(o->type!=0) {
+    if(o->type==OBJT_DUMMY) {
       V *pos = flexpos(o);
       SDL_FillRect(screen,&(SDL_Rect){pos->x-10,pos->y+10,20,20},0xFFFF00);
     }
@@ -188,12 +195,14 @@ void render() {
 
   //display console
   if(console_open) {
-    SDL_FillRect(screen,&(SDL_Rect){0,0,w,200},0x222222);
+    int conh = h/2 - 40;
+    if(conh<40) conh = 40;
+    SDL_FillRect(screen,&(SDL_Rect){0,0,w,conh},0x222222);
     x = 10;
-    y = 200-20;
+    y = conh-20;
     if((ticks/200)%2)
       SJF_DrawChar(screen, x+SJF_TextExtents(SJC.buf[0]), y, '_');
-    for(i=0;i<18;i++) {
+    for(i=0;y>0;i++) {
       if(SJC.buf[i])
         SJF_DrawText(screen,x,y,SJC.buf[i]);
       y -= 10;

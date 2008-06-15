@@ -17,12 +17,22 @@
 #define OBJF_POS 0x00000001
 #define OBJF_VIS 0x00000002
 
+//cmd flags
+#define CMDF_LIV 0x00000001
+#define CMDF_NEW 0x00000002
+
+//obj types
+#define OBJT_MOTHER 1
+#define OBJT_GHOST 2
+#define OBJT_DUMMY 3
+
 
 typedef struct{
   char cmd;
   char mousehi;
   char mousex;
   char mousey;
+  short flags;
 } FCMD_t;
 
 typedef struct{
@@ -51,6 +61,7 @@ extern Uint32 metafr;
 extern Uint32 curfr;
 extern Uint32 drawnfr;
 extern Uint32 hotfr;
+extern Uint32 cmdfr;
 extern int creatables;
 
 extern SDL_Surface *screen;
