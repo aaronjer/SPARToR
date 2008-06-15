@@ -28,27 +28,41 @@ typedef struct{
 typedef struct{
   short type;
   short flags;
+  size_t size;
   void *data;
-} FOBJ_t;
+} OBJ_t;
 
 typedef struct{
   FCMD_t *cmds;
-  FOBJ_t *objs;
+  OBJ_t *objs;
 } FRAME_t;
 
 
+typedef struct{
+  float x,y,z;
+} V;
+
 //externs
-extern size_t maxfr;
+extern size_t maxframes;
 extern size_t maxobjs;
+
 extern FRAME_t *fr;
+extern Uint32 metafr;
+extern Uint32 curfr;
+extern Uint32 drawnfr;
+extern Uint32 hotfr;
+extern int creatables;
+
 extern SDL_Surface *screen;
 extern Uint32 ticks;
 
 //prototypes
+void advance();
 void render();
 void setvideo(int w,int h);
 void command(const char *s);
 void cleanup();
+V *flexpos(OBJ_t *o);
 
 
 #endif

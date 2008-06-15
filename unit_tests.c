@@ -6,7 +6,8 @@
 
 void run_unit_tests()
 {
-  DrawSquare(screen,&(SDL_Rect){20,20,120,120},0xFF0000);
+  DrawSquare(screen,&(SDL_Rect){20,210,120,120},0xFF0000);
+  creatables++;
 }
 
 
