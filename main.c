@@ -131,7 +131,7 @@ void advance() {
       memset(fr[b].cmds,0,sizeof(FCMD_t)*maxclients);
       cmdfr = hotfr+1;
     }
-    for(i=0;i<maxobjs;i++) {
+    for(i=0;i<maxobjs;i++) { //advance each object into the hot fresh frame
       OBJ_t *oa = fr[a].objs+i;
       OBJ_t *ob = fr[b].objs+i;
       free(ob->data);
@@ -151,7 +151,7 @@ void advance() {
         ob->data = NULL;
       }
     }
-    for(i=0;i<maxobjs && creatables>0;i++) {
+    for(i=0;i<maxobjs && creatables>0;i++) { //create dummies if requested
       OBJ_t *ob = fr[b].objs+i;
       if(!ob->type) {
         ob->type = OBJT_DUMMY;
