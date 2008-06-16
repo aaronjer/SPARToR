@@ -29,7 +29,7 @@ Uint32 metafr;
 Uint32 curfr;
 Uint32 drawnfr;
 Uint32 hotfr;
-Uint32 cmdfr;
+Uint32 cmdfr = 1; //DO NOT clear frame 1, it is prefilled with client-connect for local person
 int creatables;
 
 SDL_Surface *screen;
@@ -50,6 +50,8 @@ int main(int argc,char **argv) {
     fr[i].cmds = calloc(sizeof(FCMD_t),maxclients);
     fr[i].objs = calloc(sizeof(OBJ_t),maxobjs);
   }
+  //make the mother object
+  fr[0].objs[0] = (OBJ_t){OBJT_MOTHER,0,0,0};
   //server is a client
   fr[1].cmds[0].flags = CMDF_LIV|CMDF_NEW;
 
@@ -141,7 +143,7 @@ void advance() {
         ob->size = oa->size;
         ob->data = malloc(oa->size);
         memcpy(ob->data,oa->data,oa->size);
-        if(ob->type==OBJT_DUMMY){
+        if(ob->type==OBJT_DUMMY) {
           V *pos = flexpos(ob);
           pos->x += (float)(metafr%50) - 24.5f;
         }
@@ -164,7 +166,7 @@ void advance() {
         SJC_Write("Created new OBJ_t at frame %d, obj %d, addr %X",b,i,&ob);
       }
     }
-    if( creatables>0 ){
+    if( creatables>0 ) {
       SJC_Write("Could not create %d objects!",creatables);
       creatables = 0;
     }
@@ -239,6 +241,27 @@ void cleanup() {
   }
   free(fr);
   exit(0);
+}
+
+
+// find a free obj slot in frame frame1
+// frame is "free" as long as it was empty in the previous frame
+// staticly remembers which frames have already been given out this way
+// if a slot in the current frame is filled by other code it may be CORRUPTED BY USING THIS
+int findfreeslot(int frame1) {
+  static int last_slot = 0;
+  static int last_frame = 0;
+  int frame0 = (frame1>0)?(frame1-1):(maxframes-1);
+  if( last_frame!=frame1 ) {
+    last_frame = frame1;
+    last_slot = 1;
+  } 
+  while(last_slot<maxobjs) {
+    if( fr[frame0].objs[last_slot].type==0 ) //empty
+      return last_slot;
+    last_slot++;
+  }
+  return -1;
 }
 
 

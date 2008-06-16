@@ -72,6 +72,7 @@ void advance();
 void render();
 void setvideo(int w,int h);
 void command(const char *s);
+int findfreeslot(int frame1);
 void cleanup();
 V *flexpos(OBJ_t *o);
 
