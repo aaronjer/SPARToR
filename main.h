@@ -22,9 +22,16 @@
 #define CMDF_NEW 0x00000002
 
 //obj types
-#define OBJT_MOTHER 1
-#define OBJT_GHOST 2
-#define OBJT_DUMMY 3
+#define OBJT_MOTHER   1
+#define OBJT_GHOST    2
+#define OBJT_DUMMY    3
+#define OBJT_PLAYER   4
+
+//cmd types
+#define CMDT_1LEFT    ((char)1)
+#define CMDT_0LEFT    ((char)2)
+#define CMDT_1RIGHT   ((char)3)
+#define CMDT_0RIGHT   ((char)4)
 
 
 typedef struct{
@@ -52,6 +59,21 @@ typedef struct{
   float x,y,z;
 } V;
 
+
+typedef struct{
+  V pos;
+  int client;
+  int avatar;
+} GHOST_t;
+
+typedef struct{
+  V pos;
+  int model;
+  int ghost;
+  char goingl;
+  char goingr;
+} PLAYER_t;
+
 //externs
 extern size_t maxframes;
 extern size_t maxobjs;
@@ -66,16 +88,18 @@ extern int creatables;
 
 extern SDL_Surface *screen;
 extern Uint32 ticks;
+extern int me;
 
 //prototypes
+void input(int on,int sym);
 void advance();
 void render();
 void setvideo(int w,int h);
 void command(const char *s);
 int findfreeslot(int frame1);
 void cleanup();
+void assert(const char *msg,int val);
 V *flexpos(OBJ_t *o);
-
 
 #endif
 

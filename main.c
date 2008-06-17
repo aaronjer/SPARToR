@@ -34,6 +34,7 @@ int creatables;
 
 SDL_Surface *screen;
 Uint32 ticks;
+int me;
 
 //file globals
 static console_open = 1;
@@ -42,7 +43,6 @@ static console_open = 1;
 int main(int argc,char **argv) {
   SDL_Event event;
   const SDL_VideoInfo *vidinfo;
-  int sym;
   int i;
 
   fr = calloc(sizeof(FRAME_t),maxframes);
@@ -88,27 +88,10 @@ int main(int argc,char **argv) {
         setvideo(event.resize.w,event.resize.h);
         break;
       case SDL_KEYDOWN:
-        sym = event.key.keysym.sym;
-        switch(sym) {
-          case SDLK_ESCAPE:
-            if(console_open) console_open=0;
-            else cleanup();
-            break;
-          case SDLK_BACKQUOTE:
-            console_open = !console_open;
-            break;
-          default:
-            if(console_open) {
-              if(sym>31 && sym<128)
-                SJC_Put((char)sym);
-              else if(sym==SDLK_RETURN) {
-                if( SJC_Submit() )
-                  command(SJC.buf[1]);
-              }
-              else if(sym==SDLK_BACKSPACE)
-                SJC_Rub();
-            }
-        }
+        input( 1, event.key.keysym.sym );
+        break;
+      case SDL_KEYUP:
+        input( 0, event.key.keysym.sym );
         break;
       case SDL_QUIT:
         cleanup();
@@ -124,11 +107,45 @@ int main(int argc,char **argv) {
 }
 
 
+void input(int press,int sym) {
+  Uint32 myfr = hotfr+1;
+  if( cmdfr<myfr ) { //this is the new cmdfr, so clear it, unless we already have cmds stored in the future!
+                     //TODO: jog the simulation forward if cmds do end up in the future because that must mean we're BEHIND SCHEDULE!
+    memset(fr[myfr%maxframes].cmds,0,sizeof(FCMD_t)*maxclients);
+    cmdfr = myfr;
+  }
+  myfr %= maxframes;
+
+  if(press && sym==SDLK_BACKQUOTE)
+    console_open = !console_open;
+  else if(press && console_open) {
+    if(sym>31 && sym<128)
+      SJC_Put((char)sym);
+    else if(sym==SDLK_RETURN) {
+      if( SJC_Submit() )
+        command(SJC.buf[1]);
+    }
+    else if(sym==SDLK_BACKSPACE)
+      SJC_Rub();
+    else if(sym==SDLK_ESCAPE)
+      console_open = 0;
+  } else switch(sym) {
+  case SDLK_LEFT:
+    fr[myfr].cmds[me].cmd = press?CMDT_1LEFT:CMDT_0LEFT;
+    break;
+  case SDLK_RIGHT:
+    fr[myfr].cmds[me].cmd = press?CMDT_1RIGHT:CMDT_0RIGHT;
+    break;
+  }
+}
+
+
 void advance() {
   int i;
   while(hotfr < metafr) {
     Uint32 a = (hotfr+0)%maxframes;
     Uint32 b = (hotfr+1)%maxframes;
+    Uint32 c = (hotfr+2)%maxframes;
     if( cmdfr<hotfr+1 ) { //need to clear out the cmds in the frame since it hasn't been done yet!
       memset(fr[b].cmds,0,sizeof(FCMD_t)*maxclients);
       cmdfr = hotfr+1;
@@ -136,7 +153,9 @@ void advance() {
     for(i=0;i<maxobjs;i++) { //advance each object into the hot fresh frame
       OBJ_t *oa = fr[a].objs+i;
       OBJ_t *ob = fr[b].objs+i;
-      free(ob->data);
+      OBJ_t *oc = fr[c].objs+i;
+      oc->type = 0;
+      free(oc->data);
       if(oa->type) {
         ob->type = oa->type;
         ob->flags = oa->flags;
@@ -148,10 +167,8 @@ void advance() {
           pos->x += (float)(metafr%50) - 24.5f;
         }
         mod_adv(a,b,oa,ob);
-      } else {
-        ob->type = 0;
-        ob->data = NULL;
-      }
+      } else 
+        ; //nothing to do since this was cleared out last iteration
     }
     for(i=0;i<maxobjs && creatables>0;i++) { //create dummies if requested
       OBJ_t *ob = fr[b].objs+i;
@@ -192,6 +209,11 @@ void render() {
     if(o->type==OBJT_DUMMY) {
       V *pos = flexpos(o);
       SDL_FillRect(screen,&(SDL_Rect){pos->x-10,pos->y+10,20,20},0xFFFF00);
+    }
+    if(o->type==OBJT_PLAYER) {
+      V *pos = flexpos(o);
+      SDL_FillRect(screen,&(SDL_Rect){pos->x-10,pos->y+10,20,20},0x0000FF);
+      DrawSquare(screen,&(SDL_Rect){pos->x-10,pos->y+10,20,20},0xFFFFFF);
     }
   }
 
@@ -258,10 +280,16 @@ int findfreeslot(int frame1) {
   } 
   while(last_slot<maxobjs) {
     if( fr[frame0].objs[last_slot].type==0 ) //empty
-      return last_slot;
+      return last_slot++;
     last_slot++;
   }
   return -1;
+}
+
+
+void assert(const char *msg,int val) {
+  if( !val )
+    SJC_Write("Assert failed! %s",msg);
 }
 
 
