@@ -63,6 +63,8 @@ int main(int argc,char **argv) {
     fprintf(stderr,"SDLNet_Init: %s\n",SDL_GetError());
     exit(-2);
   }
+  SDL_EnableUNICODE(1);
+  SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY,SDL_DEFAULT_REPEAT_INTERVAL);
   setvideo(640,480);
   SDL_WM_SetCaption("SPARToR CORE",NULL);
   vidinfo = SDL_GetVideoInfo();
@@ -88,10 +90,10 @@ int main(int argc,char **argv) {
         setvideo(event.resize.w,event.resize.h);
         break;
       case SDL_KEYDOWN:
-        input( 1, event.key.keysym.sym );
+        input( 1, event.key.keysym.sym, event.key.keysym.unicode );
         break;
       case SDL_KEYUP:
-        input( 0, event.key.keysym.sym );
+        input( 0, event.key.keysym.sym, event.key.keysym.unicode );
         break;
       case SDL_QUIT:
         cleanup();
@@ -107,7 +109,20 @@ int main(int argc,char **argv) {
 }
 
 
-void input(int press,int sym) {
+void toggleconsole() {
+  if( console_open ) {
+    console_open = 0;
+    SDL_EnableUNICODE(0);
+    SDL_EnableKeyRepeat(0,0);
+  } else {
+    console_open = 1;
+    SDL_EnableUNICODE(1);
+    SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY,SDL_DEFAULT_REPEAT_INTERVAL);
+  }
+}
+
+
+void input(int press,int sym,Uint16 unicode) {
   Uint32 myfr = hotfr+1;
   if( cmdfr<myfr ) { //this is the new cmdfr, so clear it, unless we already have cmds stored in the future!
                      //TODO: jog the simulation forward if cmds do end up in the future because that must mean we're BEHIND SCHEDULE!
@@ -117,18 +132,18 @@ void input(int press,int sym) {
   myfr %= maxframes;
 
   if(press && sym==SDLK_BACKQUOTE)
-    console_open = !console_open;
+    toggleconsole();
   else if(press && console_open) {
-    if(sym>31 && sym<128)
-      SJC_Put((char)sym);
+    if(unicode>31 && unicode<128)
+      SJC_Put((char)unicode);
     else if(sym==SDLK_RETURN) {
       if( SJC_Submit() )
         command(SJC.buf[1]);
     }
     else if(sym==SDLK_BACKSPACE)
       SJC_Rub();
-    else if(sym==SDLK_ESCAPE)
-      console_open = 0;
+    else if(sym==SDLK_ESCAPE && console_open)
+      toggleconsole();
   } else switch(sym) {
   case SDLK_LEFT:
     fr[myfr].cmds[me].cmd = press?CMDT_1LEFT:CMDT_0LEFT;

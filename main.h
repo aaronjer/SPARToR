@@ -91,7 +91,7 @@ extern Uint32 ticks;
 extern int me;
 
 //prototypes
-void input(int on,int sym);
+void input(int on,int sym,Uint16 unicode);
 void advance();
 void render();
 void setvideo(int w,int h);
