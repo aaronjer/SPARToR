@@ -37,6 +37,8 @@ void mod_adv(int a,int b,OBJ_t *oa,OBJ_t *ob) {
         pl->ghost = slot0;
         pl->goingl = 0;
         pl->goingr = 0;
+        pl->goingu = 0;
+        pl->goingd = 0;
       }
     }
     break;
@@ -49,13 +51,19 @@ void mod_adv(int a,int b,OBJ_t *oa,OBJ_t *ob) {
     pl = ob->data;
     gh = fr[b].objs[pl->ghost].data;
     switch( fr[b].cmds[gh->client].cmd ) {
-      case CMDT_1LEFT: pl->goingl = 1; break;
-      case CMDT_0LEFT: pl->goingl = 0; break;
+      case CMDT_1LEFT:  pl->goingl = 1; break;
+      case CMDT_0LEFT:  pl->goingl = 0; break;
       case CMDT_1RIGHT: pl->goingr = 1; break;
       case CMDT_0RIGHT: pl->goingr = 0; break; 
+      case CMDT_1UP:    pl->goingu = 1; break;
+      case CMDT_0UP:    pl->goingu = 0; break;
+      case CMDT_1DOWN:  pl->goingd = 1; break;
+      case CMDT_0DOWN:  pl->goingd = 0; break; 
     }
     if( pl->goingl ) pl->pos.x -= 1.0f;
     if( pl->goingr ) pl->pos.x += 1.0f;
+    if( pl->goingu ) pl->pos.y -= 1.0f;
+    if( pl->goingd ) pl->pos.y += 1.0f;
     break;
   }
 }

@@ -37,7 +37,10 @@ Uint32 ticks;
 int me;
 
 //file globals
-static console_open = 1;
+static console_open;
+static char cmdbuf[256] = {0};
+static int cbwrite = 0;
+static int cbread = 0;
 
 
 int main(int argc,char **argv) {
@@ -63,8 +66,7 @@ int main(int argc,char **argv) {
     fprintf(stderr,"SDLNet_Init: %s\n",SDL_GetError());
     exit(-2);
   }
-  SDL_EnableUNICODE(1);
-  SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY,SDL_DEFAULT_REPEAT_INTERVAL);
+  toggleconsole();
   setvideo(640,480);
   SDL_WM_SetCaption("SPARToR CORE",NULL);
   vidinfo = SDL_GetVideoInfo();
@@ -98,6 +100,7 @@ int main(int argc,char **argv) {
       case SDL_QUIT:
         cleanup();
     }
+    readinput();
     if(hostsock) host();
     if(clientsock) client();
     advance();
@@ -122,14 +125,20 @@ void toggleconsole() {
 }
 
 
+void putcmd(char cmd) {
+  cmdbuf[cbwrite] = cmd;
+  cbwrite = (cbwrite+1)%256;
+}
+
+char getnextcmd() {
+  char cmd = cmdbuf[cbread];
+  if( cmd==0 ) return 0;
+  cmdbuf[cbread] = 0;
+  cbread = (cbread+1)%256;
+  return cmd;
+}
+
 void input(int press,int sym,Uint16 unicode) {
-  Uint32 myfr = hotfr+1;
-  if( cmdfr<myfr ) { //this is the new cmdfr, so clear it, unless we already have cmds stored in the future!
-                     //TODO: jog the simulation forward if cmds do end up in the future because that must mean we're BEHIND SCHEDULE!
-    memset(fr[myfr%maxframes].cmds,0,sizeof(FCMD_t)*maxclients);
-    cmdfr = myfr;
-  }
-  myfr %= maxframes;
 
   if(press && sym==SDLK_BACKQUOTE)
     toggleconsole();
@@ -145,12 +154,36 @@ void input(int press,int sym,Uint16 unicode) {
     else if(sym==SDLK_ESCAPE && console_open)
       toggleconsole();
   } else switch(sym) {
-  case SDLK_LEFT:
-    fr[myfr].cmds[me].cmd = press?CMDT_1LEFT:CMDT_0LEFT;
-    break;
-  case SDLK_RIGHT:
-    fr[myfr].cmds[me].cmd = press?CMDT_1RIGHT:CMDT_0RIGHT;
-    break;
+  case SDLK_LEFT:  putcmd( press?CMDT_1LEFT :CMDT_0LEFT  ); break;
+  case SDLK_RIGHT: putcmd( press?CMDT_1RIGHT:CMDT_0RIGHT ); break;
+  case SDLK_UP:    putcmd( press?CMDT_1UP:CMDT_0UP       ); break;
+  case SDLK_DOWN:  putcmd( press?CMDT_1DOWN:CMDT_0DOWN   ); break;
+  }
+}
+
+void readinput() {
+  Uint32 infr = hotfr+1;
+  if( cmdfr<infr ) { //this is the new cmdfr, so clear it, unless we already have cmds stored in the future!
+                     //TODO: jog the simulation forward if cmds do end up in the future because that must mean we're BEHIND SCHEDULE!
+    memset(fr[infr%maxframes].cmds,0,sizeof(FCMD_t)*maxclients);
+    cmdfr = infr;
+  }
+  infr %= maxframes;
+  if( fr[infr].cmds[me].cmd==0 && cmdbuf[cbread] ) {
+    int i;
+    char s[257];
+    char t[257];
+    for(i=0;i<256;i++) {
+      s[i] = cmdbuf[i]?cmdbuf[i]+'0':'-';
+      t[i] = ' ';
+    }
+    t[cbread] = 'R';
+    t[cbwrite] = 'W';
+    s[256] = '\0';
+    t[256] = '\0';
+    SJC_Write(s);
+    SJC_Write(t);
+    fr[infr].cmds[me].cmd = getnextcmd();
   }
 }
 

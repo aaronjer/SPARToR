@@ -32,6 +32,10 @@
 #define CMDT_0LEFT    ((char)2)
 #define CMDT_1RIGHT   ((char)3)
 #define CMDT_0RIGHT   ((char)4)
+#define CMDT_1UP      ((char)5)
+#define CMDT_0UP      ((char)6)
+#define CMDT_1DOWN    ((char)7)
+#define CMDT_0DOWN    ((char)8)
 
 
 typedef struct{
@@ -72,6 +76,8 @@ typedef struct{
   int ghost;
   char goingl;
   char goingr;
+  char goingu;
+  char goingd;
 } PLAYER_t;
 
 //externs
@@ -79,11 +85,11 @@ extern size_t maxframes;
 extern size_t maxobjs;
 
 extern FRAME_t *fr;
-extern Uint32 metafr;
-extern Uint32 curfr;
-extern Uint32 drawnfr;
-extern Uint32 hotfr;
-extern Uint32 cmdfr;
+extern Uint32 metafr; //the frame corresponding to "now"
+extern Uint32 curfr;  //metafr % maxframes
+extern Uint32 drawnfr;//most recently rendered frame
+extern Uint32 hotfr;  //newest fully advanced frame (it's hot and fresh)
+extern Uint32 cmdfr;  //newest frame with cmds inserted (possibly in future)
 extern int creatables;
 
 extern SDL_Surface *screen;
@@ -91,7 +97,9 @@ extern Uint32 ticks;
 extern int me;
 
 //prototypes
+void toggleconsole();
 void input(int on,int sym,Uint16 unicode);
+void readinput();
 void advance();
 void render();
 void setvideo(int w,int h);
