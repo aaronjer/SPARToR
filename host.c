@@ -31,7 +31,6 @@ void host_stop(){
 
 
 void host(){
-  static char s[1000];
   int status;
   int i;
 
@@ -66,7 +65,7 @@ void host(){
 //accept a new client and store the "connection"
 void host_welcome(){
   int i;
-  char *p = pkt->data;
+  char *p = (char *)pkt->data;
   if( strncmp(p,PROTONAME,strlen(PROTONAME)) ){
     SJC_Write("Junk packet from unknown client.");
     return;

@@ -25,6 +25,7 @@ extern SJF_t SJF;
 void SJF_Init();
 inline void SJF_DrawChar(SDL_Surface *surf, int x, int y, char c);
 inline void SJF_DrawText(SDL_Surface *surf, int x, int y, const char *s);
+inline int SJF_TextExtents(const char *s);
 void SDL_SetPixel(SDL_Surface *surf, int x, int y, Uint8 R, Uint8 G, Uint8 B);
 
 #endif

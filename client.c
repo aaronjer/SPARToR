@@ -19,8 +19,8 @@ void client_start(const char *hostname,int port){
   SJC_Write("Connecting...");
   pkt = SDLNet_AllocPacket(1000);
   pkt->address = ipaddr;
-  sprintf(pkt->data,"%s/%s",PROTONAME,PROTOVERS);
-  pkt->len = strlen(pkt->data);
+  sprintf((char *)pkt->data,"%s/%s",PROTONAME,PROTOVERS);
+  pkt->len = strlen((char *)pkt->data);
   if( !SDLNet_UDP_Send(clientsock,-1,pkt) ){
     SJC_Write("Error: Could not send connect packet!");
     SJC_Write(SDL_GetError());
@@ -33,8 +33,8 @@ void client_start(const char *hostname,int port){
 
 void client(){
   UDPpacket pkt;
-  char s[1000];
-  int status;
+  //char s[1000];
+  //int status;
 
   pkt.data = malloc(1000);
   pkt.maxlen = 1000;

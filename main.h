@@ -95,15 +95,11 @@ extern int creatables;
 extern SDL_Surface *screen;
 extern Uint32 ticks;
 extern int me;
+extern int console_open;
 
 //prototypes
 void toggleconsole();
-void input(int on,int sym,Uint16 unicode);
-void readinput();
 void advance();
-void render();
-void setvideo(int w,int h);
-void command(const char *s);
 int findfreeslot(int frame1);
 void cleanup();
 void assert(const char *msg,int val);

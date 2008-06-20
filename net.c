@@ -1,8 +1,8 @@
 
 #include "SDL/SDL.h"
 #include "SDL/SDL_net.h"
-#include <stdlib.h>
 #include "net.h"
+#include "console.h"
 
 
 UDPsocket hostsock = NULL;

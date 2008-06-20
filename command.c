@@ -5,7 +5,9 @@
 #include "console.h"
 #include "command.h"
 #include "net.h"
-//#include "unit_tests.h"
+#include "host.h"
+#include "client.h"
+#include "tests.h"
 
 
 void command(const char *s){
@@ -33,7 +35,7 @@ void command(const char *s){
       SJC_Write("Not implemented."); //TODO
     }else if( strcmp(q,"test")==0 ){
       SJC_Write("Running unit tests...");
-      run_unit_tests();
+      run_tests();
       SJC_Write("Done.");
     }else{
       SJC_Write("Huh?");
