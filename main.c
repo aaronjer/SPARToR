@@ -1,10 +1,10 @@
 /**
  **  SPARToR [CORE]
- **  A.K.A SPARToR 4
+ **  Network Game Engine
+ **  by SuperJer
  **
- **  100% SDL+OpenGL now
- **  Network-CORE-centered
- **
+ **  www.superjer.com
+ **  www.spartor.com
  **/
 
 
@@ -38,6 +38,7 @@ SDL_Surface *screen;
 Uint32 ticks;
 int me;
 int console_open;
+UDPpacket *pkt;
 
 //file globals
 
@@ -65,6 +66,7 @@ int main(int argc,char **argv) {
     fprintf(stderr,"SDLNet_Init: %s\n",SDL_GetError());
     exit(-2);
   }
+  pkt = SDLNet_AllocPacket(1000);
   toggleconsole();
   setvideo(640,480);
   SDL_WM_SetCaption("SPARToR CORE",NULL);
@@ -178,6 +180,7 @@ void advance() {
 
 void cleanup() {
   int i;
+  SDLNet_FreePacket(pkt);
   SJUI_Destroy();
   SDLNet_Quit();
   SDL_Quit();
