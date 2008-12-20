@@ -10,7 +10,7 @@
 //macros
 #define MIN(a,b) ((a)<(b)?(a):(b))
 #define MAX(a,b) ((a)>(b)?(a):(b))
-#define SWAP(t,a,b) {t SWAP_temp = a;a = b;b = SWAP_temp;}
+#define SWAP(a,b) {a ^= b;b ^= a;a ^= b;}
 #define TRY do{
 #define HARDER }while(0);
 
