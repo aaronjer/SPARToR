@@ -17,6 +17,7 @@ void host_start(int port);
 void host_stop();
 void host();
 void host_welcome();
+char *packframe(Uint32 packfr,size_t *n);
 
 #endif
 

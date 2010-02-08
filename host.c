@@ -62,7 +62,9 @@ void host() {
 //accept a new client and store the "connection"
 void host_welcome() {
   int i;
+  size_t n;
   char *p = (char *)pkt->data;
+  char *q;
   if( strncmp(p,PROTONAME,strlen(PROTONAME)) ) {
     SJC_Write("Junk packet from unknown client.");
     return;
@@ -86,7 +88,21 @@ void host_welcome() {
     return;
   }
   SJC_Write("New client accepted.");
+  sprintf((char *)pkt->data,"MSG:Welcome aboard client %d",i);
+  pkt->len = strlen((char *)pkt->data);
+  if( !SDLNet_UDP_Send(hostsock,-1,pkt) ) {
+    SJC_Write("Error: Could not send welcome packet!");
+    SJC_Write(SDL_GetError());
+    return; 
+  }
   clients[i].addr = pkt->address;
+  // send state!
+  q = packframe(surefr,&n);
 }
 
+
+char *packframe(Uint32 packfr,size_t *n) {
+  packfr = packfr % maxframes;
+  return NULL;  
+}
 

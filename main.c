@@ -29,18 +29,18 @@ size_t maxobjs = 100;
 FRAME_t *fr;
 Uint32 metafr;
 Uint32 curfr;
+Uint32 surefr;
 Uint32 drawnfr;
 Uint32 hotfr;
 Uint32 cmdfr = 1; //DO NOT clear frame 1, it is prefilled with client-connect for local person
 int creatables;
 
 SDL_Surface *screen;
-Uint32 ticks;
+Uint32 ticks,newticks;
 int me;
 int console_open;
 UDPpacket *pkt;
 
-//file globals
 
 
 int main(int argc,char **argv) {
@@ -83,7 +83,13 @@ int main(int argc,char **argv) {
 
   //main loop
   while(1) {
-    ticks = SDL_GetTicks();
+    newticks = SDL_GetTicks();
+    if( newticks-ticks<10 && newticks-ticks>=0 )
+    {
+      SDL_Delay(1);
+      continue;
+    }
+    ticks = newticks;
     metafr = ticks/40;
     curfr = metafr%maxframes;
     while( SDL_PollEvent(&event) ) switch(event.type) {
@@ -174,6 +180,7 @@ void advance() {
       creatables = 0;
     }
     hotfr++;
+    /* UGLY HACK! */ surefr = hotfr-5;
   }
 }
 
