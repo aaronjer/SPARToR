@@ -40,7 +40,10 @@ void host() {
       break;
     case 1:
       SJC_Write("Recv'd: len=%d | ipv4=%d | port=%d",pkt->len,pkt->address.host,pkt->address.port);
-      SJC_Write("%*s",pkt->len,pkt->data);
+      SJC_Write("%.*s",pkt->len,pkt->data);
+      char s[256];
+      sprintf(s,"%.*s",10,pkt->data);
+      SJC_Write(s);
       for(i=0;i<maxclients;i++)
         if( clients[i].addr.host==pkt->address.host && clients[i].addr.port==pkt->address.port )
           break;
