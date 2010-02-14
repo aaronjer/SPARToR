@@ -33,12 +33,15 @@ void mod_adv(int a,int b,OBJ_t *oa,OBJ_t *ob) {
         fr[b].objs[slot1].size = sizeof(PLAYER_t);
         pl = fr[b].objs[slot1].data = malloc(sizeof(PLAYER_t));
         pl->pos = (V){200.0f,200.0f,0.0f};
+        pl->vel = (V){0.0f,0.0f,0.0f};
+        pl->jumpvel = 0.0f;
         pl->model = 1;
         pl->ghost = slot0;
         pl->goingl = 0;
         pl->goingr = 0;
         pl->goingu = 0;
         pl->goingd = 0;
+        pl->jumping = 0;
       }
     }
     break;
@@ -59,11 +62,31 @@ void mod_adv(int a,int b,OBJ_t *oa,OBJ_t *ob) {
       case CMDT_0UP:    pl->goingu = 0; break;
       case CMDT_1DOWN:  pl->goingd = 1; break;
       case CMDT_0DOWN:  pl->goingd = 0; break; 
+      case CMDT_1JUMP:  pl->jumping = 1; break;
+      case CMDT_0JUMP:  pl->jumping = 0; break;
     }
-    if( pl->goingl ) pl->pos.x -= 1.0f;
-    if( pl->goingr ) pl->pos.x += 1.0f;
-    if( pl->goingu ) pl->pos.y -= 1.0f;
-    if( pl->goingd ) pl->pos.y += 1.0f;
+    if( pl->goingl ) pl->pos.x -= 3.0f;
+    if( pl->goingr ) pl->pos.x += 3.0f;
+    if( pl->goingu ) pl->pos.y -= 3.0f;
+    if( pl->goingd ) pl->pos.y += 3.0f;
+
+    pl->vel.y += 0.5f;      //gravity
+    pl->pos.x += pl->vel.x; //apply velocity
+    pl->pos.y += pl->vel.y - pl->jumpvel;
+    if( pl->jumpvel>0.0f )  //jumpvel fades away
+      pl->jumpvel -= 3.0f;
+    if( pl->jumpvel<0.0f ) {//end influence of jump, jumpvel can only be non-negative
+      pl->jumpvel = 0.0f;
+      pl->jumping = 0;      //must press jump again now
+    }
+    if( !pl->jumping )      //low-jump
+      pl->jumpvel = 0.0f;
+    if( pl->pos.y>400.0f ) {//on the ground
+      pl->pos.y = 400.0f;
+      pl->vel.y = 0;
+      if( pl->jumping )     //initiate jump!
+        pl->jumpvel = 10.0f;
+    }
     break;
   }
 }

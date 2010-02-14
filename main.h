@@ -7,6 +7,8 @@
 
 #define VERSION "0.1a"
 
+#define PACKET_SIZE 5000
+
 //macros
 #define MIN(a,b) ((a)<(b)?(a):(b))
 #define MAX(a,b) ((a)>(b)?(a):(b))
@@ -38,6 +40,8 @@
 #define CMDT_0UP      ((char)6)
 #define CMDT_1DOWN    ((char)7)
 #define CMDT_0DOWN    ((char)8)
+#define CMDT_1JUMP    ((char)9)
+#define CMDT_0JUMP    ((char)10)
 
 
 typedef struct{
@@ -75,11 +79,14 @@ typedef struct{
 typedef struct{
   V pos;
   int model;
+  V vel;
+  float jumpvel;
   int ghost;
   char goingl;
   char goingr;
   char goingu;
   char goingd;
+  char jumping;
 } PLAYER_t;
 
 //externs

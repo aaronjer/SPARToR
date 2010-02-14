@@ -30,24 +30,27 @@ void client_start(const char *hostname,int port) {
 
 
 void client() {
-  char s[1000];
   int status;
 
-  //look for new connections
+  //look for new connections, bub
   status = SDLNet_UDP_Recv(clientsock,pkt);
-  switch( status ) {
-    case -1:
-      SJC_Write("Network Error: Failed to check for new packets.");
-      SJC_Write(SDL_GetError());
-      break;
-    case 1:
-      SJC_Write("Received packet...");
-      sprintf(s,"channel %d|maxlen %d|len %d|ipv4 %d|port %d",pkt->channel,pkt->maxlen,pkt->len,pkt->address.host,pkt->address.port);
-      SJC_Write(s);
-      strncpy(s,(char *)pkt->data,pkt->len);
-      s[pkt->len]='\0';
-      SJC_Write("Server says: %s",s);
-      break;
+  if( status==-1 ) {
+    SJC_Write("Network Error: Failed to check for new packets.");
+    SJC_Write(SDL_GetError());
+  } else if( status==1 ) {
+    Uint32 ipnum = pkt->address.host;
+    SJC_Write("Received UPD packet of length %d from %d.%d.%d.%d:%d",pkt->len,
+              ipnum%256,(ipnum>>8)%256,(ipnum>>16)%256,(ipnum>>24)%256,pkt->address.port);
+    switch(pkt->data[0]) {
+      case 'M': //message
+        SJC_Write("Server says: %s",pkt->data+1);
+        break;
+      case 'S': //state
+        SJC_Write("Receiving state, %d bytes",pkt->len-1);
+        break;
+      default:
+        SJC_Write("Error: Packet is garbled!");
+    }
   }
 }
 

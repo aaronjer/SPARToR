@@ -66,7 +66,7 @@ int main(int argc,char **argv) {
     fprintf(stderr,"SDLNet_Init: %s\n",SDL_GetError());
     exit(-2);
   }
-  pkt = SDLNet_AllocPacket(1000);
+  pkt = SDLNet_AllocPacket(PACKET_SIZE);
   toggleconsole();
   setvideo(640,480);
   SDL_WM_SetCaption("SPARToR CORE",NULL);
