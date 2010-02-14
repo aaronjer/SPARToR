@@ -93,9 +93,10 @@ extern size_t maxframes;
 extern size_t maxobjs;
 
 extern FRAME_t *fr;
+extern Uint32 frameoffset; //offset to sync client with server
 extern Uint32 metafr; //the frame corresponding to "now"
 extern Uint32 curfr;  //metafr % maxframes
-extern Uint32 surefr;  //newest frame we are sure of (i.e. it has all its inputs and has been advanced)
+extern Uint32 surefr; //newest frame we are sure of (i.e. it has all its inputs and has been advanced)
 extern Uint32 drawnfr;//most recently rendered frame
 extern Uint32 hotfr;  //newest fully advanced frame (it's hot and fresh)
 extern Uint32 cmdfr;  //newest frame with cmds inserted (possibly in future)
@@ -111,6 +112,7 @@ extern UDPpacket *pkt;
 void toggleconsole();
 void advance();
 int findfreeslot(int frame1);
+void clearframebuffer();
 void cleanup();
 void assert(const char *msg,int val);
 V *flexpos(OBJ_t *o);

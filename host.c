@@ -102,16 +102,17 @@ void host_welcome() {
   // send state!
   q = packframe(surefr,&n);
   SJC_Write("Frame %d packed into %d bytes, ready to send state.",surefr,n);
-  if( n+4>pkt->maxlen ) {
+  if( n+9>pkt->maxlen ) {
     SJC_Write("Error: Packed frame is too big to send!");
     free(q);
     return;
   }
-  pkt->len = n+5;
+  pkt->len = n+9;
   pkt->data[0] = '?';
   packbytes(pkt->data+0,'S',NULL,1);
-  packbytes(pkt->data+1,surefr,NULL,4);
-  memcpy(pkt->data+5,q,n);
+  packbytes(pkt->data+1,metafr,NULL,4);
+  packbytes(pkt->data+5,surefr,NULL,4);
+  memcpy(pkt->data+9,q,n);
   if( !SDLNet_UDP_Send(hostsock,-1,pkt) ) {
     SJC_Write("Error: Could not send state packet!");
     SJC_Write(SDL_GetError());

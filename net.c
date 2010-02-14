@@ -51,22 +51,56 @@ Uint8 *packframe(Uint32 packfr,size_t *n) {
       data = realloc(data,(s*=2));
     packbytes(data,pfr->objs[i].type,n,2);
     if(pfr->objs[i].type) {
+    SJC_Write("Packing object %d, type %d",i,pfr->objs[i].type); //FIXME: remove
       packbytes(data,pfr->objs[i].flags,n,2);
       packbytes(data,pfr->objs[i].size ,n,sizeof(size_t));
-      memcpy(data, pfr->objs[i].data, pfr->objs[i].size);
+      memcpy(data+*n, pfr->objs[i].data, pfr->objs[i].size);
+      *n += pfr->objs[i].size;
     }
   }
   return data;
 }
 
 
-int unpackframe(Uint32 packfr,Uint8 *data) {
+int unpackframe(Uint32 packfr,Uint8 *data,size_t len) {
   FRAME_t *pfr = fr + packfr % maxframes;
+  int i;
   size_t n = 0;
-  int packed_maxclients;
 
-  packed_maxclients = unpackbytes(data,&n,4);
-  SJC_Write("maxclients from state = %d",packed_maxclients);
+  if( maxclients!=unpackbytes(data,len,&n,4) ) {
+    SJC_Write("Your maxclients setting (%d) differs from server's!",maxclients);
+    return 1;
+  }
+  for(i=0;i<maxclients;i++) {
+    pfr->cmds[i].cmd     = unpackbytes(data,len,&n,1);
+    pfr->cmds[i].mousehi = unpackbytes(data,len,&n,1);
+    pfr->cmds[i].mousex  = unpackbytes(data,len,&n,1);
+    pfr->cmds[i].mousey  = unpackbytes(data,len,&n,1);
+    pfr->cmds[i].flags   = unpackbytes(data,len,&n,2);
+  }
+  if( maxobjs!=unpackbytes(data,len,&n,4) ) {
+    SJC_Write("Your maxobjs setting (%d) differs from server's!",maxobjs);
+    return 1;
+  }
+  for(i=0;i<maxobjs;i++) {
+    pfr->objs[i].type = unpackbytes(data,len,&n,2);
+    if(pfr->objs[i].type) {
+      pfr->objs[i].flags = unpackbytes(data,len,&n,2);
+      pfr->objs[i].size  = unpackbytes(data,len,&n,sizeof(size_t));
+      fprintf(stderr,"malloc'ing %d bytes for object %d, type %d\n",pfr->objs[i].size,i,pfr->objs[i].type);
+      if( pfr->objs[i].size ) {
+        if( len<n+pfr->objs[i].size ) {
+          SJC_Write("Packed data ended early!");
+          return 1;
+        }
+        pfr->objs[i].data  = malloc(pfr->objs[i].size); //FIXME: might already be allocated with pre-net data
+        memcpy(pfr->objs[i].data, data+n, pfr->objs[i].size);
+        n += pfr->objs[i].size;
+      }
+    }
+  }
+
+  return 0;
 }
 
 
@@ -86,10 +120,14 @@ void packbytes(Uint8 *data,Uint64 value,size_t *offset,int width) {
 }
 
 
-Uint64 unpackbytes(Uint8 *data,size_t *offset,int width) {
+Uint64 unpackbytes(Uint8 *data,size_t len,size_t *offset,int width) {
   Uint64 value = 0;
   size_t n = 0;
   if( offset==NULL ) offset = &n;
+  if( len<*offset+width ) {
+    SJC_Write("Not enough packed bytes to read!");
+    return 0;
+  }
   switch(width) {
     case 8: value |= ((Uint64)*(data+(*offset)++))<<56;
     case 7: value |= ((Uint64)*(data+(*offset)++))<<48;
@@ -103,4 +141,10 @@ Uint64 unpackbytes(Uint8 *data,size_t *offset,int width) {
   return value;
 }
 
+
+void inspectbytes(Uint8 *data,int n) {
+  int i = 0;
+  for(;i<n;i++)
+    SJC_Write("Byte %d: %d",i,data[i]);
+}
 

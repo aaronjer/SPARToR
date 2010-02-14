@@ -27,6 +27,7 @@ size_t maxframes = 360;
 size_t maxobjs = 100;
 
 FRAME_t *fr;
+Uint32 frameoffset;
 Uint32 metafr;
 Uint32 curfr;
 Uint32 surefr;
@@ -90,7 +91,7 @@ int main(int argc,char **argv) {
       continue;
     }
     ticks = newticks;
-    metafr = ticks/40;
+    metafr = ticks/40 + frameoffset;
     curfr = metafr%maxframes;
     while( SDL_PollEvent(&event) ) switch(event.type) {
       case SDL_VIDEOEXPOSE:
@@ -147,7 +148,7 @@ void advance() {
       OBJ_t *ob = fr[b].objs+i;
       OBJ_t *oc = fr[c].objs+i;
       oc->type = 0;
-      free(oc->data);
+      free(oc->data); oc->data = NULL;
       if(oa->type) {
         ob->type = oa->type;
         ob->flags = oa->flags;
@@ -180,7 +181,7 @@ void advance() {
       creatables = 0;
     }
     hotfr++;
-    /* UGLY HACK! */ surefr = hotfr-5;
+    surefr = hotfr-5; //FIXME: UGLY HACK! surefr should be determined for REAL
   }
 }
 
@@ -191,6 +192,7 @@ void cleanup() {
   SJUI_Destroy();
   SDLNet_Quit();
   SDL_Quit();
+  clearframebuffer();
   for(i=0;i<maxframes;i++) {
     free(fr[i].cmds);
     free(fr[i].objs);
@@ -218,6 +220,19 @@ int findfreeslot(int frame1) {
     last_slot++;
   }
   return -1;
+}
+
+// clears all objects and commands out of frame buffer
+void clearframebuffer() {
+  int i,j;
+  for(i=0;i<maxframes;i++) {
+    memset(fr[i].cmds,0,sizeof(FCMD_t)*maxclients);
+    for(j=0;j<maxobjs;j++) {
+      if( fr[i].objs[j].data )
+        free( fr[i].objs[j].data );
+      memset( fr[i].objs+j, 0, sizeof(OBJ_t) );
+    }
+  }
 }
 
 

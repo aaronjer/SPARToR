@@ -46,8 +46,16 @@ void client() {
         SJC_Write("Server says: %s",pkt->data+1);
         break;
       case 'S': //state
-        SJC_Write("Receiving state, %d bytes",pkt->len-5);
-        unpackframe(0,pkt->data+5);
+        clearframebuffer();
+        metafr = unpackbytes(pkt->data+1,4,NULL,4);
+        surefr = unpackbytes(pkt->data+5,4,NULL,4);
+        SJC_Write("Receiving state of frame %d, %d bytes, syncing up at frame %d",surefr,pkt->len-9,metafr);
+
+        frameoffset = metafr-ticks/40; //sync up
+        curfr = metafr%maxframes;
+        drawnfr = hotfr = cmdfr = surefr;
+
+        unpackframe(surefr,pkt->data+9,pkt->len-9);
         break;
       default:
         SJC_Write("Error: Packet is garbled!");
