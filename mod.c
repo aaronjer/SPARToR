@@ -70,9 +70,12 @@ void mod_adv(int a,int b,OBJ_t *oa,OBJ_t *ob) {
     if( pl->goingu ) pl->pos.y -= 3.0f;
     if( pl->goingd ) pl->pos.y += 3.0f;
 
-    pl->vel.y += 0.5f;      //gravity
+    pl->vel.y += 0.8f;      //gravity and jump effect
+    pl->vel.y -= pl->jumpvel;
+
     pl->pos.x += pl->vel.x; //apply velocity
-    pl->pos.y += pl->vel.y - pl->jumpvel;
+    pl->pos.y += pl->vel.y;
+
     if( pl->jumpvel>0.0f )  //jumpvel fades away
       pl->jumpvel -= 3.0f;
     if( pl->jumpvel<0.0f ) {//end influence of jump, jumpvel can only be non-negative
@@ -85,7 +88,7 @@ void mod_adv(int a,int b,OBJ_t *oa,OBJ_t *ob) {
       pl->pos.y = 400.0f;
       pl->vel.y = 0;
       if( pl->jumping )     //initiate jump!
-        pl->jumpvel = 10.0f;
+        pl->jumpvel = 8.0f;
     }
     break;
   }

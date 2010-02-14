@@ -16,7 +16,6 @@
 #define TRY do{
 #define HARDER }while(0);
 
-
 //obj flags
 #define OBJF_POS 0x00000001
 #define OBJF_VIS 0x00000002

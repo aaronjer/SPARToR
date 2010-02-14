@@ -46,7 +46,8 @@ void client() {
         SJC_Write("Server says: %s",pkt->data+1);
         break;
       case 'S': //state
-        SJC_Write("Receiving state, %d bytes",pkt->len-1);
+        SJC_Write("Receiving state, %d bytes",pkt->len-5);
+        unpackframe(0,pkt->data+5);
         break;
       default:
         SJC_Write("Error: Packet is garbled!");

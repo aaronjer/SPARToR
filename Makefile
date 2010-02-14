@@ -10,6 +10,7 @@ LIBS = -lm -lSDL -lSDL_net
 
 $(EXE_NAME): $(OBJS)
 	$(CC) -o $@ $(OBJS) $(FLAGS) $(INC) $(LIBS) $(XLIBS)
+	-rm $(OBJS)
 
 $(OBJS):
 	$(CC) -o $@ -c `sdl-config --cflags` $(FLAGS) $(INC) $*.c

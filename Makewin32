@@ -10,6 +10,7 @@ LIBS = -lmingw32 -lSDLmain -lSDL -lSDL_net -lm
 
 $(EXE_NAME): $(OBJS)
 	$(CC) -o $@ $(OBJS) $(FLAGS) $(INC) $(LIBS) $(XLIBS)
+        -rm $(OBJS)
 
 $(OBJS):
 	$(CC) -o $@ -c $(FLAGS) $(INC) $*.c
