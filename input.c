@@ -58,11 +58,13 @@ void readinput() {
   if( cmdfr<infr ) { //this is the new cmdfr, so clear it, unless we already have cmds stored in the future!
                      //TODO: jog the simulation forward if cmds do end up in the future because that must mean we're BEHIND SCHEDULE!
     memset(fr[infr%maxframes].cmds,0,sizeof(FCMD_t)*maxclients);
+    fr[infr%maxframes].dirty = 0;
     cmdfr = infr;
   }
   infr %= maxframes;
   if( fr[infr].cmds[me].cmd==0 && cmdbuf[cbread] ) {
-    int i;
+    char cmd;
+/*  int i; //FIXME: remove
     char s[257];
     char t[257];
     for(i=0;i<256;i++) {
@@ -74,8 +76,11 @@ void readinput() {
     s[256] = '\0';
     t[256] = '\0';
     SJC_Write(s);
-    SJC_Write(t);
-    fr[infr].cmds[me].cmd = getnextcmd();
+    SJC_Write(t); */
+    if( (cmd = getnextcmd()) ) { // dirty frame if new cmd inserted
+      fr[infr].cmds[me].cmd = cmd;
+      fr[infr].dirty = 1;
+    }
   }
 }
 

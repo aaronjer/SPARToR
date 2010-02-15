@@ -33,18 +33,10 @@ void disconnect(){
 Uint8 *packframe(Uint32 packfr,size_t *n) {
   FRAME_t *pfr = fr + packfr % maxframes;
   int i;
-  size_t s = maxclients*8;
+  size_t s = 80;
   Uint8 *data = malloc(s);
   *n = 0;
 
-  packbytes(data,maxclients,n,4);
-  for(i=0;i<maxclients;i++) {
-    packbytes(data,pfr->cmds[i].cmd    ,n,1);
-    packbytes(data,pfr->cmds[i].mousehi,n,1);
-    packbytes(data,pfr->cmds[i].mousex ,n,1);
-    packbytes(data,pfr->cmds[i].mousey ,n,1);
-    packbytes(data,pfr->cmds[i].flags  ,n,2);
-  }
   packbytes(data,maxobjs,n,4);
   for(i=0;i<maxobjs;i++) {
     while( *n+4+sizeof(size_t)+pfr->objs[i].size >= s-1 )
@@ -62,7 +54,56 @@ Uint8 *packframe(Uint32 packfr,size_t *n) {
 }
 
 
+Uint8 *packframecmds(Uint32 packfr,size_t *n) {
+  FRAME_t *pfr = fr + packfr % maxframes;
+  int i;
+  size_t s = maxclients*6+4;
+  Uint8 *data = malloc(s);
+  *n = 0;
+
+  packbytes(data,maxclients,n,4);
+  for(i=0;i<maxclients;i++) {
+    packbytes(data,pfr->cmds[i].cmd    ,n,1);
+    packbytes(data,pfr->cmds[i].mousehi,n,1);
+    packbytes(data,pfr->cmds[i].mousex ,n,1);
+    packbytes(data,pfr->cmds[i].mousey ,n,1);
+    packbytes(data,pfr->cmds[i].flags  ,n,2);
+  }
+  return data;
+}
+
+
 int unpackframe(Uint32 packfr,Uint8 *data,size_t len) {
+  FRAME_t *pfr = fr + packfr % maxframes;
+  int i;
+  size_t n = 0;
+
+  if( maxobjs!=unpackbytes(data,len,&n,4) ) {
+    SJC_Write("Your maxobjs setting (%d) differs from server's!",maxobjs);
+    return 1;
+  }
+  for(i=0;i<maxobjs;i++) {
+    pfr->objs[i].type = unpackbytes(data,len,&n,2);
+    if(pfr->objs[i].type) {
+      pfr->objs[i].flags = unpackbytes(data,len,&n,2);
+      pfr->objs[i].size  = unpackbytes(data,len,&n,sizeof(size_t));
+      fprintf(stderr,"malloc'ing %d bytes for object %d, type %d\n",pfr->objs[i].size,i,pfr->objs[i].type); //FIXME: remove
+      if( pfr->objs[i].size ) {
+        if( len<n+pfr->objs[i].size ) {
+          SJC_Write("Packed data ended early!");
+          return 1;
+        }
+        pfr->objs[i].data  = malloc(pfr->objs[i].size); //FIXME: might already be allocated with pre-net data
+        memcpy(pfr->objs[i].data, data+n, pfr->objs[i].size);
+        n += pfr->objs[i].size;
+      }
+    }
+  }
+  return 0;
+}
+
+
+int unpackframecmds(Uint32 packfr,Uint8 *data,size_t len) {
   FRAME_t *pfr = fr + packfr % maxframes;
   int i;
   size_t n = 0;
@@ -78,28 +119,6 @@ int unpackframe(Uint32 packfr,Uint8 *data,size_t len) {
     pfr->cmds[i].mousey  = unpackbytes(data,len,&n,1);
     pfr->cmds[i].flags   = unpackbytes(data,len,&n,2);
   }
-  if( maxobjs!=unpackbytes(data,len,&n,4) ) {
-    SJC_Write("Your maxobjs setting (%d) differs from server's!",maxobjs);
-    return 1;
-  }
-  for(i=0;i<maxobjs;i++) {
-    pfr->objs[i].type = unpackbytes(data,len,&n,2);
-    if(pfr->objs[i].type) {
-      pfr->objs[i].flags = unpackbytes(data,len,&n,2);
-      pfr->objs[i].size  = unpackbytes(data,len,&n,sizeof(size_t));
-      fprintf(stderr,"malloc'ing %d bytes for object %d, type %d\n",pfr->objs[i].size,i,pfr->objs[i].type);
-      if( pfr->objs[i].size ) {
-        if( len<n+pfr->objs[i].size ) {
-          SJC_Write("Packed data ended early!");
-          return 1;
-        }
-        pfr->objs[i].data  = malloc(pfr->objs[i].size); //FIXME: might already be allocated with pre-net data
-        memcpy(pfr->objs[i].data, data+n, pfr->objs[i].size);
-        n += pfr->objs[i].size;
-      }
-    }
-  }
-
   return 0;
 }
 

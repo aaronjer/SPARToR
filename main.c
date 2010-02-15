@@ -136,11 +136,12 @@ void toggleconsole() {
 void advance() {
   int i;
   while(hotfr < metafr) {
-    Uint32 a = (hotfr+0)%maxframes;
+    Uint32 a = (hotfr+0)%maxframes; //a: frame to advance from, b: frame to advance to, c: frame in future
     Uint32 b = (hotfr+1)%maxframes;
     Uint32 c = (hotfr+2)%maxframes;
     if( cmdfr<hotfr+1 ) { //need to clear out the cmds in the frame since it hasn't been done yet!
       memset(fr[b].cmds,0,sizeof(FCMD_t)*maxclients);
+      fr[b].dirty = 0;
       cmdfr = hotfr+1;
     }
     for(i=0;i<maxobjs;i++) { //advance each object into the hot fresh frame
@@ -226,6 +227,7 @@ int findfreeslot(int frame1) {
 void clearframebuffer() {
   int i,j;
   for(i=0;i<maxframes;i++) {
+    fr[i].dirty = 0;
     memset(fr[i].cmds,0,sizeof(FCMD_t)*maxclients);
     for(j=0;j<maxobjs;j++) {
       if( fr[i].objs[j].data )

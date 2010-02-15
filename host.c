@@ -31,6 +31,8 @@ void host() {
   int status;
   int i;
   Uint32 ipnum;
+  Uint8 *data;
+  size_t n;
 
   //recv from clients
   status = SDLNet_UDP_Recv(hostsock,pkt);
@@ -58,7 +60,39 @@ void host() {
   }
 
   //send to clients
-  //TODO
+  pkt->data[0] = 'C';
+  pkt->data[1] = 0;
+  pkt->len = 2;
+  for(i=surefr+1;i<=cmdfr;i++) { //scan for dirty frames to send
+    if( fr[i%maxframes].dirty ) {
+      if( pkt->data[0]>100 ) {
+        SJC_Write("DANGER! >100 framesworth of cmds packed!");
+        break;
+      }
+      data = packframecmds(i,&n);
+      if( pkt->len+4+n >= pkt->maxlen ) {
+        SJC_Write("DANGER! >=pkt->maxlen bytesworth of cmds almost packed!");
+        free(data);
+        break;
+      }
+      packbytes(pkt->data+pkt->len,i,NULL,4);
+      memcpy(pkt->data+pkt->len+4, data, n);
+      free(data);
+      pkt->len += 4+n;
+      pkt->data[1]++;
+      fr[i%maxframes].dirty = 0;
+    }
+  }
+  if( pkt->data[1]>0 ) { //we have packed cmds to send along!
+    SJC_Write("Sending cmds packet of length %d",pkt->len);
+    for(i=0;i<maxclients;i++) {
+      pkt->address = clients[i].addr;
+      if( pkt->address.host && !SDLNet_UDP_Send(hostsock,-1,pkt) ) {
+        SJC_Write("Error: Could not send cmds packet!");
+        SJC_Write(SDL_GetError());
+      }
+    }
+  }
 }
 
 
@@ -88,16 +122,12 @@ void host_welcome() {
   if( i==maxclients ) {
     SJC_Write("New client not accepted b/c server is full.");
     //TODO: inform client
-    return;
-  }
-  SJC_Write("New client accepted.");
-  sprintf((char *)pkt->data,"MWelcome aboard client %d",i);
-  pkt->len = strlen((char *)pkt->data)+1;
-  if( !SDLNet_UDP_Send(hostsock,-1,pkt) ) {
-    SJC_Write("Error: Could not send welcome packet!");
-    SJC_Write(SDL_GetError());
+    sprintf((char *)pkt->data,"MFULL: Server is full!");
+    pkt->len = strlen((char *)pkt->data)+1;
+    SDLNet_UDP_Send(hostsock,-1,pkt);
     return; 
   }
+  SJC_Write("New client accepted.");
   clients[i].addr = pkt->address;
   // send state!
   q = packframe(surefr,&n);

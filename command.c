@@ -27,7 +27,8 @@ void command(const char *s){
     }else if( strcmp(q,"connect")==0 ){
       char *hostname = strtok(NULL," :");
       char *port = strtok(NULL," ");
-      client_start(hostname,(port?atoi(port):0));
+      char *clientport = strtok(NULL," ");
+      client_start(hostname,(port?atoi(port):0),(clientport?atoi(clientport):0));
     }else if( strcmp(q,"disconnect")==0 ){
       disconnect();
     }else if( strcmp(q,"reconnect")==0 ){

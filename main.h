@@ -59,6 +59,7 @@ typedef struct{
 } OBJ_t;
 
 typedef struct{
+  int dirty;
   FCMD_t *cmds;
   OBJ_t *objs;
 } FRAME_t;

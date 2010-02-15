@@ -8,13 +8,13 @@
 #include "net.h"
 
 
-void client_start(const char *hostname,int port) {
+void client_start(const char *hostname,int port,int clientport) {
   if( hostsock ) { SJC_Write("Already running as a host. Type disconnect to stop."); return; }
   if( clientsock ) { SJC_Write("Already connected to a host. Type disconnect if that ain't cool."); return; }
   if( !hostname || !*hostname ) { SJC_Write("Error: Please specify host."); return; }
   SDLNet_ResolveHost(&ipaddr,hostname,port?port:HOSTPORT);
   if( ipaddr.host==INADDR_NONE ) { SJC_Write("Error: Could not resolve host!"); return; }
-  if( !(clientsock = SDLNet_UDP_Open(CLIENTPORT)) ) { SJC_Write("Error: Could not open client socket!"); SJC_Write(SDL_GetError()); return; }
+  if( !(clientsock = SDLNet_UDP_Open(clientport?clientport:CLIENTPORT)) ) { SJC_Write("Error: Could not open client socket!"); SJC_Write(SDL_GetError()); return; }
   SJC_Write("Connecting...");
   pkt->address = ipaddr;
   sprintf((char *)pkt->data,"%s/%s",PROTONAME,PROTOVERS);
@@ -31,6 +31,9 @@ void client_start(const char *hostname,int port) {
 
 void client() {
   int status;
+  int i;
+  size_t n;
+  Uint32 packfr;
 
   //look for new connections, bub
   status = SDLNet_UDP_Recv(clientsock,pkt);
@@ -56,6 +59,16 @@ void client() {
         drawnfr = hotfr = cmdfr = surefr;
 
         unpackframe(surefr,pkt->data+9,pkt->len-9);
+        break;
+      case 'C': //cmds
+        n = 2;
+        for(i=0;i<(int)pkt->data[1];i++) {
+          packfr = unpackbytes(pkt->data,pkt->len,&n,4);
+          unpackframecmds(packfr,pkt->data+n,pkt->len-n);
+          SJC_Write("Unpacked cmd %d on frame %d, metaframe is %d",fr[packfr%maxframes].cmds[0].cmd,packfr,metafr); //FIXME: remove
+          if( hotfr>packfr-1 )
+            hotfr = packfr-1;
+        }
         break;
       default:
         SJC_Write("Error: Packet is garbled!");
