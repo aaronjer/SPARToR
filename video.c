@@ -16,7 +16,7 @@ void render() {
   Uint32 vidfr = (metafr-1);
   Uint32 vidfrmod = vidfr%maxframes;
 
-  if( vidfr<=drawnfr )
+  if( metafr==0 || vidfr<=drawnfr ) //==0 prevent never-draw bug
     return;
 
   vidinfo = SDL_GetVideoInfo();
