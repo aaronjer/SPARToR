@@ -54,13 +54,9 @@ void input(int press,int sym,Uint16 unicode) {
 
 
 void readinput() {
-  Uint32 infr = hotfr+1;
-  if( cmdfr<infr ) { //this is the new cmdfr, so clear it, unless we already have cmds stored in the future!
-                     //TODO: jog the simulation forward if cmds do end up in the future because that must mean we're BEHIND SCHEDULE!
-    memset(fr[infr%maxframes].cmds,0,sizeof(FCMD_t)*maxclients);
-    fr[infr%maxframes].dirty = 0;
-    cmdfr = infr;
-  }
+  Uint32 infr = hotfr+1; //TODO: _should_ we always insert on hotfr+1?
+  if( cmdfr<infr ) //this is the new cmdfr, so clear it, unless we already have cmds stored in the future!
+    setcmdfr(infr);
   infr %= maxframes;
   if( fr[infr].cmds[me].cmd==0 && cmdbuf[cbread] ) {
     char cmd;

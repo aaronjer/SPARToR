@@ -50,13 +50,10 @@ void client() {
         break;
       case 'S': //state
         clearframebuffer();
-        metafr = unpackbytes(pkt->data+1,4,NULL,4);
-        surefr = unpackbytes(pkt->data+5,4,NULL,4);
+        Uint32 newmetafr = unpackbytes(pkt->data+1,4,NULL,4);
+        Uint32 newsurefr = unpackbytes(pkt->data+5,4,NULL,4);
+        jogframebuffer( newmetafr, newsurefr );
         SJC_Write("Receiving state of frame %d, %d bytes, syncing up at frame %d",surefr,pkt->len-9,metafr);
-
-        frameoffset = metafr-ticks/40; //sync up
-        curfr = metafr%maxframes;
-        drawnfr = hotfr = cmdfr = surefr;
 
         unpackframe(surefr,pkt->data+9,pkt->len-9);
         break;
@@ -64,10 +61,11 @@ void client() {
         n = 2;
         for(i=0;i<(int)pkt->data[1];i++) {
           packfr = unpackbytes(pkt->data,pkt->len,&n,4);
+          setcmdfr(packfr);
           unpackframecmds(packfr,pkt->data+n,pkt->len-n);
           SJC_Write("Unpacked cmd %d on frame %d, metaframe is %d",fr[packfr%maxframes].cmds[0].cmd,packfr,metafr); //FIXME: remove
           if( hotfr>packfr-1 )
-            hotfr = packfr-1;
+            sethotfr(packfr-1);
         }
         break;
       default:

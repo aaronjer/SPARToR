@@ -29,7 +29,6 @@ size_t maxobjs = 100;
 FRAME_t *fr;
 Uint32 frameoffset;
 Uint32 metafr;
-Uint32 curfr;
 Uint32 surefr;
 Uint32 drawnfr;
 Uint32 hotfr;
@@ -91,8 +90,7 @@ int main(int argc,char **argv) {
       continue;
     }
     ticks = newticks;
-    metafr = ticks/40 + frameoffset;
-    curfr = metafr%maxframes;
+    metafr = ticks/TICKSAFRAME + frameoffset; //do not call setter here!
     while( SDL_PollEvent(&event) ) switch(event.type) {
       case SDL_VIDEOEXPOSE:
         break;
@@ -139,11 +137,8 @@ void advance() {
     Uint32 a = (hotfr+0)%maxframes; //a: frame to advance from, b: frame to advance to, c: frame in future
     Uint32 b = (hotfr+1)%maxframes;
     Uint32 c = (hotfr+2)%maxframes;
-    if( cmdfr<hotfr+1 ) { //need to clear out the cmds in the frame since it hasn't been done yet!
-      memset(fr[b].cmds,0,sizeof(FCMD_t)*maxclients);
-      fr[b].dirty = 0;
-      cmdfr = hotfr+1;
-    }
+    if( cmdfr<hotfr+1 ) //need to clear out the cmds in forward frame since it hasn't been done yet!
+      setcmdfr(hotfr+1);
     for(i=0;i<maxobjs;i++) { //advance each object into the hot fresh frame
       OBJ_t *oa = fr[a].objs+i;
       OBJ_t *ob = fr[b].objs+i;
@@ -182,7 +177,7 @@ void advance() {
       creatables = 0;
     }
     hotfr++;
-    surefr = hotfr-5; //FIXME: UGLY HACK! surefr should be determined for REAL
+    setsurefr(hotfr-5); //FIXME: UGLY HACK! surefr should be determined for REAL
   }
 }
 
@@ -250,5 +245,35 @@ V *flexpos(OBJ_t *o){
    return (V*)(o->data);
 }
 
+
+
+//frame setters
+void setmetafr( Uint32 to) {
+  metafr = to;
+}
+void setsurefr( Uint32 to) {
+  surefr = to;
+}
+void setdrawnfr(Uint32 to) {
+  drawnfr = to;
+}
+void sethotfr(  Uint32 to) {
+  hotfr = to;
+}
+void setcmdfr(  Uint32 to) {
+  while(cmdfr<to) {
+    cmdfr++;
+    memset(fr[cmdfr%maxframes].cmds,0,sizeof(FCMD_t)*maxclients);
+    fr[cmdfr%maxframes].dirty = 0;
+  }
+}
+void jogframebuffer(Uint32  newmetafr,Uint32 newsurefr) {
+  metafr = newmetafr;
+  frameoffset = metafr - ticks/TICKSAFRAME;
+  surefr  = newsurefr;
+  drawnfr = newsurefr;
+  hotfr   = newsurefr;
+  cmdfr   = newsurefr;
+}
 
 

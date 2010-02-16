@@ -13,6 +13,7 @@ void render() {
   int x,y,w,h;
   int i;
   char buf[1000];
+  Uint32 vidfr = (metafr-1)%maxframes;
 
   vidinfo = SDL_GetVideoInfo();
   w = vidinfo->current_w;
@@ -20,7 +21,7 @@ void render() {
 
   //display objects
   for(i=0;i<maxobjs;i++) {
-    OBJ_t *o = fr[curfr].objs+i;
+    OBJ_t *o = fr[vidfr].objs+i;
     if(o->type==OBJT_DUMMY) {
       V *pos = flexpos(o);
       SDL_FillRect(screen,&(SDL_Rect){pos->x-10,pos->y+10,20,20},0xFFFF00);
@@ -52,11 +53,11 @@ void render() {
   //SJUI_Paint(screen);
   
   //display stats
-  sprintf(buf,"fr: meta=%d cur=%d drawn=%d hot=%d",metafr,curfr,drawnfr,hotfr);
+  sprintf(buf,"fr: meta=%d vid=%d drawn=%d hot=%d",metafr,vidfr,drawnfr,hotfr);
   SJF_DrawText(screen,w-20-SJF_TextExtents(buf),h-20,buf);
 
   SDL_Flip(screen);
-  drawnfr = metafr;
+  setdrawnfr(vidfr);
 
   SDL_FillRect(screen,&(SDL_Rect){0,0,w,h},0x000088);
 }
