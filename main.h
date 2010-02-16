@@ -4,6 +4,7 @@
 
 #include "SDL/SDL.h"
 #include "SDL/SDL_net.h"
+#include "SDL/SDL_image.h"
 
 #define VERSION "0.1a"
 

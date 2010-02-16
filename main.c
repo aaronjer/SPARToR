@@ -10,6 +10,7 @@
 
 #include "SDL/SDL.h"
 #include "SDL/SDL_net.h"
+#include "SDL/SDL_image.h"
 #include "main.h"
 #include "font.h"
 #include "console.h"
@@ -21,6 +22,11 @@
 #include "input.h"
 #include "video.h"
 
+#ifndef IMG_Init //support pre SDL_image 1.2.8
+#define IMG_INIT_PNG 1
+int IMG_Init(int flags) {return flags;}
+void IMG_Quit() {}
+#endif
 
 //globals
 size_t maxframes = 360;
@@ -66,10 +72,15 @@ int main(int argc,char **argv) {
     fprintf(stderr,"SDLNet_Init: %s\n",SDL_GetError());
     exit(-2);
   }
+  if( IMG_Init(IMG_INIT_PNG)!=IMG_INIT_PNG ) {
+    fprintf(stderr,"IMG_Init: %s\n",SDL_GetError());
+    exit(-3);
+  }
   pkt = SDLNet_AllocPacket(PACKET_SIZE);
   toggleconsole();
-  setvideo(640,480);
   SDL_WM_SetCaption("SPARToR CORE",NULL);
+  SDL_WM_SetIcon(IMG_Load("icon.png"),NULL);
+  setvideo(640,480);
   vidinfo = SDL_GetVideoInfo();
 
   SJF_Init();
@@ -186,6 +197,7 @@ void cleanup() {
   int i;
   SDLNet_FreePacket(pkt);
   SJUI_Destroy();
+  IMG_Quit();
   SDLNet_Quit();
   SDL_Quit();
   clearframebuffer();
