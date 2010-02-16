@@ -33,35 +33,43 @@ void host_stop() {
 void host() {
   int status;
   int i;
-  Uint32 ipnum;
   Uint8 *data;
   size_t n;
+  Uint32 packfr;
+  FCMD_t *pcmd;
 
   //recv from clients
   status = SDLNet_UDP_Recv(hostsock,pkt);
-  switch( status ) {
-    case -1:
-      SJC_Write("Network Error: Recv failed!");
-      SJC_Write(SDL_GetError());
-      break;
-    case 1:
-      ipnum = pkt->address.host;
-      SJC_Write("Received UPD packet of length %d from %d.%d.%d.%d:%d",pkt->len,
-                ipnum%256,(ipnum>>8)%256,(ipnum>>16)%256,(ipnum>>24)%256,pkt->address.port);
-      SJC_Write("Client: %.*s",pkt->len,pkt->data);
-      for(i=0;i<maxclients;i++)
-        if(clients[i].connected &&
-           clients[i].addr.host==pkt->address.host &&
-           clients[i].addr.port==pkt->address.port)
-          break;
-      if(i==maxclients) { //a new client is connecting?
-        host_welcome();
+  if( status==-1 ) {
+    SJC_Write("Network Error: Recv failed!");
+    SJC_Write(SDL_GetError());
+  }
+  if( status==1 ) {
+    for(i=0;i<maxclients;i++)
+      if(clients[i].connected &&
+          clients[i].addr.host==pkt->address.host &&
+          clients[i].addr.port==pkt->address.port)
         break;
-      }
-      //clients[i] has something to say!
-      SJC_Write("Known client %d identified.",i);
-      //TODO
-      break;
+    if(i==maxclients) //a new client is connecting?
+      host_welcome();
+    else switch(pkt->data[0]) { //clients[i] has something to say!
+      case 'm': //message
+        SJC_Write("Client %d says: %.*s",i,pkt->len,pkt->data);
+        break;
+      case 'c': //cmd update
+        n = 1;
+        packfr = unpackbytes(pkt->data,pkt->len,&n,4);
+        setcmdfr(packfr); //FIXME: totally just trusting the client here!
+        if( hotfr>packfr-1 );
+          sethotfr(packfr-1);
+        fr[packfr%maxframes].dirty = 1;
+        pcmd = fr[packfr%maxframes].cmds+i;
+        pcmd->cmd     = unpackbytes(pkt->data,pkt->len,&n,1);
+        pcmd->mousehi = unpackbytes(pkt->data,pkt->len,&n,1);
+        pcmd->mousex  = unpackbytes(pkt->data,pkt->len,&n,1);
+        pcmd->mousey  = unpackbytes(pkt->data,pkt->len,&n,1);
+        break;
+    }
   }
 
   //send to clients
@@ -89,7 +97,6 @@ void host() {
     }
   }
   if( pkt->data[1]>0 ) { //we have packed cmds to send along!
-    SJC_Write("Sending cmds packet of length %d",pkt->len);
     for(i=0;i<maxclients;i++) {
       pkt->address = clients[i].addr;
       if( clients[i].connected && pkt->address.host && !SDLNet_UDP_Send(hostsock,-1,pkt) ) {
@@ -135,6 +142,10 @@ void host_welcome() {
   SJC_Write("New client accepted.");
   clients[i].connected = 1;
   clients[i].addr = pkt->address;
+  setcmdfr(metafr);
+  sethotfr(metafr-1);
+  fr[metafr%maxframes].dirty = 1;
+  fr[metafr%maxframes].cmds[i].flags |= CMDF_LIV|CMDF_NEW;
   // send state!
   q = packframe(surefr,&n);
   SJC_Write("Frame %d packed into %d bytes, ready to send state.",surefr,n);
@@ -144,7 +155,6 @@ void host_welcome() {
     return;
   }
   pkt->len = n+10;
-  pkt->data[0] = '?';
   packbytes(pkt->data+0,   'S',NULL,1);
   packbytes(pkt->data+1,     i,NULL,1);
   packbytes(pkt->data+2,metafr,NULL,4);

@@ -7,7 +7,7 @@
 #include "net.h"
 
 
-void mod_adv(int a,int b,OBJ_t *oa,OBJ_t *ob) {
+void mod_adv(Uint32 objid,Uint32 b,OBJ_t *ob) {
   int i;
   int slot0,slot1;
   GHOST_t *gh;
@@ -17,10 +17,18 @@ void mod_adv(int a,int b,OBJ_t *oa,OBJ_t *ob) {
     //the mother object is sort of the root of the object tree... only not... and there's no object tree
     for(i=0;i<maxclients;i++) {
       if( fr[b].cmds[i].flags & CMDF_NEW ) {
-        SJC_Write("***NEW CLIENT DETECTED***");
+        int j;
+        for(j=0;j<maxobjs;j++) {
+          if( fr[b].objs[j].type==OBJT_GHOST ) {
+            gh = fr[b].objs[j].data;
+            if(gh->client==i)
+              SJC_Write("%d Mother(%d): Client %i already has a ghost at obj#%d!",hotfr,objid,i,j);
+          }
+        }
         slot0 = findfreeslot(b);
         slot1 = findfreeslot(b);
-        SJC_Write("%d,%d",slot0,slot1);
+        SJC_Write("%d Mother(%d): New client %d detected, created ghost is obj#%d, player is obj#%d",
+                   hotfr,objid,i,slot0,slot1);
         fr[b].objs[slot0].type = OBJT_GHOST;
         fr[b].objs[slot0].flags = OBJF_POS;
         fr[b].objs[slot0].size = sizeof(GHOST_t);
@@ -90,6 +98,10 @@ void mod_adv(int a,int b,OBJ_t *oa,OBJ_t *ob) {
       if( pl->jumping )     //initiate jump!
         pl->jumpvel = 8.0f;
     }
+    if( pl->pos.x<0.0f )
+      pl->pos.x = 0.0f;
+    if( pl->pos.x>640.0f )
+      pl->pos.x = 640.0f;
     break;
   }
 }

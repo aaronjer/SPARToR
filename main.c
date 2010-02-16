@@ -93,37 +93,26 @@ int main(int argc,char **argv) {
   SJC_Write("SPARToR CORE v%s",VERSION);
 
   //main loop
-  while(1) {
+  for(;;) {
     newticks = SDL_GetTicks();
-    if( newticks-ticks<10 && newticks-ticks>=0 )
-    {
+    if( newticks-ticks<10 && newticks-ticks>=0 ) {
       SDL_Delay(1);
       continue;
     }
     ticks = newticks;
-    metafr = ticks/TICKSAFRAME + frameoffset; //do not call setter here!
+    metafr = ticks/TICKSAFRAME + frameoffset;
     while( SDL_PollEvent(&event) ) switch(event.type) {
-      case SDL_VIDEOEXPOSE:
-        break;
-      case SDL_VIDEORESIZE:
-        setvideo(event.resize.w,event.resize.h);
-        break;
-      case SDL_KEYDOWN:
-        input( 1, event.key.keysym.sym, event.key.keysym.unicode );
-        break;
-      case SDL_KEYUP:
-        input( 0, event.key.keysym.sym, event.key.keysym.unicode );
-        break;
-      case SDL_QUIT:
-        cleanup();
+      case SDL_VIDEOEXPOSE:                                                         break;
+      case SDL_VIDEORESIZE: setvideo(event.resize.w,event.resize.h);                break;
+      case SDL_KEYDOWN: input( 1, event.key.keysym.sym, event.key.keysym.unicode ); break;
+      case SDL_KEYUP:   input( 0, event.key.keysym.sym, event.key.keysym.unicode ); break;
+      case SDL_QUIT: cleanup();                                                     break;
     }
     readinput();
-    if(hostsock) host();
+    if(hostsock)   host();
     if(clientsock) client();
     advance();
-    if(metafr!=drawnfr)
-      render();
-    //SDL_Delay(10);
+    render();
   }
   return 0;
 }
@@ -144,31 +133,37 @@ void toggleconsole() {
 
 void advance() {
   int i;
+  findfreeslot(-1);
   while(hotfr < metafr) {
-    Uint32 a = (hotfr+0)%maxframes; //a: frame to advance from, b: frame to advance to, c: frame in future
-    Uint32 b = (hotfr+1)%maxframes;
-    Uint32 c = (hotfr+2)%maxframes;
-    if( cmdfr<hotfr+1 ) //need to clear out the cmds in forward frame since it hasn't been done yet!
-      setcmdfr(hotfr+1);
-    for(i=0;i<maxobjs;i++) { //advance each object into the hot fresh frame
+if( hotfr<3 ) SJC_Write("Advance: hotfr=%d, metafr=%d",hotfr,metafr); //FIXME: remove
+    sethotfr(hotfr+1);
+    Uint32 a = (hotfr-1)%maxframes; //a: frame to advance from, b: frame to advance to
+    Uint32 b = (hotfr  )%maxframes;
+    if( cmdfr<hotfr ) //need to clear out the cmds in forward frame since it hasn't been done yet!
+      setcmdfr(hotfr);
+    for(i=0;i<maxobjs;i++) { //first pass
       OBJ_t *oa = fr[a].objs+i;
       OBJ_t *ob = fr[b].objs+i;
-      OBJ_t *oc = fr[c].objs+i;
-      oc->type = 0;
-      free(oc->data); oc->data = NULL;
+      free(ob->data);
+      memset(ob,0,sizeof(*ob));
       if(oa->type) {
         ob->type = oa->type;
         ob->flags = oa->flags;
         ob->size = oa->size;
         ob->data = malloc(oa->size);
         memcpy(ob->data,oa->data,oa->size);
+      } 
+    }
+    for(i=0;i<maxobjs;i++) { //second pass
+      OBJ_t *oa = fr[a].objs+i;
+      OBJ_t *ob = fr[b].objs+i;
+      if(oa->type) {
         if(ob->type==OBJT_DUMMY) {
           V *pos = flexpos(ob);
-          pos->x += (float)(metafr%50) - 24.5f;
+          pos->x += (float)((hotfr-i)%50) - 24.5f;
         }
-        mod_adv(a,b,oa,ob);
-      } else 
-        ; //nothing to do since this was cleared out last iteration
+        mod_adv(i,b,ob);
+      } 
     }
     for(i=0;i<maxobjs && creatables>0;i++) { //create dummies if requested
       OBJ_t *ob = fr[b].objs+i;
@@ -187,8 +182,7 @@ void advance() {
       SJC_Write("Could not create %d objects!",creatables);
       creatables = 0;
     }
-    hotfr++;
-    setsurefr(hotfr-5); //FIXME: UGLY HACK! surefr should be determined for REAL
+    setsurefr(hotfr>50 ? hotfr-50 : 0); //FIXME: UGLY HACK! surefr should be determined for REAL
   }
 }
 
@@ -221,9 +215,12 @@ int findfreeslot(int frame1) {
   if( last_frame!=frame1 ) {
     last_frame = frame1;
     last_slot = 1;
-  } 
+  }
+  if( frame1==-1 ) //exit early
+    return -1;
   while(last_slot<maxobjs) {
-    if( fr[frame0].objs[last_slot].type==0 ) //empty
+    if( fr[frame0].objs[last_slot].type==0 &&
+        fr[frame1].objs[last_slot].type==0 ) //empty
       return last_slot++;
     last_slot++;
   }
@@ -278,6 +275,10 @@ void setcmdfr(  Uint32 to) {
     memset(fr[cmdfr%maxframes].cmds,0,sizeof(FCMD_t)*maxclients);
     fr[cmdfr%maxframes].dirty = 0;
   }
+  if(hotfr>=cmdfr)
+    hotfr = cmdfr-1;
+  if(surefr>=cmdfr)
+    SJC_Write("*** DESYNC: cmdfr has been set = or before surefr! ***");
 }
 void jogframebuffer(Uint32  newmetafr,Uint32 newsurefr) {
   metafr = newmetafr;

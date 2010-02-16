@@ -43,7 +43,6 @@ Uint8 *packframe(Uint32 packfr,size_t *n) {
       data = realloc(data,(s*=2));
     packbytes(data,pfr->objs[i].type,n,2);
     if(pfr->objs[i].type) {
-    SJC_Write("Packing object %d, type %d",i,pfr->objs[i].type); //FIXME: remove
       packbytes(data,pfr->objs[i].flags,n,2);
       packbytes(data,pfr->objs[i].size ,n,sizeof(size_t));
       memcpy(data+*n, pfr->objs[i].data, pfr->objs[i].size);
