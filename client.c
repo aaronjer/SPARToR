@@ -50,12 +50,14 @@ void client() {
         break;
       case 'S': //state
         clearframebuffer();
-        Uint32 newmetafr = unpackbytes(pkt->data+1,4,NULL,4);
-        Uint32 newsurefr = unpackbytes(pkt->data+5,4,NULL,4);
+        me               = unpackbytes(pkt->data+1,4,NULL,1);
+        Uint32 newmetafr = unpackbytes(pkt->data+2,4,NULL,4);
+        Uint32 newsurefr = unpackbytes(pkt->data+6,4,NULL,4);
         jogframebuffer( newmetafr, newsurefr );
-        SJC_Write("Receiving state of frame %d, %d bytes, syncing up at frame %d",surefr,pkt->len-9,metafr);
+        SJC_Write("Receiving state of frame %d, %d bytes, syncing up at frame %d as client %d",
+                  surefr,pkt->len-10,metafr,me);
 
-        unpackframe(surefr,pkt->data+9,pkt->len-9);
+        unpackframe(surefr,pkt->data+10,pkt->len-10);
         break;
       case 'C': //cmds
         n = 2;

@@ -18,6 +18,9 @@ void host_start(int port) {
   if( clientsock ) { SJC_Write("Already connected to a host. Type disconnect if that ain't cool."); return; }
   if( !(hostsock = SDLNet_UDP_Open(port)) ) { SJC_Write("Error: Could not open host socket!"); SJC_Write(SDL_GetError()); return; }
   clients = calloc(maxclients,sizeof(CLIENT_t));
+  me = 0;
+  clients[me].connected = 1;
+  clients[me].addr = (IPaddress){0,0};
   SJC_Write("Host started on port %d.",port);
 }
 
@@ -47,9 +50,11 @@ void host() {
                 ipnum%256,(ipnum>>8)%256,(ipnum>>16)%256,(ipnum>>24)%256,pkt->address.port);
       SJC_Write("Client: %.*s",pkt->len,pkt->data);
       for(i=0;i<maxclients;i++)
-        if( clients[i].addr.host==pkt->address.host && clients[i].addr.port==pkt->address.port )
+        if(clients[i].connected &&
+           clients[i].addr.host==pkt->address.host &&
+           clients[i].addr.port==pkt->address.port)
           break;
-      if( i==maxclients ) { //a new client is connecting?
+      if(i==maxclients) { //a new client is connecting?
         host_welcome();
         break;
       }
@@ -87,7 +92,7 @@ void host() {
     SJC_Write("Sending cmds packet of length %d",pkt->len);
     for(i=0;i<maxclients;i++) {
       pkt->address = clients[i].addr;
-      if( pkt->address.host && !SDLNet_UDP_Send(hostsock,-1,pkt) ) {
+      if( clients[i].connected && pkt->address.host && !SDLNet_UDP_Send(hostsock,-1,pkt) ) {
         SJC_Write("Error: Could not send cmds packet!");
         SJC_Write(SDL_GetError());
       }
@@ -118,7 +123,7 @@ void host_welcome() {
     return;
   }
   for(i=0;i<maxclients;i++)
-    if( clients[i].addr.host==0 ) break;
+    if( !clients[i].connected ) break;
   if( i==maxclients ) {
     SJC_Write("New client not accepted b/c server is full.");
     //TODO: inform client
@@ -128,21 +133,23 @@ void host_welcome() {
     return; 
   }
   SJC_Write("New client accepted.");
+  clients[i].connected = 1;
   clients[i].addr = pkt->address;
   // send state!
   q = packframe(surefr,&n);
   SJC_Write("Frame %d packed into %d bytes, ready to send state.",surefr,n);
-  if( n+9>pkt->maxlen ) {
+  if( n+10>pkt->maxlen ) {
     SJC_Write("Error: Packed frame is too big to send!");
     free(q);
     return;
   }
-  pkt->len = n+9;
+  pkt->len = n+10;
   pkt->data[0] = '?';
-  packbytes(pkt->data+0,'S',NULL,1);
-  packbytes(pkt->data+1,metafr,NULL,4);
-  packbytes(pkt->data+5,surefr,NULL,4);
-  memcpy(pkt->data+9,q,n);
+  packbytes(pkt->data+0,   'S',NULL,1);
+  packbytes(pkt->data+1,     i,NULL,1);
+  packbytes(pkt->data+2,metafr,NULL,4);
+  packbytes(pkt->data+6,surefr,NULL,4);
+  memcpy(pkt->data+10,q,n);
   if( !SDLNet_UDP_Send(hostsock,-1,pkt) ) {
     SJC_Write("Error: Could not send state packet!");
     SJC_Write(SDL_GetError());

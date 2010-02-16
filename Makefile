@@ -2,7 +2,7 @@
 #  libsdl1.2-dev
 #  libsdl-net1.2-dev
 EXE_NAME = spartor_linux
-OBJS = main.o font.o console.o sjstring.o command.o net.o host.o client.o sjui.o input.o video.o mod.o tests.o
+OBJS = main.o font.o console.o command.o net.o host.o client.o sjui.o input.o video.o mod.o tests.o
 CC = gcc
 FLAGS = -g -Wall
 LIBS = -lm -lSDL -lSDL_net -lSDL_image

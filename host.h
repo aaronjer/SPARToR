@@ -9,7 +9,8 @@
 
 typedef struct{
   IPaddress addr;
-  int ghost;
+  int connected;
+  int ghost; //unused, actually
 } CLIENT_t;
 
 
