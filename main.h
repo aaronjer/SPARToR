@@ -6,7 +6,7 @@
 #include "SDL/SDL_net.h"
 #include "SDL/SDL_image.h"
 
-#define VERSION "0.1a"
+#define VERSION "0.1b"
 
 #define TICKSAFRAME 30
 #define PACKET_SIZE 5000

@@ -32,9 +32,9 @@ void render() {
     }
     if(o->type==OBJT_PLAYER) {
       V *pos = flexpos(o);
-      SDL_FillRect(screen,&(SDL_Rect){pos->x-10,pos->y+10,20,20},0x0000FF*( i   %2) + 
-                                                                 0x00FF00*((i/2)%2) +
-                                                                 0xFF0000*((i/4)%2));
+      SDL_FillRect(screen,&(SDL_Rect){pos->x-10,pos->y+10,20,20},0x00007F*((i/1)%3) | 
+                                                                 0x007F00*((i/3)%3) |
+                                                                 0x7F0000*((i/9)%3));
       DrawSquare(screen,&(SDL_Rect){pos->x-10,pos->y+10,20,20},0xFFFFFF);
     }
   }
