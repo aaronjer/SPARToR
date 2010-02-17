@@ -13,13 +13,22 @@ static int negotiated;
 
 
 void client_start(const char *hostname,int port,int clientport) {
+  int i;
   if( hostsock ) { SJC_Write("Already running as a host. Type disconnect to stop."); return; }
   if( clientsock ) { SJC_Write("Already connected to a host. Type disconnect if that ain't cool."); return; }
   if( !hostname || !*hostname ) { SJC_Write("Error: Please specify host."); return; }
   SDLNet_ResolveHost(&ipaddr,hostname,port?port:HOSTPORT);
   if( ipaddr.host==INADDR_NONE ) { SJC_Write("Error: Could not resolve host!"); return; }
-  if( !(clientsock = SDLNet_UDP_Open(clientport?clientport:CLIENTPORT)) ) { SJC_Write("Error: Could not open client socket!"); SJC_Write(SDL_GetError()); return; }
-  SJC_Write("Connecting...");
+  clientport = clientport?clientport:CLIENTPORT;
+  for(i=0;i<maxclients;i++) {
+    if( (clientsock = SDLNet_UDP_Open(clientport)) )
+      break;
+    SJC_Write("Could not open client socket on port %d",clientport++);
+    SJC_Write(SDL_GetError());
+  }
+    
+  if( !clientsock ) { SJC_Write("Error: Could not open client any client socket!"); return; }
+  SJC_Write("Connecting from port %d...",clientport);
   negotiated = 0;
   pkt->address = ipaddr;
   sprintf((char *)pkt->data,"%s/%s",PROTONAME,PROTOVERS);
@@ -44,7 +53,6 @@ void client() {
     sentfr++;
     Uint32 sentfrmod = sentfr%maxframes;
     if( fr[sentfrmod].dirty ) {
-      SJC_Write("Sending cmd update for dirty frame %d",sentfr);
       pkt->len = 9;
       packbytes(pkt->data+0,'c'                           ,NULL,1);
       packbytes(pkt->data+1,sentfr                        ,NULL,4);

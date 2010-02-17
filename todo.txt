@@ -1,5 +1,0 @@
-(TOP)
-Implement SPROTOCOL
-
-(Other)
-Run unit tests from console

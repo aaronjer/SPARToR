@@ -86,7 +86,6 @@ int unpackframe(Uint32 packfr,Uint8 *data,size_t len) {
     if(pfr->objs[i].type) {
       pfr->objs[i].flags = unpackbytes(data,len,&n,2);
       pfr->objs[i].size  = unpackbytes(data,len,&n,sizeof(size_t));
-      fprintf(stderr,"malloc'ing %d bytes for object %d, type %d\n",pfr->objs[i].size,i,pfr->objs[i].type); //FIXME: remove
       if( pfr->objs[i].size ) {
         if( len<n+pfr->objs[i].size ) {
           SJC_Write("Packed data ended early!");
