@@ -162,7 +162,7 @@ if( hotfr<3 ) SJC_Write("Advance: hotfr=%d, metafr=%d",hotfr,metafr); //FIXME: r
           V *pos = flexpos(ob);
           pos->x += (float)((hotfr-i)%50) - 24.5f;
         }
-        mod_adv(i,b,ob);
+        mod_adv(i,a,b,oa,ob);
       } 
     }
     for(i=0;i<maxobjs && creatables>0;i++) { //create dummies if requested

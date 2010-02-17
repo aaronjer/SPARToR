@@ -5,9 +5,10 @@
 #include "main.h"
 #include "console.h"
 #include "net.h"
+#include <math.h>
 
 
-void mod_adv(Uint32 objid,Uint32 b,OBJ_t *ob) {
+void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
   int i;
   int slot0,slot1;
   GHOST_t *gh;
@@ -92,13 +93,28 @@ void mod_adv(Uint32 objid,Uint32 b,OBJ_t *ob) {
     }
     if( !pl->jumping )      //low-jump
       pl->jumpvel = 0.0f;
-    if( pl->pos.y>400.0f ) {//on the ground
-      pl->pos.y = 400.0f;
-      pl->vel.y = 0;
+
+    float floor = 400.0f;   //ground test
+    for(i=0;i<maxobjs;i++)  //find another player to land on
+      if(fr[b].objs[i].type==OBJT_PLAYER && i!=objid) {
+        PLAYER_t *pla = oa->data;
+        PLAYER_t *plb = ob->data;
+        V *posa = flexpos(fr[a].objs+i);
+        V *posb = flexpos(fr[b].objs+i);
+        if( fabsf(plb->pos.x - posb->x)< 20.0f && //we collide in x NOW
+            fabsf(plb->pos.y - posb->y)< 20.0f && //we collide in y NOW
+            (posa->y - pla->pos.y)     >=20.0f && //I was above BEFORE
+            (posb->y - 20.0f)          < floor )  //you make for a higher floor NOW
+          floor = posb->y - 20.0f;
+      }
+    if( pl->pos.y>floor ) { //on the ground
+      pl->pos.y = floor;
+      pl->vel.y = 0.0f;
       if( pl->jumping )     //initiate jump!
         pl->jumpvel = 8.0f;
     }
-    if( pl->pos.x<0.0f )
+
+    if( pl->pos.x<0.0f )    //screen edges
       pl->pos.x = 0.0f;
     if( pl->pos.x>640.0f )
       pl->pos.x = 640.0f;

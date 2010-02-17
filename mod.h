@@ -7,7 +7,7 @@
 #include "main.h"
 
 
-void mod_adv(Uint32 objid,Uint32 b,OBJ_t *ob);
+void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob);
 
 
 #endif
