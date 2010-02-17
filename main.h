@@ -6,7 +6,7 @@
 #include "SDL/SDL_net.h"
 #include "SDL/SDL_image.h"
 
-#define VERSION "0.1b"
+#define VERSION "0.1c"
 
 #define TICKSAFRAME 30
 #define PACKET_SIZE 5000
@@ -90,9 +90,11 @@ typedef struct{
   char goingu;
   char goingd;
   char jumping;
+  char grounded;
 } PLAYER_t;
 
 //externs
+extern Uint32 ticksaframe;
 extern size_t maxframes;
 extern size_t maxobjs;
 

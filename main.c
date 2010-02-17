@@ -29,6 +29,7 @@ void IMG_Quit() {}
 #endif
 
 //globals
+Uint32 ticksaframe = TICKSAFRAME;
 size_t maxframes = 360;
 size_t maxobjs = 100;
 
@@ -100,7 +101,7 @@ int main(int argc,char **argv) {
       continue;
     }
     ticks = newticks;
-    metafr = ticks/TICKSAFRAME + frameoffset;
+    metafr = ticks/ticksaframe + frameoffset;
     while( SDL_PollEvent(&event) ) switch(event.type) {
       case SDL_VIDEOEXPOSE:                                                         break;
       case SDL_VIDEORESIZE: setvideo(event.resize.w,event.resize.h);                break;
@@ -282,7 +283,7 @@ void setcmdfr(  Uint32 to) {
 }
 void jogframebuffer(Uint32  newmetafr,Uint32 newsurefr) {
   metafr = newmetafr;
-  frameoffset = metafr - ticks/TICKSAFRAME;
+  frameoffset = metafr - ticks/ticksaframe;
   surefr  = newsurefr;
   drawnfr = newsurefr;
   hotfr   = newsurefr;

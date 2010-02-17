@@ -28,14 +28,16 @@ void render() {
     OBJ_t *o = fr[vidfrmod].objs+i;
     if(o->type==OBJT_DUMMY) {
       V *pos = flexpos(o);
-      SDL_FillRect(screen,&(SDL_Rect){pos->x-10,pos->y+10,20,20},0xFFFF00);
+      SDL_FillRect(screen,&(SDL_Rect){pos->x-10,pos->y-10,20,20},0x000000);
     }
     if(o->type==OBJT_PLAYER) {
       V *pos = flexpos(o);
-      SDL_FillRect(screen,&(SDL_Rect){pos->x-10,pos->y+10,20,20},0x00007F*((i/1)%3) | 
+      SDL_FillRect(screen,&(SDL_Rect){pos->x-10,pos->y-10,20,20},0x00007F*((i/1)%3) | 
                                                                  0x007F00*((i/3)%3) |
                                                                  0x7F0000*((i/9)%3));
-      DrawSquare(screen,&(SDL_Rect){pos->x-10,pos->y+10,20,20},0xFFFFFF);
+      DrawSquare(screen,&(SDL_Rect){pos->x-10,pos->y-10,20,20},0xFFFFFF);
+      sprintf(buf,"%d",i);
+      SJF_DrawText(screen,pos->x-7,pos->y-8,buf);
     }
   }
 

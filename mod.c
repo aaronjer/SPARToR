@@ -19,17 +19,16 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
     for(i=0;i<maxclients;i++) {
       if( fr[b].cmds[i].flags & CMDF_NEW ) {
         int j;
-        for(j=0;j<maxobjs;j++) {
+        for(j=0;j<maxobjs;j++)
           if( fr[b].objs[j].type==OBJT_GHOST ) {
             gh = fr[b].objs[j].data;
             if(gh->client==i)
               SJC_Write("%d Mother(%d): Client %i already has a ghost at obj#%d!",hotfr,objid,i,j);
           }
-        }
         slot0 = findfreeslot(b);
         slot1 = findfreeslot(b);
         SJC_Write("%d Mother(%d): New client %d detected, created ghost is obj#%d, player is obj#%d",
-                   hotfr,objid,i,slot0,slot1);
+                  hotfr,objid,i,slot0,slot1);
         fr[b].objs[slot0].type = OBJT_GHOST;
         fr[b].objs[slot0].flags = OBJF_POS;
         fr[b].objs[slot0].size = sizeof(GHOST_t);
@@ -51,6 +50,7 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
         pl->goingu = 0;
         pl->goingd = 0;
         pl->jumping = 0;
+        pl->grounded = 0;
       }
     }
     break;
@@ -60,64 +60,91 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
     break;
   case OBJT_PLAYER:
     assert("ob->size==sizeof(PLAYER_t)",ob->size==sizeof(PLAYER_t));
-    pl = ob->data;
-    gh = fr[b].objs[pl->ghost].data;
+    PLAYER_t *oldme = oa->data;
+    PLAYER_t *newme = ob->data;
+    gh = fr[b].objs[newme->ghost].data;
     switch( fr[b].cmds[gh->client].cmd ) {
-      case CMDT_1LEFT:  pl->goingl = 1; break;
-      case CMDT_0LEFT:  pl->goingl = 0; break;
-      case CMDT_1RIGHT: pl->goingr = 1; break;
-      case CMDT_0RIGHT: pl->goingr = 0; break; 
-      case CMDT_1UP:    pl->goingu = 1; break;
-      case CMDT_0UP:    pl->goingu = 0; break;
-      case CMDT_1DOWN:  pl->goingd = 1; break;
-      case CMDT_0DOWN:  pl->goingd = 0; break; 
-      case CMDT_1JUMP:  pl->jumping = 1; break;
-      case CMDT_0JUMP:  pl->jumping = 0; break;
+      case CMDT_1LEFT:  newme->goingl = 1; break;
+      case CMDT_0LEFT:  newme->goingl = 0; break;
+      case CMDT_1RIGHT: newme->goingr = 1; break;
+      case CMDT_0RIGHT: newme->goingr = 0; break; 
+      case CMDT_1UP:    newme->goingu = 1; break;
+      case CMDT_0UP:    newme->goingu = 0; break;
+      case CMDT_1DOWN:  newme->goingd = 1; break;
+      case CMDT_0DOWN:  newme->goingd = 0; break; 
+      case CMDT_1JUMP:  newme->jumping = 1; break;
+      case CMDT_0JUMP:  newme->jumping = 0; break;
     }
-    if( pl->goingl ) pl->pos.x -= 3.0f;
-    if( pl->goingr ) pl->pos.x += 3.0f;
-    if( pl->goingu ) pl->pos.y -= 3.0f;
-    if( pl->goingd ) pl->pos.y += 3.0f;
+    if( newme->goingl ) newme->pos.x -= 3.0f;
+    if( newme->goingr ) newme->pos.x += 3.0f;
+    if( newme->goingu ) newme->pos.y -= 3.0f;
+    if( newme->goingd ) newme->pos.y += 3.0f;
 
-    pl->vel.y += 0.8f;      //gravity and jump effect
-    pl->vel.y -= pl->jumpvel;
+    newme->grounded = 0;          //in the air until proven otherwise
 
-    pl->pos.x += pl->vel.x; //apply velocity
-    pl->pos.y += pl->vel.y;
-
-    if( pl->jumpvel>0.0f )  //jumpvel fades away
-      pl->jumpvel -= 3.0f;
-    if( pl->jumpvel<0.0f ) {//end influence of jump, jumpvel can only be non-negative
-      pl->jumpvel = 0.0f;
-      pl->jumping = 0;      //must press jump again now
+    if( newme->jumpvel>0.0f )     //jumpvel fades away
+      newme->jumpvel -= 3.0f;
+    if( newme->jumpvel<0.0f ) {   //end influence of jump, jumpvel can only be non-negative
+      newme->jumpvel = 0.0f;
+      newme->jumping = 0;         //must press jump again now
     }
-    if( !pl->jumping )      //low-jump
-      pl->jumpvel = 0.0f;
+    if( !newme->jumping )         //low-jump
+      newme->jumpvel = 0.0f;
 
-    float floor = 400.0f;   //ground test
-    for(i=0;i<maxobjs;i++)  //find another player to land on
-      if(fr[b].objs[i].type==OBJT_PLAYER && i!=objid) {
-        PLAYER_t *pla = oa->data;
-        PLAYER_t *plb = ob->data;
-        V *posa = flexpos(fr[a].objs+i);
-        V *posb = flexpos(fr[b].objs+i);
-        if( fabsf(plb->pos.x - posb->x)< 20.0f && //we collide in x NOW
-            fabsf(plb->pos.y - posb->y)< 20.0f && //we collide in y NOW
-            (posa->y - pla->pos.y)     >=20.0f && //I was above BEFORE
-            (posb->y - 20.0f)          < floor )  //you make for a higher floor NOW
-          floor = posb->y - 20.0f;
+    newme->vel.y += 0.8f;         //gravity and jump effect
+    newme->vel.y -= newme->jumpvel;
+
+    newme->pos.x += newme->vel.x; //apply velocity
+    newme->pos.y += newme->vel.y;
+
+    if( newme->pos.x<0.0f )       //screen edges
+      newme->pos.x = 0.0f;
+    if( newme->pos.x>640.0f )
+      newme->pos.x = 640.0f;
+
+    float floor = 400.0f;         //ground test
+    if( newme->pos.y>floor ) {    //on the ground
+      newme->pos.y = floor;
+      newme->grounded = 1;
+      newme->vel.y = 0.0f;
+    }
+
+    if( newme->grounded || oldme->grounded )
+    {
+      if( newme->jumping )        //initiate jump!
+        newme->jumpvel = 8.0f;
+    }
+
+    for(i=0;i<objid;i++)  //find other players to interact with -- who've already MOVED
+      if(fr[b].objs[i].type==OBJT_PLAYER) {
+        PLAYER_t *oldyou = fr[a].objs[i].data;
+        PLAYER_t *newyou = fr[b].objs[i].data;
+        if( !oldme || !newme || !oldyou || !newyou ) //FIXME
+          continue;
+        if( fabsf(newme->pos.x - newyou->pos.x)<=20.0f &&  //we collide in x NOW
+            fabsf(newme->pos.y - newyou->pos.y)<=20.0f ) { //we collide in y NOW
+          if( oldyou->pos.y - oldme->pos.y >= 20.0f ) {    //I was above BEFORE
+            newme->pos.y = newyou->pos.y - 20.0f;
+            newme->grounded = 1;
+            newme->vel.y = 0.0f;
+          } else if( oldme->pos.y - oldyou->pos.y >= 20.0f ) {    //You were above BEFORE
+            newyou->pos.y = newme->pos.y - 20.0f;
+            newyou->grounded = 1;
+            newyou->vel.y = 0.0f;
+          }
+        }
+        if( fabsf(newme->pos.x - newyou->pos.x)<=5.0f &&                   //we're on top of each other
+            fabsf(newme->pos.y - newyou->pos.y)<=2.0f &&                   //pretty much
+            newme->pos.x==oldme->pos.x && newyou->pos.x==oldyou->pos.x ) { //and not moving
+          if(newme->pos.x < newyou->pos.x ) {
+            newme->pos.x -= 1.0f;
+            newyou->pos.x += 1.0f;
+          } else {
+            newme->pos.x += 1.0f;
+            newyou->pos.x -= 1.0f;
+          } 
+        }
       }
-    if( pl->pos.y>floor ) { //on the ground
-      pl->pos.y = floor;
-      pl->vel.y = 0.0f;
-      if( pl->jumping )     //initiate jump!
-        pl->jumpvel = 8.0f;
-    }
-
-    if( pl->pos.x<0.0f )    //screen edges
-      pl->pos.x = 0.0f;
-    if( pl->pos.x>640.0f )
-      pl->pos.x = 640.0f;
     break;
   }
 }

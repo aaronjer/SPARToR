@@ -39,16 +39,18 @@ void host() {
   FCMD_t *pcmd;
 
   //recv from clients
-  status = SDLNet_UDP_Recv(hostsock,pkt);
-  if( status==-1 ) {
-    SJC_Write("Network Error: Recv failed!");
-    SJC_Write(SDL_GetError());
-  }
-  if( status==1 ) {
+  for(;;) {
+    status = SDLNet_UDP_Recv(hostsock,pkt);
+    if( status==-1 ) {
+      SJC_Write("Network Error: Recv failed!");
+      SJC_Write(SDL_GetError());
+    }
+    if( status!=1 )
+      break;
     for(i=0;i<maxclients;i++)
       if(clients[i].connected &&
-          clients[i].addr.host==pkt->address.host &&
-          clients[i].addr.port==pkt->address.port)
+         clients[i].addr.host==pkt->address.host &&
+         clients[i].addr.port==pkt->address.port)
         break;
     if(i==maxclients) //a new client is connecting?
       host_welcome();
@@ -60,7 +62,7 @@ void host() {
         n = 1;
         packfr = unpackbytes(pkt->data,pkt->len,&n,4);
         setcmdfr(packfr); //FIXME: totally just trusting the client here!
-        if( hotfr>packfr-1 );
+        if( hotfr>packfr-1 )
           sethotfr(packfr-1);
         fr[packfr%maxframes].dirty = 1;
         pcmd = fr[packfr%maxframes].cmds+i;
@@ -78,10 +80,6 @@ void host() {
   pkt->len = 2;
   for(i=surefr+1;i<=cmdfr;i++) { //scan for dirty frames to send
     if( fr[i%maxframes].dirty ) {
-      if( pkt->data[0]>100 ) {
-        SJC_Write("DANGER! >100 framesworth of cmds packed!");
-        break;
-      }
       data = packframecmds(i,&n);
       if( pkt->len+4+n >= pkt->maxlen ) {
         SJC_Write("DANGER! >=pkt->maxlen bytesworth of cmds almost packed!");
@@ -94,6 +92,10 @@ void host() {
       pkt->len += 4+n;
       pkt->data[1]++;
       fr[i%maxframes].dirty = 0;
+      if( pkt->data[1]>10 ) {
+        SJC_Write("DANGER! >10 framesworth of cmds packed!");
+        break;
+      }
     }
   }
   if( pkt->data[1]>0 ) { //we have packed cmds to send along!
@@ -166,6 +168,10 @@ void host_welcome() {
     free(q);
     return;
   }
+  //dirty all unsure frames
+  SJC_Write("%d: I'd like to dirty all frames from %d to %d",hotfr,surefr,cmdfr);
+  for(i=surefr+1;i<cmdfr;i++)
+    fr[i%maxframes].dirty = 1;
 
   free(q);
 

@@ -107,8 +107,8 @@ int unpackframecmds(Uint32 packfr,Uint8 *data,size_t len) {
   size_t n = 0;
 
   if( maxclients!=unpackbytes(data,len,&n,4) ) {
-    SJC_Write("Your maxclients setting (%d) differs from server's!",maxclients);
-    return 1;
+    SJC_Write("Your maxclients setting (%d) differs from server's! packfr=%d",maxclients,packfr);
+    return -1;
   }
   for(i=0;i<maxclients;i++) {
     pfr->cmds[i].cmd     = unpackbytes(data,len,&n,1);
@@ -117,7 +117,7 @@ int unpackframecmds(Uint32 packfr,Uint8 *data,size_t len) {
     pfr->cmds[i].mousey  = unpackbytes(data,len,&n,1);
     pfr->cmds[i].flags   = unpackbytes(data,len,&n,2);
   }
-  return 0;
+  return n;
 }
 
 

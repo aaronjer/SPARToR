@@ -69,11 +69,14 @@ void client() {
   }
 
   //look for data from server
-  status = SDLNet_UDP_Recv(clientsock,pkt);
-  if( status==-1 ) {
-    SJC_Write("Network Error: Failed to check for new packets.");
-    SJC_Write(SDL_GetError());
-  } else if( status==1 ) {
+  for(;;) {
+    status = SDLNet_UDP_Recv(clientsock,pkt);
+    if( status==-1 ) {
+      SJC_Write("Network Error: Failed to check for new packets.");
+      SJC_Write(SDL_GetError());
+    }
+    if( status!=1 )
+      break;
     switch(pkt->data[0]) {
       case 'M': //message
         SJC_Write("Server says: %s",pkt->data+1);
@@ -96,7 +99,12 @@ void client() {
         for(i=0;i<(int)pkt->data[1];i++) {
           packfr = unpackbytes(pkt->data,pkt->len,&n,4);
           setcmdfr(packfr);
-          unpackframecmds(packfr,pkt->data+n,pkt->len-n);
+          int unpacked = unpackframecmds(packfr,pkt->data+n,pkt->len-n);
+          if( unpacked<0 ) {
+            SJC_Write("Failed to unpack frame cmds!");
+            break;
+          }
+          n += unpacked;
           if( hotfr>packfr-1 )
             sethotfr(packfr-1);
         }

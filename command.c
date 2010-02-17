@@ -34,6 +34,14 @@ void command(const char *s){
     }else if( strcmp(q,"reconnect")==0 ){
       disconnect();
       SJC_Write("Not implemented."); //TODO
+    }else if( strcmp(q,"slow")==0 ){
+      SJC_Write("Speed is now slow");
+      ticksaframe = 300;
+      jogframebuffer(metafr,surefr);
+    }else if( strcmp(q,"fast")==0 ){
+      SJC_Write("Speed is now fast");
+      ticksaframe = 30;
+      jogframebuffer(metafr,surefr);
     }else if( strcmp(q,"test")==0 ){
       SJC_Write("Running unit tests...");
       run_tests();
