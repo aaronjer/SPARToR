@@ -6,7 +6,7 @@
 #include "SDL/SDL_net.h"
 #include "SDL/SDL_image.h"
 
-#define VERSION "0.1c"
+#define VERSION "0.1d"
 
 #define TICKSAFRAME 30
 #define PACKET_SIZE 5000
@@ -19,12 +19,16 @@
 #define HARDER }while(0);
 
 //obj flags
-#define OBJF_POS 0x00000001
-#define OBJF_VIS 0x00000002
+#define OBJF_POS  0x00000001 //has position
+#define OBJF_VEL  0x00000002 //has velocity
+#define OBJF_VIS  0x00000004 //is visible
+#define OBJF_HULL 0x00000008 //has a hull
+#define OBJF_CLIP 0x00000010 //clips against solids
+#define OBJF_PLAT 0x00000020 //acts as a platform
 
 //cmd flags
-#define CMDF_LIV 0x00000001
-#define CMDF_NEW 0x00000002
+#define CMDF_NEW  0x00000001
+#define CMDF_QUIT 0x00000002
 
 //obj types
 #define OBJT_MOTHER   1
@@ -81,9 +85,9 @@ typedef struct{
 
 typedef struct{
   V pos;
-  int model;
   V vel;
-  float jumpvel;
+  V hull[2];
+  int model;
   int ghost;
   char goingl;
   char goingr;
@@ -91,6 +95,7 @@ typedef struct{
   char goingd;
   char jumping;
   char grounded;
+  float jumpvel;
 } PLAYER_t;
 
 //externs
@@ -120,7 +125,7 @@ int findfreeslot(int frame1);
 void clearframebuffer();
 void cleanup();
 void assert(const char *msg,int val);
-V *flexpos(OBJ_t *o);
+void *flex(OBJ_t *o,Uint32 part);
 
 //frame setters
 void setmetafr( Uint32 to);

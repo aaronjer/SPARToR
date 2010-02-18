@@ -62,7 +62,7 @@ int main(int argc,char **argv) {
   //make the mother object
   fr[0].objs[0] = (OBJ_t){OBJT_MOTHER,0,0,0};
   //server is a client
-  fr[1].cmds[0].flags = CMDF_LIV|CMDF_NEW;
+  fr[1].cmds[0].flags |= CMDF_NEW;
 
   if( SDL_Init(SDL_INIT_TIMER|SDL_INIT_AUDIO|SDL_INIT_VIDEO)<0 || !SDL_GetVideoInfo() ) {
     fprintf(stderr,"SDL_Init: %s\n",SDL_GetError());
@@ -156,7 +156,7 @@ if( hotfr<3 ) SJC_Write("Advance: hotfr=%d, metafr=%d",hotfr,metafr); //FIXME: r
       OBJ_t *ob = fr[b].objs+i;
       if(oa->type) {
         if(ob->type==OBJT_DUMMY) {
-          V *pos = flexpos(ob);
+          V *pos = flex(ob,OBJF_POS);
           pos->x += (float)((hotfr-i)%50) - 24.5f;
         }
         mod_adv(i,a,b,oa,ob);
@@ -169,7 +169,7 @@ if( hotfr<3 ) SJC_Write("Advance: hotfr=%d, metafr=%d",hotfr,metafr); //FIXME: r
         ob->flags = OBJF_POS|OBJF_VIS;
         ob->size = sizeof(V);
         ob->data = malloc(ob->size);
-        V *pos = flexpos(ob);
+        V *pos = flex(ob,OBJF_POS);
         *pos = (V){320.0f,20.0f+(float)(rand()%440),0.0f};
         creatables--;
         SJC_Write("Created new OBJ_t at frame %d, obj %d, addr %X",b,i,&ob);
@@ -244,10 +244,20 @@ void assert(const char *msg,int val) {
 }
 
 
-V *flexpos(OBJ_t *o){
-   if(!(o->flags & OBJF_POS))
-     return NULL;
-   return (V*)(o->data);
+void *flex(OBJ_t *o,Uint32 part) {
+  size_t offset = 0;
+  if(!(o->flags & part))
+    return NULL;
+  TRY
+    if(    part == OBJF_POS  ) break;
+    if( o->flags & OBJF_POS  ) offset += sizeof(V);
+    if(    part == OBJF_VEL  ) break;
+    if( o->flags & OBJF_VEL  ) offset += sizeof(V);
+    if(    part == OBJF_HULL ) break;
+    if( o->flags & OBJF_HULL ) offset += sizeof(V[2]);
+    return NULL;
+  HARDER
+  return (V*)(o->data+offset);
 }
 
 

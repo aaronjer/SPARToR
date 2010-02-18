@@ -26,11 +26,11 @@ void render() {
   for(i=0;i<maxobjs;i++) {
     OBJ_t *o = fr[vidfrmod].objs+i;
     if(o->type==OBJT_DUMMY) {
-      V *pos = flexpos(o);
+      V *pos = flex(o,OBJF_POS);
       SDL_FillRect(screen,&(SDL_Rect){pos->x-10,pos->y-10,20,20},0x000000);
     }
     if(o->type==OBJT_PLAYER) {
-      V *pos = flexpos(o);
+      V *pos = flex(o,OBJF_POS);
       SDL_FillRect(screen,&(SDL_Rect){pos->x-10,pos->y-10,20,20},0x00007F*((i/1)%3) | 
                                                                  0x007F00*((i/3)%3) |
                                                                  0x7F0000*((i/9)%3));

@@ -143,7 +143,7 @@ void host_welcome() {
   setcmdfr(metafr);
   sethotfr(metafr-1);
   fr[metafr%maxframes].dirty = 1;
-  fr[metafr%maxframes].cmds[i].flags |= CMDF_LIV|CMDF_NEW;
+  fr[metafr%maxframes].cmds[i].flags |= CMDF_NEW;
   // send state!
   q = packframe(surefr,&n);
   SJC_Write("Frame %d packed into %d bytes, ready to send state.",surefr,n);
