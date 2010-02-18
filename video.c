@@ -5,7 +5,6 @@
 #include "main.h"
 #include "console.h"
 #include "font.h"
-#include "sjui.h"
 
 
 void render() {
@@ -70,6 +69,21 @@ void render() {
 
 void setvideo(int w,int h) {
   screen = SDL_SetVideoMode(w,h,SDL_GetVideoInfo()->vfmt->BitsPerPixel,SDL_RESIZABLE|SDL_DOUBLEBUF);
+}
+
+
+void DrawSquare(SDL_Surface *surf, SDL_Rect *rect, unsigned int color) {
+  SDL_Rect edge;
+  edge = *rect;
+  edge.w = 1;
+  SDL_FillRect(surf,&edge,color);
+  edge.x += rect->w - 1;
+  SDL_FillRect(surf,&edge,color);
+  edge = *rect;
+  edge.h = 1;
+  SDL_FillRect(surf,&edge,color);
+  edge.y += rect->h - 1;
+  SDL_FillRect(surf,&edge,color);
 }
 
 

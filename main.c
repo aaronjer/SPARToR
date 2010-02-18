@@ -17,7 +17,6 @@
 #include "net.h"
 #include "host.h"
 #include "client.h"
-#include "sjui.h"
 #include "mod.h"
 #include "input.h"
 #include "video.h"
@@ -79,17 +78,14 @@ int main(int argc,char **argv) {
   }
   pkt = SDLNet_AllocPacket(PACKET_SIZE);
   toggleconsole();
-  SDL_WM_SetCaption("SPARToR CORE",NULL);
-  SDL_WM_SetIcon(IMG_Load("icon.png"),NULL);
+  SDL_WM_SetCaption("SPARToR " VERSION,NULL);
+  SDL_Surface *iconsurf = IMG_Load("icon.png");
+  SDL_WM_SetIcon(iconsurf,NULL);
+  SDL_FreeSurface(iconsurf);
   setvideo(640,480);
   vidinfo = SDL_GetVideoInfo();
 
   SJF_Init();
-
-  //UI
-  SJUI_Init();
-  SJUI_HANDLE h = SJUI_NewControl(0,50,90,0);
-  SJUI_SetPos(h,10,10);
 
   SJC_Write("SPARToR CORE v%s",VERSION);
 
@@ -191,7 +187,6 @@ if( hotfr<3 ) SJC_Write("Advance: hotfr=%d, metafr=%d",hotfr,metafr); //FIXME: r
 void cleanup() {
   int i;
   SDLNet_FreePacket(pkt);
-  SJUI_Destroy();
   IMG_Quit();
   SDLNet_Quit();
   SDL_Quit();

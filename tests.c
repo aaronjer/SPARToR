@@ -3,7 +3,7 @@
 #include "main.h"
 #include "console.h"
 #include "font.h"
-#include "sjui.h"
+#include "video.h"
 
 
 void run_tests()

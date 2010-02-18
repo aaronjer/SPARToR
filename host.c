@@ -81,8 +81,8 @@ void host() {
   for(i=surefr+1;i<=cmdfr;i++) { //scan for dirty frames to send
     if( fr[i%maxframes].dirty ) {
       data = packframecmds(i,&n);
-      if( pkt->len+4+n >= pkt->maxlen ) {
-        SJC_Write("DANGER! >=pkt->maxlen bytesworth of cmds almost packed!");
+      if( pkt->len+4+n >= pkt->maxlen || pkt->data[1]>100 ) {
+        SJC_Write("%d: Packed too many cmds! Will get the rest next frame...",hotfr);
         free(data);
         break;
       }
@@ -92,10 +92,6 @@ void host() {
       pkt->len += 4+n;
       pkt->data[1]++;
       fr[i%maxframes].dirty = 0;
-      if( pkt->data[1]>10 ) {
-        SJC_Write("DANGER! >10 framesworth of cmds packed!");
-        break;
-      }
     }
   }
   if( pkt->data[1]>0 ) { //we have packed cmds to send along!
@@ -169,7 +165,7 @@ void host_welcome() {
     return;
   }
   //dirty all unsure frames
-  SJC_Write("%d: I'd like to dirty all frames from %d to %d",hotfr,surefr,cmdfr);
+  SJC_Write("%d: Dirtying all frames from %d to %d",hotfr,surefr,cmdfr);
   for(i=surefr+1;i<cmdfr;i++)
     fr[i%maxframes].dirty = 1;
 
