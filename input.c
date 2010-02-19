@@ -33,13 +33,13 @@ void input(int press,int sym,Uint16 unicode) {
   if(press && sym==SDLK_BACKQUOTE)
     toggleconsole();
   else if(press && console_open) {
-    if(unicode>31 && unicode<128)
+    if(unicode>31 && unicode<127)
       SJC_Put((char)unicode);
     else if(sym==SDLK_RETURN) {
       if( SJC_Submit() )
         command(SJC.buf[1]);
     }
-    else if(sym==SDLK_BACKSPACE)
+    else if(sym==SDLK_BACKSPACE || sym==SDLK_DELETE)
       SJC_Rub();
     else if(sym==SDLK_ESCAPE && console_open)
       toggleconsole();

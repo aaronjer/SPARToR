@@ -9,17 +9,6 @@
 SJC_t SJC = {{0},{0}};
 
 
-void SJC_Init()
-{
-  //int i;
-  //for(i=0;i<200;i++)
-  //{
-  //  SJC.buf[i] = NULL;
-  //  SJC.size[i] = 0;
-  //}
-}
-
-
 void SJC_Put(char c)
 {
   int n;

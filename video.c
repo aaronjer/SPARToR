@@ -58,6 +58,11 @@ void render() {
         SJF_DrawText(screen,x,y,SJC.buf[i]);
       y -= 10;
     }
+    if( SJC.buf[0] && SJC.buf[0][0] ) {
+      char s[10];
+      sprintf(s,"%d",SJC.buf[0][strlen(SJC.buf[0])-1]);
+      SJF_DrawText(screen,w-20,conh-20,s);
+    }
   }
 
   //display stats
