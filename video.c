@@ -15,6 +15,11 @@ void render() {
   Uint32 vidfr = (metafr-1);
   Uint32 vidfrmod = vidfr%maxframes;
 
+  Uint32 black  = SDL_MapRGB(screen->format,  0,  0,  0);
+  Uint32 white  = SDL_MapRGB(screen->format,255,255,255);
+  Uint32 dkgray = SDL_MapRGB(screen->format, 34, 34, 34);
+  Uint32 dkblue = SDL_MapRGB(screen->format,  0,  0,136);
+
   if( metafr==0 || vidfr<=drawnfr ) //==0 prevent never-draw bug
     return;
 
@@ -27,14 +32,13 @@ void render() {
     OBJ_t *o = fr[vidfrmod].objs+i;
     if(o->type==OBJT_DUMMY) {
       V *pos = flex(o,OBJF_POS);
-      SDL_FillRect(screen,&(SDL_Rect){pos->x-10,pos->y-10,20,20},0x000000);
+      SDL_FillRect(screen,&(SDL_Rect){pos->x-10,pos->y-10,20,20},black);
     }
     if(o->type==OBJT_PLAYER) {
       V *pos = flex(o,OBJF_POS);
-      SDL_FillRect(screen,&(SDL_Rect){pos->x-10,pos->y-10,20,20},0x00007F*((i/1)%3) | 
-                                                                 0x007F00*((i/3)%3) |
-                                                                 0x7F0000*((i/9)%3));
-      DrawSquare(screen,&(SDL_Rect){pos->x-10,pos->y-10,20,20},0xFFFFFF);
+      Uint32 color = SDL_MapRGB(screen->format, 0x7F*((i/1)%3), 0x7F*((i/3)%3), 0x7F*((i/9)%3));
+      SDL_FillRect(screen,&(SDL_Rect){pos->x-10,pos->y-10,20,20},color);
+      DrawSquare(screen,&(SDL_Rect){pos->x-10,pos->y-10,20,20},white);
       sprintf(buf,"%d",i);
       SJF_DrawText(screen,pos->x-7,pos->y-8,buf);
     }
@@ -44,7 +48,7 @@ void render() {
   if(console_open) {
     int conh = h/2 - 40;
     if(conh<40) conh = 40;
-    SDL_FillRect(screen,&(SDL_Rect){0,0,w,conh},0x222222);
+    SDL_FillRect(screen,&(SDL_Rect){0,0,w,conh},dkgray);
     x = 10;
     y = conh-20;
     if((ticks/200)%2)
@@ -63,7 +67,7 @@ void render() {
   SDL_Flip(screen);
   setdrawnfr(vidfr);
 
-  SDL_FillRect(screen,&(SDL_Rect){0,0,w,h},0x000088);
+  SDL_FillRect(screen,&(SDL_Rect){0,0,w,h},dkblue);
 }
 
 
