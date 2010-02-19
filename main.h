@@ -1,12 +1,12 @@
 
-#ifndef __MAIN_H__
-#define __MAIN_H__
+#ifndef SPARTOR_MAIN_H_
+#define SPARTOR_MAIN_H_
 
 #include "SDL/SDL.h"
 #include "SDL/SDL_net.h"
 #include "SDL/SDL_image.h"
 
-#define VERSION "0.1d"
+#define VERSION "0.1e"
 
 #define TICKSAFRAME 30
 #define PACKET_SIZE 5000

@@ -1,6 +1,6 @@
 
-#ifndef __HOST_H__
-#define __HOST_H__
+#ifndef SPARTOR_HOST_H_
+#define SPARTOR_HOST_H_
 
 
 #include "SDL/SDL.h"

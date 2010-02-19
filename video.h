@@ -1,6 +1,6 @@
 
-#ifndef __VIDEO_H__
-#define __VIDEO_H__
+#ifndef SPARTOR_VIDEO_H_
+#define SPARTOR_VIDEO_H_
 
 
 void render();

@@ -1,6 +1,6 @@
 
-#ifndef __COMMAND_H__
-#define __COMMAND_H__
+#ifndef SPARTOR_COMMAND_H_
+#define SPARTOR_COMMAND_H_
 
 void command(const char *s);
 

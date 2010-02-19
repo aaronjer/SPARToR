@@ -1,6 +1,6 @@
 
-#ifndef __INPUT_H__
-#define __INPUT_H__
+#ifndef SPARTOR_INPUT_H_
+#define SPARTOR_INPUT_H_
 
 #include "SDL/SDL.h"
 #include "SDL/SDL_net.h"

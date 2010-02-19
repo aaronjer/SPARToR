@@ -37,7 +37,7 @@ How to build:
 
    Build on Mac:
    -------------
-   1. Install frameworks
+   1. Install 'frameworks' for the above libraries
    2. For some reason on Mac, the SDL net and image headers
       are NOT in SDL/...
       - so mkdir SDL and copy them there I guess

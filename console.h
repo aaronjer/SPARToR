@@ -3,8 +3,8 @@
  **
  **/
 
-#ifndef __SJCONSOLE_H__
-#define __SJCONSOLE_H__
+#ifndef SPARTOR_SJCONSOLE_H_
+#define SPARTOR_SJCONSOLE_H_
 
 #include "SDL/SDL.h"
 #include "font.h"

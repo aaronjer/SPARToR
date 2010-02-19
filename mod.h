@@ -1,6 +1,6 @@
 
-#ifndef __MOD_H__
-#define __MOD_H__
+#ifndef SPARTOR_MOD_H_
+#define SPARTOR_MOD_H_
 
 #include "SDL/SDL.h"
 #include "SDL/SDL_net.h"

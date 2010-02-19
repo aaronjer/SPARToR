@@ -1,6 +1,6 @@
 
-#ifndef __NET_H__
-#define __NET_H__
+#ifndef SPARTOR_NET_H_
+#define SPARTOR_NET_H_
 
 
 #define PROTONAME "SPARToR Protocol"
