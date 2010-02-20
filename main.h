@@ -119,6 +119,13 @@ extern int me;
 extern int console_open;
 extern UDPpacket *pkt;
 
+extern Uint32 idle_time;
+extern Uint32 render_time;
+extern Uint32 adv_move_time;
+extern Uint32 adv_collide_time;
+extern Uint32 adv_game_time;
+extern Uint32 adv_frames;
+
 //prototypes
 void toggleconsole();
 void advance();

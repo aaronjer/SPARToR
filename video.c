@@ -15,6 +15,10 @@ void render() {
   Uint32 vidfr = (metafr-1);
   Uint32 vidfrmod = vidfr%maxframes;
 
+  Uint32 render_start = SDL_GetTicks();
+  static Uint32 unaccounted_start = 0;
+  Uint32 tmp;
+
   Uint32 black  = SDL_MapRGB(screen->format,  0,  0,  0);
   Uint32 white  = SDL_MapRGB(screen->format,255,255,255);
   Uint32 dkgray = SDL_MapRGB(screen->format, 34, 34, 34);
@@ -69,10 +73,29 @@ void render() {
   sprintf(buf,"fr: idx=%d meta=%d vid=%d hot=%d",metafr%maxframes,metafr,vidfr,hotfr);
   SJF_DrawText(screen,w-20-SJF_TextExtents(buf),h-20,buf);
 
-  SDL_Flip(screen);
-  setdrawnfr(vidfr);
+  sprintf(buf,"idle_time %d",idle_time);
+  SJF_DrawText(screen,w-20-SJF_TextExtents(buf),h-110,buf);
+  sprintf(buf,"render_time %d",render_time);
+  SJF_DrawText(screen,w-20-SJF_TextExtents(buf),h-100,buf);
+  sprintf(buf,"adv_move_time %d",adv_move_time);
+  SJF_DrawText(screen,w-20-SJF_TextExtents(buf),h-90,buf);
+  sprintf(buf,"adv_collide_time %d",adv_collide_time);
+  SJF_DrawText(screen,w-20-SJF_TextExtents(buf),h-80,buf);
+  sprintf(buf,"adv_game_time %d",adv_game_time);
+  SJF_DrawText(screen,w-20-SJF_TextExtents(buf),h-70,buf);
+  sprintf(buf,"adv_frames %d",adv_frames);
+  SJF_DrawText(screen,w-20-SJF_TextExtents(buf),h-60,buf);
+  sprintf(buf,"unaccounted_time %d",(tmp=SDL_GetTicks())-unaccounted_start-render_time-adv_move_time-adv_collide_time
+                                                                          -adv_game_time-idle_time);
+  unaccounted_start = tmp;
+  SJF_DrawText(screen,w-20-SJF_TextExtents(buf),h-50,buf);
 
+  SDL_Flip(screen);
   SDL_FillRect(screen,&(SDL_Rect){0,0,w,h},dkblue);
+
+  setdrawnfr(vidfr);
+  render_time = SDL_GetTicks() - render_start; //keep track of render time
+  idle_time = 0;
 }
 
 

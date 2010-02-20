@@ -48,12 +48,20 @@ int me;
 int console_open;
 UDPpacket *pkt;
 
+Uint32 idle_time = 0;
+Uint32 render_time = 0;
+Uint32 adv_move_time = 0;
+Uint32 adv_collide_time = 0;
+Uint32 adv_game_time = 0;
+Uint32 adv_frames = 0;
+
 
 
 int main(int argc,char **argv) {
   SDL_Event event;
   const SDL_VideoInfo *vidinfo;
   int i;
+  Uint32 idle_start = 0;
 
   fr = calloc(sizeof(FRAME_t),maxframes);
   for(i=0;i<maxframes;i++) {
@@ -106,11 +114,13 @@ int main(int argc,char **argv) {
       case SDL_KEYUP:   input( 0, event.key.keysym.sym, event.key.keysym.unicode ); break;
       case SDL_QUIT: cleanup();                                                     break;
     }
+    idle_time += SDL_GetTicks() - idle_start;
     readinput();
     if(hostsock)   host();
     if(clientsock) client();
     advance();
     render();
+    idle_start = SDL_GetTicks();
   }
   return 0;
 }
