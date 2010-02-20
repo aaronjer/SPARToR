@@ -6,7 +6,7 @@
 #ifndef SPARTOR_SJCONSOLE_H_
 #define SPARTOR_SJCONSOLE_H_
 
-#include "SDL/SDL.h"
+#include "SDL.h"
 #include "font.h"
 
 typedef struct

@@ -9,6 +9,8 @@ CC = ~/mingw32/bin/i386-mingw32-gcc
 WINDRES = ~/mingw32/bin/i386-mingw32-windres
 FLAGS = -g -Wall -mwindows
 LIBS = -lmingw32 -lSDLmain -lSDL -lSDL_net -lSDL_image -lm
+INC = -I ~/mingw32/include/SDL
+
 
 
 $(EXE_NAME): $(OBJS) $(OBJSRES)

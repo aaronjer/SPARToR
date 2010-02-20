@@ -2,9 +2,9 @@
 #ifndef SPARTOR_MAIN_H_
 #define SPARTOR_MAIN_H_
 
-#include "SDL/SDL.h"
-#include "SDL/SDL_net.h"
-#include "SDL/SDL_image.h"
+#include "SDL.h"
+#include "SDL_net.h"
+#include "SDL_image.h"
 
 #define VERSION "0.1e"
 
@@ -25,6 +25,7 @@
 #define OBJF_HULL 0x00000008 //has a hull
 #define OBJF_CLIP 0x00000010 //clips against solids
 #define OBJF_PLAT 0x00000020 //acts as a platform
+#define OBJF_PVEL 0x00000040 //has player-controlled velocity
 
 //cmd flags
 #define CMDF_NEW  0x00000001
@@ -87,6 +88,7 @@ typedef struct{
   V pos;
   V vel;
   V hull[2];
+  V pvel;
   int model;
   int ghost;
   char goingl;
@@ -95,7 +97,6 @@ typedef struct{
   char goingd;
   char jumping;
   char grounded;
-  float jumpvel;
 } PLAYER_t;
 
 //externs

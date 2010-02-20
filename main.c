@@ -8,9 +8,9 @@
  **/
 
 
-#include "SDL/SDL.h"
-#include "SDL/SDL_net.h"
-#include "SDL/SDL_image.h"
+#include "SDL.h"
+#include "SDL_net.h"
+#include "SDL_image.h"
 #include "main.h"
 #include "font.h"
 #include "console.h"
@@ -20,6 +20,7 @@
 #include "mod.h"
 #include "input.h"
 #include "video.h"
+#include <math.h>
 
 #ifndef IMG_Init //support pre SDL_image 1.2.8
 #define IMG_INIT_PNG 1
@@ -129,8 +130,10 @@ void toggleconsole() {
 
 
 void advance() {
-  int i;
-  findfreeslot(-1);
+  int i,j,r;
+  char recheck[2][maxobjs]; // for collision rechecking
+  findfreeslot(-1); // reset slot finder
+
   while(hotfr < metafr) {
 if( hotfr<3 ) SJC_Write("Advance: hotfr=%d, metafr=%d",hotfr,metafr); //FIXME: remove
     sethotfr(hotfr+1);
@@ -138,7 +141,7 @@ if( hotfr<3 ) SJC_Write("Advance: hotfr=%d, metafr=%d",hotfr,metafr); //FIXME: r
     Uint32 b = (hotfr  )%maxframes;
     if( cmdfr<hotfr ) //need to clear out the cmds in forward frame since it hasn't been done yet!
       setcmdfr(hotfr);
-    for(i=0;i<maxobjs;i++) { //first pass
+    for(i=0;i<maxobjs;i++) { //first pass -- copy forward, move, clip with world
       OBJ_t *oa = fr[a].objs+i;
       OBJ_t *ob = fr[b].objs+i;
       free(ob->data);
@@ -149,18 +152,60 @@ if( hotfr<3 ) SJC_Write("Advance: hotfr=%d, metafr=%d",hotfr,metafr); //FIXME: r
         ob->size = oa->size;
         ob->data = malloc(oa->size);
         memcpy(ob->data,oa->data,oa->size);
-      } 
+      }
+      if( (ob->flags & (OBJF_POS|OBJF_VEL|OBJF_PVEL)) == (OBJF_POS|OBJF_VEL|OBJF_PVEL) ) {
+        V *pos  = flex(ob,OBJF_POS);
+        V *vel  = flex(ob,OBJF_VEL);
+        V *pvel = flex(ob,OBJF_PVEL);
+        pos->x += vel->x + pvel->x;  //apply velocity
+        pos->y += vel->y + pvel->y;
+        if( pos->x < 0.0f )    //screen edges
+          pos->x = 0.0f;
+        if( pos->x > 640.0f )
+          pos->x = 640.0f;
+        if( pos->y>400.0f ) { 
+          pos->y = 400.0f;
+          vel->y = 0.0f;
+        }
+      }
     }
-    for(i=0;i<maxobjs;i++) { //second pass
+    for(r=0;r<10;r++) { //"recurse" up to 10 times to sort out collisions
+      memset(recheck[r%2],0,sizeof(recheck[0]));
+      for(i=0;i<maxobjs;i++) {
+        if(r!=0 && !recheck[(r+1)%2][i])
+          continue;
+        if(fr[b].objs[i].type!=OBJT_PLAYER)
+          continue;
+        PLAYER_t *oldme = fr[a].objs[i].data;
+        PLAYER_t *newme = fr[b].objs[i].data;
+        for(j=0;j<(r<2?i:maxobjs);j++) { //find other players to interact with -- don't need to check all on 1st 2 passes
+          if(i==j || fr[b].objs[j].type!=OBJT_PLAYER)
+            continue;
+          PLAYER_t *oldyou = fr[a].objs[j].data;
+          PLAYER_t *newyou = fr[b].objs[j].data;
+          if( !oldme || !newme || !oldyou || !newyou ||
+              fabsf(newme->pos.x - newyou->pos.x)>20.0f ||  //we dont collide in x NOW
+              fabsf(newme->pos.y - newyou->pos.y)>20.0f )   //we dont collide in y NOW
+            continue;
+          if( oldyou->pos.y - oldme->pos.y >= 20.0f ) {        //I was above BEFORE
+            newme->pos.y = newyou->pos.y - 20.0f;
+            newme->grounded = 1;
+            newme->vel.y = 0.0f;
+            recheck[r%2][i] = 1; //I've moved, so recheck me
+          } else if( oldme->pos.y - oldyou->pos.y >= 20.0f ) { //You were above BEFORE
+            newyou->pos.y = newme->pos.y - 20.0f;
+            newyou->grounded = 1;
+            newyou->vel.y = 0.0f;
+            recheck[r%2][j] = 1; //you've moved, so recheck you
+          }
+        }
+      }
+    }
+    for(i=0;i<maxobjs;i++) { //mod pass
       OBJ_t *oa = fr[a].objs+i;
       OBJ_t *ob = fr[b].objs+i;
-      if(oa->type) {
-        if(ob->type==OBJT_DUMMY) {
-          V *pos = flex(ob,OBJF_POS);
-          pos->x += (float)((hotfr-i)%50) - 24.5f;
-        }
+      if(ob->type)
         mod_adv(i,a,b,oa,ob);
-      } 
     }
     for(i=0;i<maxobjs && creatables>0;i++) { //create dummies if requested
       OBJ_t *ob = fr[b].objs+i;
@@ -255,6 +300,8 @@ void *flex(OBJ_t *o,Uint32 part) {
     if( o->flags & OBJF_VEL  ) offset += sizeof(V);
     if(    part == OBJF_HULL ) break;
     if( o->flags & OBJF_HULL ) offset += sizeof(V[2]);
+    if(    part == OBJF_PVEL ) break;
+    if( o->flags & OBJF_PVEL ) offset += sizeof(V);
     return NULL;
   HARDER
   return (V*)(o->data+offset);

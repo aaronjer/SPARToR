@@ -1,6 +1,6 @@
 
-#include "SDL/SDL.h"
-#include "SDL/SDL_net.h"
+#include "SDL.h"
+#include "SDL_net.h"
 #include "input.h"
 #include "main.h"
 #include "console.h"

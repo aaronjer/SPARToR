@@ -3,8 +3,8 @@
 #define SPARTOR_HOST_H_
 
 
-#include "SDL/SDL.h"
-#include "SDL/SDL_net.h"
+#include "SDL.h"
+#include "SDL_net.h"
 
 
 typedef struct{

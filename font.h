@@ -5,10 +5,10 @@
  **  which requires no outside resources (images, fonts, etc.)
  **/
 
-#ifndef __SJFONT_H__
-#define __SJFONT_H__
+#ifndef SPARTOR_SJFONT_H_
+#define SPARTOR_SJFONT_H_
 
-#include "SDL/SDL.h"
+#include "SDL.h"
 
 typedef struct
 {
