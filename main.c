@@ -152,7 +152,22 @@ if( hotfr<3 ) SJC_Write("Advance: hotfr=%d, metafr=%d",hotfr,metafr); //FIXME: r
         ob->size = oa->size;
         ob->data = malloc(oa->size);
         memcpy(ob->data,oa->data,oa->size);
-      } 
+      }
+      if( (ob->flags & (OBJF_POS|OBJF_VEL|OBJF_PVEL)) == (OBJF_POS|OBJF_VEL|OBJF_PVEL) ) {
+        V *pos  = flex(ob,OBJF_POS);
+        V *vel  = flex(ob,OBJF_VEL);
+        V *pvel = flex(ob,OBJF_PVEL);
+        pos->x += vel->x + pvel->x;  //apply velocity
+        pos->y += vel->y + pvel->y;
+        if( pos->x < 0.0f )    //screen edges
+          pos->x = 0.0f;
+        if( pos->x > 640.0f )
+          pos->x = 640.0f;
+        if( pos->y>400.0f ) { 
+          pos->y = 400.0f;
+          vel->y = 0.0f;
+        }
+      }
     }
     for(r=0;r<10;r++) { //"recurse" up to 10 times to sort out collisions
       memset(recheck[r%2],0,sizeof(recheck[0]));
@@ -164,7 +179,7 @@ if( hotfr<3 ) SJC_Write("Advance: hotfr=%d, metafr=%d",hotfr,metafr); //FIXME: r
         PLAYER_t *oldme = fr[a].objs[i].data;
         PLAYER_t *newme = fr[b].objs[i].data;
         for(j=0;j<(r<2?i:maxobjs);j++) { //find other players to interact with -- don't need to check all on 1st 2 passes
-          if(i==j || fr[b].objs[j].type==OBJT_PLAYER)
+          if(i==j || fr[b].objs[j].type!=OBJT_PLAYER)
             continue;
           PLAYER_t *oldyou = fr[a].objs[j].data;
           PLAYER_t *newyou = fr[b].objs[j].data;
@@ -285,6 +300,8 @@ void *flex(OBJ_t *o,Uint32 part) {
     if( o->flags & OBJF_VEL  ) offset += sizeof(V);
     if(    part == OBJF_HULL ) break;
     if( o->flags & OBJF_HULL ) offset += sizeof(V[2]);
+    if(    part == OBJF_PVEL ) break;
+    if( o->flags & OBJF_PVEL ) offset += sizeof(V);
     return NULL;
   HARDER
   return (V*)(o->data+offset);

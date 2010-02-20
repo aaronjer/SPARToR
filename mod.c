@@ -37,12 +37,12 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
         gh->client = i;
         gh->avatar = slot1;
         fr[b].objs[slot1].type = OBJT_PLAYER;
-        fr[b].objs[slot1].flags = OBJF_POS|OBJF_VIS;
+        fr[b].objs[slot1].flags = OBJF_POS|OBJF_VEL|OBJF_HULL|OBJF_PVEL|OBJF_VIS;
         fr[b].objs[slot1].size = sizeof(PLAYER_t);
         pl = fr[b].objs[slot1].data = malloc(sizeof(PLAYER_t));
-        pl->pos = (V){200.0f,200.0f,0.0f};
-        pl->vel = (V){0.0f,0.0f,0.0f};
-        pl->jumpvel = 0.0f;
+        pl->pos  = (V){200.0f,200.0f,0.0f};
+        pl->vel  = (V){0.0f,0.0f,0.0f};
+        pl->pvel = (V){0.0f,0.0f,0.0f};
         pl->model = 1;
         pl->ghost = slot0;
         pl->goingl = 0;
@@ -78,67 +78,59 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
       case CMDT_1JUMP:  newme->jumping = 1; break;
       case CMDT_0JUMP:  newme->jumping = 0; break;
     }
-    if( newme->goingl ) newme->pos.x -= 3.0f;
-    if( newme->goingr ) newme->pos.x += 3.0f;
-    if( newme->goingu ) newme->pos.y -= 3.0f;
-    if( newme->goingd ) newme->pos.y += 3.0f;
 
-    newme->grounded = 0;          //in the air until proven otherwise
+    if(      newme->pvel.x> 0.5f ) newme->pvel.x -= 0.5f;  // friction
+    else if( newme->pvel.x>-0.5f ) newme->pvel.x  = 0.0f;
+    else                           newme->pvel.x += 0.5f;
 
-    if( newme->jumpvel>0.0f )     //jumpvel fades away
-      newme->jumpvel -= 3.0f;
-    if( newme->jumpvel<0.0f ) {   //end influence of jump, jumpvel can only be non-negative
-      newme->jumpvel = 0.0f;
-      newme->jumping = 0;         //must press jump again now
+    if( newme->goingl ) {  // player-controlled accel
+      if(      newme->pvel.x>-2.0f ) newme->pvel.x += -1.0f;
+      else if( newme->pvel.x>-3.0f ) newme->pvel.x  = -3.0f;
     }
-    if( !newme->jumping )         //low-jump
-      newme->jumpvel = 0.0f;
+    if( newme->goingr ) {
+      if(      newme->pvel.x< 2.0f ) newme->pvel.x +=  1.0f;
+      else if( newme->pvel.x< 3.0f ) newme->pvel.x  =  3.0f;
+    }
 
-    newme->vel.y += 0.8f;         //gravity and jump effect
-    newme->vel.y -= newme->jumpvel;
-
-    newme->pos.x += newme->vel.x; //apply velocity
-    newme->pos.y += newme->vel.y;
-
-    if( newme->pos.x<0.0f )       //screen edges
-      newme->pos.x = 0.0f;
-    if( newme->pos.x>640.0f )
-      newme->pos.x = 640.0f;
-
-    float floor = 400.0f;         //ground test
-    if( newme->pos.y>floor ) {    //on the ground
-      newme->pos.y = floor;
-      newme->grounded = 1;
-      newme->vel.y = 0.0f;
+    if( newme->pvel.y < 0.0f ) {   //jumpvel fades into real velocity
+      newme->pvel.y  += 2.0f;
+      newme->vel.y   -= 2.0f;
+    }
+    if( newme->pvel.y > 0.0f ) {  //end influence of jump, jumpvel can only be negative
+      newme->pvel.y   = 0.0f;
+      newme->jumping  = 0;        //must press jump again now
+    }
+    if( !newme->jumping ) {       //low-jump
+      newme->pvel.y   = 0.0f;
     }
 
     if( !oldme ) //FIXME why's this null?
       break;
 
-    if( newme->grounded || oldme->grounded )
-    {
-      if( newme->jumping )        //initiate jump!
-        newme->jumpvel = 8.0f;
-    }
+    if( (newme->vel.y==0.0f || oldme->vel.y==0.0f)  //FIXME 0 velocity means grounded? not really
+        && newme->jumping )
+      newme->pvel.y  = -12.0f;  //initiate jump!
 
     for(i=0;i<objid;i++)  //find other players to interact with -- who've already MOVED
       if(fr[b].objs[i].type==OBJT_PLAYER) {
         PLAYER_t *oldyou = fr[a].objs[i].data;
         PLAYER_t *newyou = fr[b].objs[i].data;
-        if( fabsf(newme->pos.x - newyou->pos.x)<=5.0f &&                   //we're on top of each other
-            fabsf(newme->pos.y - newyou->pos.y)<=2.0f &&                   //pretty much
-            newme->pos.x==oldme->pos.x && newyou->pos.x==oldyou->pos.x ) { //and not moving
-          if(newme->pos.x < newyou->pos.x ) {
-            newme->pos.x -= 1.0f;
-            newyou->pos.x += 1.0f;
-          } else {
-            newme->pos.x += 1.0f;
-            newyou->pos.x -= 1.0f;
-          } 
+        if( fabsf(newme->pos.x - newyou->pos.x)>5.0f ||   //we're not on top of each other
+            fabsf(newme->pos.y - newyou->pos.y)>2.0f || 
+            newme->pos.x  == oldme->pos.x            ||   //or not moving
+            newyou->pos.x == oldyou->pos.x              )
+          continue;
+        if(newme->pos.x < newyou->pos.x ) {
+          newme->pvel.x  -= 1.0f;
+          newyou->pvel.x += 1.0f;
+        } else {
+          newme->pvel.x  += 1.0f;
+          newyou->pvel.x -= 1.0f;
         }
       }
-    break;
-  }
-}
 
+      newme->vel.y += 0.8f;        //gravity
+    break;
+  } //end switch ob->type
+}
 
