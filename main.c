@@ -101,10 +101,8 @@ int main(int argc,char **argv) {
   //main loop
   for(;;) {
     newticks = SDL_GetTicks();
-    if( newticks-ticks<10 && newticks-ticks>=0 ) {
+    if( newticks-ticks<5 ) // give system some time to breathe if we're not too busy
       SDL_Delay(1);
-      continue;
-    }
     ticks = newticks;
     metafr = ticks/ticksaframe + frameoffset;
     while( SDL_PollEvent(&event) ) switch(event.type) {
