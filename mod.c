@@ -58,6 +58,9 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
     assert("ob->size==sizeof(GHOST_t)",ob->size==sizeof(GHOST_t));
     gh = ob->data;
     break;
+  case OBJT_DUMMY:
+    ((V*)flex(ob,OBJF_POS))->x += (float)((hotfr-objid)%50) - 24.5f;
+    break;
   case OBJT_PLAYER:
     assert("ob->size==sizeof(PLAYER_t)",ob->size==sizeof(PLAYER_t));
     PLAYER_t *oldme = oa->data;
@@ -109,6 +112,9 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
       newme->vel.y = 0.0f;
     }
 
+    if( !oldme ) //FIXME why's this null?
+      break;
+
     if( newme->grounded || oldme->grounded )
     {
       if( newme->jumping )        //initiate jump!
@@ -119,20 +125,6 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
       if(fr[b].objs[i].type==OBJT_PLAYER) {
         PLAYER_t *oldyou = fr[a].objs[i].data;
         PLAYER_t *newyou = fr[b].objs[i].data;
-        if( !oldme || !newme || !oldyou || !newyou ) //FIXME
-          continue;
-        if( fabsf(newme->pos.x - newyou->pos.x)<=20.0f &&  //we collide in x NOW
-            fabsf(newme->pos.y - newyou->pos.y)<=20.0f ) { //we collide in y NOW
-          if( oldyou->pos.y - oldme->pos.y >= 20.0f ) {    //I was above BEFORE
-            newme->pos.y = newyou->pos.y - 20.0f;
-            newme->grounded = 1;
-            newme->vel.y = 0.0f;
-          } else if( oldme->pos.y - oldyou->pos.y >= 20.0f ) {    //You were above BEFORE
-            newyou->pos.y = newme->pos.y - 20.0f;
-            newyou->grounded = 1;
-            newyou->vel.y = 0.0f;
-          }
-        }
         if( fabsf(newme->pos.x - newyou->pos.x)<=5.0f &&                   //we're on top of each other
             fabsf(newme->pos.y - newyou->pos.y)<=2.0f &&                   //pretty much
             newme->pos.x==oldme->pos.x && newyou->pos.x==oldyou->pos.x ) { //and not moving
