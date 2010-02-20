@@ -2,8 +2,8 @@
 #ifndef __MOD_H__
 #define __MOD_H__
 
-#include "SDL/SDL.h"
-#include "SDL/SDL_net.h"
+#include "SDL.h"
+#include "SDL_net.h"
 #include "main.h"
 
 

@@ -8,7 +8,7 @@
 #ifndef __SJFONT_H__
 #define __SJFONT_H__
 
-#include "SDL/SDL.h"
+#include "SDL.h"
 
 typedef struct
 {

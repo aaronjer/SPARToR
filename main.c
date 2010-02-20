@@ -8,9 +8,9 @@
  **/
 
 
-#include "SDL/SDL.h"
-#include "SDL/SDL_net.h"
-#include "SDL/SDL_image.h"
+#include "SDL.h"
+#include "SDL_net.h"
+#include "SDL_image.h"
 #include "main.h"
 #include "font.h"
 #include "console.h"

@@ -2,9 +2,9 @@
 #ifndef __MAIN_H__
 #define __MAIN_H__
 
-#include "SDL/SDL.h"
-#include "SDL/SDL_net.h"
-#include "SDL/SDL_image.h"
+#include "SDL.h"
+#include "SDL_net.h"
+#include "SDL_image.h"
 
 #define VERSION "0.1d"
 

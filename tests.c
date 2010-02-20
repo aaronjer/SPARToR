@@ -1,5 +1,5 @@
 
-#include "SDL/SDL.h"
+#include "SDL.h"
 #include "main.h"
 #include "console.h"
 #include "font.h"

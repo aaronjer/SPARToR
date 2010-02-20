@@ -6,7 +6,7 @@
 #ifndef __SJCONSOLE_H__
 #define __SJCONSOLE_H__
 
-#include "SDL/SDL.h"
+#include "SDL.h"
 #include "font.h"
 
 typedef struct
