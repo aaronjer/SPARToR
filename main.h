@@ -26,6 +26,7 @@
 #define OBJF_CLIP 0x00000010 //clips against solids
 #define OBJF_PLAT 0x00000020 //acts as a platform
 #define OBJF_PVEL 0x00000040 //has player-controlled velocity
+#define OBJF_DEL  0x00000080 //object is marked for deletion
 
 //cmd flags
 #define CMDF_NEW  0x00000001
@@ -36,6 +37,7 @@
 #define OBJT_GHOST    2
 #define OBJT_DUMMY    3
 #define OBJT_PLAYER   4
+#define OBJT_BULLET   5
 
 //cmd types
 #define CMDT_1LEFT    ((char)1)
@@ -48,6 +50,8 @@
 #define CMDT_0DOWN    ((char)8)
 #define CMDT_1JUMP    ((char)9)
 #define CMDT_0JUMP    ((char)10)
+#define CMDT_1FIRE    ((char)11)
+#define CMDT_0FIRE    ((char)12)
 
 
 typedef struct{
@@ -96,8 +100,21 @@ typedef struct{
   char goingu;
   char goingd;
   char jumping;
+  char firing;
+  char cooldown;
+  char projectiles;
   char grounded;
+  char facingr;
 } PLAYER_t;
+
+typedef struct{
+  V pos;
+  V vel;
+  V hull[2];
+  int model;
+  int owner;
+  Uint8 ttl;
+} BULLET_t;
 
 //externs
 extern Uint32 ticksaframe;

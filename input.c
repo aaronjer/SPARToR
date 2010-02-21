@@ -59,7 +59,8 @@ void input(int press,int sym,Uint16 unicode) {
   case SDLK_RIGHT: putcmd( press?CMDT_1RIGHT:CMDT_0RIGHT ); break;
   case SDLK_UP:    putcmd( press?CMDT_1UP   :CMDT_0UP    ); break;
   case SDLK_DOWN:  putcmd( press?CMDT_1DOWN :CMDT_0DOWN  ); break;
-  case SDLK_SPACE: putcmd( press?CMDT_1JUMP :CMDT_0JUMP  ); break;
+  case SDLK_z:     putcmd( press?CMDT_1JUMP :CMDT_0JUMP  ); break;
+  case SDLK_x:     putcmd( press?CMDT_1FIRE :CMDT_0FIRE  ); break;
   }
 }
 

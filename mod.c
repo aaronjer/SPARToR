@@ -53,6 +53,8 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
         pl = fr[b].objs[slot1].data = malloc(sizeof(PLAYER_t));
         pl->pos  = (V){200.0f,200.0f,0.0f};
         pl->vel  = (V){0.0f,0.0f,0.0f};
+        pl->hull[0] = (V){-10.0f,-10.0f,0.0f};
+        pl->hull[1] = (V){ 10.0f, 10.0f,0.0f};
         pl->pvel = (V){0.0f,0.0f,0.0f};
         pl->model = 1;
         pl->ghost = slot0;
@@ -61,7 +63,10 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
         pl->goingu = 0;
         pl->goingd = 0;
         pl->jumping = 0;
+        pl->firing = 0;
+        pl->cooldown = 0;
         pl->grounded = 0;
+        pl->facingr = 1;
       }
     }
     break;
@@ -78,23 +83,30 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
     PLAYER_t *newme = ob->data;
     gh = fr[b].objs[newme->ghost].data;
     switch( fr[b].cmds[gh->client].cmd ) {
-      case CMDT_1LEFT:  newme->goingl = 1; break;
-      case CMDT_0LEFT:  newme->goingl = 0; break;
-      case CMDT_1RIGHT: newme->goingr = 1; break;
-      case CMDT_0RIGHT: newme->goingr = 0; break; 
-      case CMDT_1UP:    newme->goingu = 1; break;
-      case CMDT_0UP:    newme->goingu = 0; break;
-      case CMDT_1DOWN:  newme->goingd = 1; break;
-      case CMDT_0DOWN:  newme->goingd = 0; break; 
-      case CMDT_1JUMP:  newme->jumping = 1; break;
-      case CMDT_0JUMP:  newme->jumping = 0; break;
+      case CMDT_1LEFT:  newme->goingl  = 1; newme->facingr = 0; break;
+      case CMDT_0LEFT:  newme->goingl  = 0;                     break;
+      case CMDT_1RIGHT: newme->goingr  = 1; newme->facingr = 1; break;
+      case CMDT_0RIGHT: newme->goingr  = 0;                     break; 
+      case CMDT_1UP:    newme->goingu  = 1;                     break;
+      case CMDT_0UP:    newme->goingu  = 0;                     break;
+      case CMDT_1DOWN:  newme->goingd  = 1;                     break;
+      case CMDT_0DOWN:  newme->goingd  = 0;                     break; 
+      case CMDT_1JUMP:  newme->jumping = 1;                     break;
+      case CMDT_0JUMP:  newme->jumping = 0;                     break;
+      case CMDT_1FIRE:  newme->firing  = 1;                     break;
+      case CMDT_0FIRE:  newme->firing  = 0;                     break;
     }
 
-    if(      newme->pvel.x> 0.5f ) newme->pvel.x -= 0.5f;  // friction
+    if( !oldme ) //FIXME why's this null?
+      break;
+
+    // friction
+    if(      newme->pvel.x> 0.5f ) newme->pvel.x -= 0.5f;
     else if( newme->pvel.x>-0.5f ) newme->pvel.x  = 0.0f;
     else                           newme->pvel.x += 0.5f;
 
-    if( newme->goingl ) {  // player-controlled accel
+    // -- WALK --
+    if( newme->goingl ) {
       if(      newme->pvel.x>-2.0f ) newme->pvel.x += -1.0f;
       else if( newme->pvel.x>-3.0f ) newme->pvel.x  = -3.0f;
     }
@@ -103,35 +115,61 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
       else if( newme->pvel.x< 3.0f ) newme->pvel.x  =  3.0f;
     }
 
-    if( newme->pvel.y < 0.0f ) {   //jumpvel fades into real velocity
-      newme->pvel.y  += 2.0f;
-      newme->vel.y   -= 2.0f;
+    // -- JUMP --
+    if( newme->pvel.y <= -2.0f ) {     //jumping in progress
+      newme->pvel.y   +=  2.0f;        //jumpvel fades into real velocity
+      newme->vel.y    += -2.0f;
     }
-    if( newme->pvel.y > 0.0f ) {  //end influence of jump, jumpvel can only be negative
+    else if( newme->pvel.y < 0.0f ) {  //jumping ending
+      newme->vel.y    += newme->pvel.y;
       newme->pvel.y   = 0.0f;
-      newme->jumping  = 0;        //must press jump again now
+      newme->jumping  = 0;             //must press jump again now
     }
-    if( !newme->jumping ) {       //low-jump
+    if( !newme->jumping )              //low-jump, cancel jump velocity early
       newme->pvel.y   = 0.0f;
+    if( (newme->vel.y==0.0f || oldme->vel.y==0.0f) && newme->jumping ) //FIXME 0 velocity means grounded? not really
+      newme->pvel.y  = -11.9f;         //initiate jump!
+
+    // -- FIRE --
+    if( newme->cooldown>0 )
+      newme->cooldown--;
+    if( newme->firing && newme->cooldown==0 && newme->projectiles<3 ) { // create bullet
+      slot0 = findfreeslot(b);
+      fr[b].objs[slot0].type = OBJT_BULLET;
+      fr[b].objs[slot0].flags = OBJF_POS|OBJF_VEL|OBJF_HULL|OBJF_VIS;
+      fr[b].objs[slot0].size = sizeof(BULLET_t);
+      BULLET_t *bu = fr[b].objs[slot0].data = malloc(sizeof(BULLET_t));
+      if( newme->facingr ) {
+        bu->pos = (V){newme->pos.x+10.0f,newme->pos.y,0.0f};
+        bu->vel = (V){ 8.0f,0.0f,0.0f};
+      } else {
+        bu->pos = (V){newme->pos.x-10.0f,newme->pos.y,0.0f};
+        bu->vel = (V){-8.0f,0.0f,0.0f};
+      }
+      if( newme->goingu ) // aiming
+        bu->vel.y +=-8.0f;
+      if( newme->goingd )
+        bu->vel.y += 8.0f;
+      bu->hull[0] = (V){-2.0f,-2.0f,0.0f};
+      bu->hull[1] = (V){ 2.0f, 2.0f,0.0f};
+      bu->model = 1;
+      bu->owner = objid;
+      bu->ttl = 50;
+      newme->cooldown = 5;
+      newme->projectiles++;
     }
-
-    if( !oldme ) //FIXME why's this null?
-      break;
-
-    if( (newme->vel.y==0.0f || oldme->vel.y==0.0f)  //FIXME 0 velocity means grounded? not really
-        && newme->jumping )
-      newme->pvel.y  = -12.0f;  //initiate jump!
 
     for(i=0;i<objid;i++)  //find other players to interact with -- who've already MOVED
       if(fr[b].objs[i].type==OBJT_PLAYER) {
         PLAYER_t *oldyou = fr[a].objs[i].data;
         PLAYER_t *newyou = fr[b].objs[i].data;
-        if( fabsf(newme->pos.x - newyou->pos.x)>5.0f ||   //we're not on top of each other
+        if( !oldyou                                  ||
+            fabsf(newme->pos.x - newyou->pos.x)>5.0f || //we're not on top of each other
             fabsf(newme->pos.y - newyou->pos.y)>2.0f || 
-            newme->pos.x  == oldme->pos.x            ||   //or not moving
-            newyou->pos.x == oldyou->pos.x              )
+            fabsf( newme->vel.x)>=1.0f               || //or we're moving
+            fabsf(newyou->vel.x)>=1.0f )
           continue;
-        if(newme->pos.x < newyou->pos.x ) {
+        if(newme->pos.x < newyou->pos.x) {
           newme->pvel.x  -= 1.0f;
           newyou->pvel.x += 1.0f;
         } else {
@@ -140,7 +178,17 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
         }
       }
 
-      newme->vel.y += 0.8f;        //gravity
+    newme->vel.y += 0.8f;        //gravity
+    break;
+  case OBJT_BULLET:
+    assert("ob->size==sizeof(BULLET_t)",ob->size==sizeof(BULLET_t));
+    BULLET_t *bu = ob->data;
+    bu->ttl--;
+    if(bu->pos.x<=0.0f || bu->pos.x>=640.0f || bu->ttl==0) {
+      if( fr[b].objs[bu->owner].type==OBJT_PLAYER )
+        ((PLAYER_t *)fr[b].objs[bu->owner].data)->projectiles--;
+      ob->flags |= OBJF_DEL;
+    }
     break;
   } //end switch ob->type
 }

@@ -35,6 +35,7 @@ void render() {
   Uint32 white  = SDL_MapRGB(screen->format,255,255,255);
   Uint32 dkgray = SDL_MapRGB(screen->format, 34, 34, 34);
   Uint32 dkblue = SDL_MapRGB(screen->format,  0,  0,136);
+  Uint32 color;
 
   if( metafr==0 || vidfr<=drawnfr ) //==0 prevent never-draw bug
     return;
@@ -46,17 +47,22 @@ void render() {
   //display objects
   for(i=0;i<maxobjs;i++) {
     OBJ_t *o = fr[vidfrmod].objs+i;
-    if(o->type==OBJT_DUMMY) {
-      V *pos = flex(o,OBJF_POS);
-      SDL_FillRect(screen,&(SDL_Rect){pos->x-10,pos->y-10,20,20},black);
-    }
-    if(o->type==OBJT_PLAYER) {
-      V *pos = flex(o,OBJF_POS);
-      Uint32 color = SDL_MapRGB(screen->format, 0x7F*((i/1)%3), 0x7F*((i/3)%3), 0x7F*((i/9)%3));
-      SDL_FillRect(screen,&(SDL_Rect){pos->x-10,pos->y-10,20,20},color);
-      DrawSquare(screen,&(SDL_Rect){pos->x-10,pos->y-10,20,20},white);
-      sprintf(buf,"%d",i);
-      SJF_DrawText(screen,pos->x-7,pos->y-8,buf);
+    V *pos = flex(o,OBJF_POS);
+    switch( o->type ) {
+      case OBJT_DUMMY:
+        SDL_FillRect(screen,&(SDL_Rect){pos->x-10,pos->y-10,20,20},black);
+        break;
+      case OBJT_PLAYER:
+        color = SDL_MapRGB(screen->format, 0x7F*((i/1)%3), 0x7F*((i/3)%3), 0x7F*((i/9)%3));
+        SDL_FillRect(screen,&(SDL_Rect){pos->x-10,pos->y-10,20,20},color);
+        DrawSquare(  screen,&(SDL_Rect){pos->x-10,pos->y-10,20,20},white);
+        sprintf(buf,"%d",i);
+        SJF_DrawText(screen,pos->x-7,pos->y-8,buf);
+        break;
+      case OBJT_BULLET:
+        color = SDL_MapRGB(screen->format, 0x7F*(hotfr%3), 0xFF*(hotfr%2), 0);
+        SDL_FillRect(screen,&(SDL_Rect){pos->x-2,pos->y-2,4,4},color);
+        break;
     }
   }
 

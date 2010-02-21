@@ -160,19 +160,19 @@ void advance() {
       OBJ_t *ob = fr[b].objs+i;
       free(ob->data);
       memset(ob,0,sizeof(*ob));
-      if(oa->type) {
+      if(oa->type && !(oa->flags&OBJF_DEL)) {
         ob->type = oa->type;
         ob->flags = oa->flags;
         ob->size = oa->size;
         ob->data = malloc(oa->size);
         memcpy(ob->data,oa->data,oa->size);
       }
-      if( (ob->flags & (OBJF_POS|OBJF_VEL|OBJF_PVEL)) == (OBJF_POS|OBJF_VEL|OBJF_PVEL) ) {
+      if( (ob->flags & (OBJF_POS|OBJF_VEL)) == (OBJF_POS|OBJF_VEL) ) {
         V *pos  = flex(ob,OBJF_POS);
         V *vel  = flex(ob,OBJF_VEL);
-        V *pvel = flex(ob,OBJF_PVEL);
-        pos->x += vel->x + pvel->x;  //apply velocity
-        pos->y += vel->y + pvel->y;
+        V *pvel = (ob->flags & OBJF_PVEL) ? flex(ob,OBJF_PVEL) : NULL;
+        pos->x += vel->x + (pvel?pvel->x:0.0f);  //apply velocity
+        pos->y += vel->y + (pvel?pvel->y:0.0f);
         if( pos->x < 0.0f )    //screen edges
           pos->x = 0.0f;
         if( pos->x > 640.0f )
@@ -279,7 +279,7 @@ int findfreeslot(int frame1) {
       return last_slot++;
     last_slot++;
   }
-  return -1;
+  return -1; //FIXME increase maxobjs instead -- other code will fail until then
 }
 
 // clears all objects and commands out of frame buffer
