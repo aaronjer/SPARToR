@@ -128,6 +128,8 @@ int unpackframecmds(Uint32 packfr,Uint8 *data,size_t len) {
     pfr->cmds[i].mousex  = unpackbytes(data,len,&n,1);
     pfr->cmds[i].mousey  = unpackbytes(data,len,&n,1);
     pfr->cmds[i].flags   = unpackbytes(data,len,&n,2);
+    if( pfr->cmds[i].flags & CMDF_NEW )
+      SJC_Write("%u Unpacked CMDF_NEW for client %d",packfr,i);
   }
   return n;
 }
