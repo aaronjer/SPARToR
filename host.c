@@ -62,7 +62,7 @@ void host() {
       case 'c': //cmd update
         n = 1;
         pktnum = unpackbytes(pkt->data,pkt->len,&n,4);
-        SJC_Write("Received packet #%u from client %d",i);
+        SJC_Write("Received packet #%u from client %d",pktnum,i);
         packfr = unpackbytes(pkt->data,pkt->len,&n,4);
         if( packfr<metafr-30 ) {
           SJC_Write("Ignoring too old cmd from client %d",i);
