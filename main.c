@@ -188,28 +188,35 @@ void advance() {
       for(i=0;i<maxobjs;i++) {
         if(r!=0 && !recheck[(r+1)%2][i])
           continue;
-        if(fr[b].objs[i].type!=OBJT_PLAYER)
+        if( (fr[b].objs[i].flags & (OBJF_POS|OBJF_VEL|OBJF_HULL)) != (OBJF_POS|OBJF_VEL|OBJF_HULL) )
           continue;
-        PLAYER_t *oldme = fr[a].objs[i].data;
-        PLAYER_t *newme = fr[b].objs[i].data;
-        for(j=0;j<(r<2?i:maxobjs);j++) { //find other players to interact with -- don't need to check all on 1st 2 passes
-          if(i==j || fr[b].objs[j].type!=OBJT_PLAYER)
+        V *oldmepos  = flex(fr[a].objs+i,OBJF_POS );
+        V *newmepos  = flex(fr[b].objs+i,OBJF_POS );
+        V *newmevel  = flex(fr[b].objs+i,OBJF_VEL );
+        V *oldmehull = flex(fr[b].objs+i,OBJF_HULL);
+        V *newmehull = flex(fr[b].objs+i,OBJF_HULL);
+        for(j=0;j<(r<2?i:maxobjs);j++) { //find other objs to interact with -- don't need to check all on 1st 2 passes
+          if(i==j || !fr[a].objs[i].data || !fr[a].objs[j].data )
             continue;
-          PLAYER_t *oldyou = fr[a].objs[j].data;
-          PLAYER_t *newyou = fr[b].objs[j].data;
-          if( !oldme || !newme || !oldyou || !newyou ||
-              fabsf(newme->pos.x - newyou->pos.x)>20.0f ||  //we dont collide in x NOW
-              fabsf(newme->pos.y - newyou->pos.y)>20.0f )   //we dont collide in y NOW
+          if( (fr[b].objs[j].flags & (OBJF_POS|OBJF_VEL|OBJF_HULL)) != (OBJF_POS|OBJF_VEL|OBJF_HULL) )
             continue;
-          if( oldyou->pos.y - oldme->pos.y >= 20.0f ) {        //I was above BEFORE
-            newme->pos.y = newyou->pos.y - 20.0f;
-            newme->grounded = 1;
-            newme->vel.y = 0.0f;
+          V *oldyoupos  = flex(fr[a].objs+j,OBJF_POS );
+          V *newyoupos  = flex(fr[b].objs+j,OBJF_POS );
+          V *newyouvel  = flex(fr[b].objs+j,OBJF_VEL );
+          V *oldyouhull = flex(fr[b].objs+j,OBJF_HULL);
+          V *newyouhull = flex(fr[b].objs+j,OBJF_HULL);
+          if( newmepos->x+newmehull[0].x >= newyoupos->x+newyouhull[1].x ||   //we dont collide NOW
+              newmepos->x+newmehull[1].x <= newyoupos->x+newyouhull[0].x ||
+              newmepos->y+newmehull[0].y >= newyoupos->y+newyouhull[1].y ||
+              newmepos->y+newmehull[1].y <= newyoupos->y+newyouhull[0].y    )
+            continue;
+          if(        oldyoupos->y+oldyouhull[0].y >= oldmepos->y+oldmehull[1].y ) { //I was above BEFORE
+            newmepos->y = newyoupos->y + newyouhull[0].y - newmehull[1].y;
+            newmevel->y = 0.0f;
             recheck[r%2][i] = 1; //I've moved, so recheck me
-          } else if( oldme->pos.y - oldyou->pos.y >= 20.0f ) { //You were above BEFORE
-            newyou->pos.y = newme->pos.y - 20.0f;
-            newyou->grounded = 1;
-            newyou->vel.y = 0.0f;
+          } else if( oldyoupos->y+oldyouhull[1].y <= oldmepos->y+oldmehull[0].y ) { //You were above BEFORE
+            newyoupos->y = newmepos->y + newmehull[0].y - newyouhull[1].y;
+            newyouvel->y = 0.0f;
             recheck[r%2][j] = 1; //you've moved, so recheck you
           }
         }

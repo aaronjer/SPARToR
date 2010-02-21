@@ -34,7 +34,7 @@ void render() {
   Uint32 black  = SDL_MapRGB(screen->format,  0,  0,  0);
   Uint32 white  = SDL_MapRGB(screen->format,255,255,255);
   Uint32 dkgray = SDL_MapRGB(screen->format, 34, 34, 34);
-  Uint32 dkblue = SDL_MapRGB(screen->format,  0,  0,136);
+  Uint32 blue   = SDL_MapRGB(screen->format,  0,  0,136);
   Uint32 color;
 
   if( metafr==0 || vidfr<=drawnfr ) //==0 prevent never-draw bug
@@ -49,20 +49,30 @@ void render() {
     OBJ_t *o = fr[vidfrmod].objs+i;
     V *pos  = flex(o,OBJF_POS);
     V *hull = flex(o,OBJF_HULL);
+    SDL_Rect rect;
     switch( o->type ) {
       case OBJT_PLAYER:
         color = SDL_MapRGB(screen->format, 0x7F*((i/1)%3), 0x7F*((i/3)%3), 0x7F*((i/9)%3));
         SDL_FillRect(screen,&(SDL_Rect){pos->x-10,pos->y-10,20,20},color);
         DrawSquare(  screen,&(SDL_Rect){pos->x-10,pos->y-10,20,20},white);
+        if( ((PLAYER_t *)o->data)->facingr )
+          SDL_FillRect(screen,&(SDL_Rect){pos->x+ 7,pos->y-1,6,2},white);
+        else
+          SDL_FillRect(screen,&(SDL_Rect){pos->x-13,pos->y-1,6,2},white);
         sprintf(buf,"%d",i);
-        SJF_DrawText(screen,pos->x-7,pos->y-8,buf);
+        SJF_DrawText(screen,pos->x+hull[0].x+3,pos->y+hull[0].y+2,buf);
         break;
       case OBJT_BULLET:
         color = SDL_MapRGB(screen->format, 0x7F*(hotfr%3), 0xFF*(hotfr%2), 0);
         SDL_FillRect(screen,&(SDL_Rect){pos->x-2,pos->y-2,4,4},color);
         break;
       case OBJT_DUMMY:
-        DrawSquare(screen,&(SDL_Rect){ pos->x+hull[0].x, pos->y+hull[1].y, hull[1].x-hull[0].x, hull[1].y-hull[0].y },black);
+        color = SDL_MapRGB(screen->format, 0x50+0x22*((i/1)%3), 0x50+0x22*((i/3)%3), 0x22*((i/9)%3));
+        rect = (SDL_Rect){ pos->x+hull[0].x, pos->y+hull[0].y, hull[1].x-hull[0].x, hull[1].y-hull[0].y };
+        SDL_FillRect(screen,&rect,color);
+        DrawSquare(screen,&rect,black);
+        sprintf(buf,"%d",i);
+        SJF_DrawText(screen,pos->x+hull[0].x+3,pos->y+hull[0].y+2,buf);
         break;
     }
   }
@@ -111,7 +121,7 @@ void render() {
   SJF_DrawText(screen,w-20-SJF_TextExtents(buf),h-30,buf);
 
   SDL_Flip(screen);
-  SDL_FillRect(screen,&(SDL_Rect){0,0,w,h},dkblue);
+  SDL_FillRect(screen,&(SDL_Rect){0,0,w,h},blue);
 
   setdrawnfr(vidfr);
   render_time = SDL_GetTicks() - render_start; //keep track of render time

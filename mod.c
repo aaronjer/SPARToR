@@ -24,15 +24,17 @@ void mod_setup(Uint32 setupfr) {
   //make the mother object
   fr[setupfr].objs[0] = (OBJ_t){OBJT_MOTHER,0,0,NULL};
   //make some dummys
-  for(i=1;i<20;i++) {
+  for(i=1;i<31;i++) {
     fr[setupfr].objs[i].type = OBJT_DUMMY;
     fr[setupfr].objs[i].flags = OBJF_POS|OBJF_VEL|OBJF_HULL|OBJF_VIS|OBJF_PLAT;
     fr[setupfr].objs[i].size = sizeof(DUMMY_t);
     DUMMY_t *du = fr[setupfr].objs[i].data = malloc(sizeof(DUMMY_t));
-    du->pos = (V){rand()%641,rand()%200+200,0.0f};
+    du->pos = (V){(rand()%42)*10+110,i*30,0.0f};
     du->vel = (V){0.0f,0.0f,0.0f};
-    du->hull[0] = (V){-100+rand()%100, -40+rand()%40, 0.0f};
-    du->hull[1] = (V){ 100-rand()%100,  40-rand()%40, 0.0f};
+    float w = (float)((rand()%4+1)*10);
+    float h = (float)((rand()%3+1)*10);
+    du->hull[0] = (V){-w,-h,0.0f};
+    du->hull[1] = (V){ w, h,0.0f};
     du->model = 1;
   }
 }
@@ -83,6 +85,7 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
         pl->jumping = 0;
         pl->firing = 0;
         pl->cooldown = 0;
+        pl->projectiles = 0;
         pl->grounded = 0;
         pl->facingr = 1;
       }
@@ -93,12 +96,16 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
     gh = ob->data;
     break;
   case OBJT_DUMMY:
-    PLAYER_t *du = ob->data;
+    assert("ob->size==sizeof(DUMMY_t)",ob->size==sizeof(DUMMY_t));
+    DUMMY_t *du = ob->data;
 
     // friction
     if(      du->vel.x> 0.1f ) du->vel.x -= 0.1f;
     else if( du->vel.x>-0.1f ) du->vel.x  = 0.0f;
     else                       du->vel.x += 0.1f;
+
+    if( objid==(hotfr+100)%2000 ) //tee-hee
+      du->vel.x += (float)(b%4)-1.5;
 
     du->vel.y += 0.8f;        //gravity
     break;
