@@ -57,7 +57,7 @@ void client() {
     if( fr[sentfrmod].dirty ) {
       n = 0;
       packbytes(pkt->data,'c'                           ,&n,1);
-      packbytes(pkt->data,pktnum                        ,&n,4);
+      packbytes(pkt->data,pktnum++                      ,&n,4);
       packbytes(pkt->data,sentfr                        ,&n,4);
       packbytes(pkt->data,fr[sentfrmod].cmds[me].cmd    ,&n,1);
       packbytes(pkt->data,fr[sentfrmod].cmds[me].mousehi,&n,1);
