@@ -72,8 +72,7 @@ void host() {
         break;
       case 'c': //cmd update
         n = 1;
-        pktnum = unpackbytes(pkt->data,pkt->len,&n,4);
-        SJC_Write("Received packet #%u from client %d",pktnum,i);
+        pktnum = unpackbytes(pkt->data,pkt->len,&n,4); //FIXME: do something with this!
         packfr = unpackbytes(pkt->data,pkt->len,&n,4);
         if( packfr<metafr-30 ) {
           SJC_Write("Ignoring too old cmd from client %d",i);
@@ -83,7 +82,7 @@ void host() {
           SJC_Write("Ignoring too new cmd from client %d",i);
           break;
         }
-        setcmdfr(packfr); //FIXME: totally just trusting the client here!
+        setcmdfr(packfr);
         if( hotfr>packfr-1 )
           sethotfr(packfr-1);
         fr[packfr%maxframes].dirty = 1;

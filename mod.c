@@ -101,6 +101,9 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
       break;
 
     // friction
+    if(      newme->vel.x> 0.2f ) newme->vel.x -= 0.2f;
+    else if( newme->vel.x>-0.2f ) newme->vel.x  = 0.0f;
+    else                          newme->vel.x += 0.2f;
     if(      newme->pvel.x> 0.5f ) newme->pvel.x -= 0.5f;
     else if( newme->pvel.x>-0.5f ) newme->pvel.x  = 0.0f;
     else                           newme->pvel.x += 0.5f;
@@ -166,15 +169,15 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
         if( !oldyou                                  ||
             fabsf(newme->pos.x - newyou->pos.x)>5.0f || //we're not on top of each other
             fabsf(newme->pos.y - newyou->pos.y)>2.0f || 
-            fabsf( newme->vel.x)>=1.0f               || //or we're moving
-            fabsf(newyou->vel.x)>=1.0f )
+             newme->goingr ||  newme->goingl         || //or we're moving
+            newyou->goingr || newyou->goingl            )
           continue;
         if(newme->pos.x < newyou->pos.x) {
-          newme->pvel.x  -= 1.0f;
-          newyou->pvel.x += 1.0f;
+          newme->pvel.x  -= 0.2f;
+          newyou->pvel.x += 0.2f;
         } else {
-          newme->pvel.x  += 1.0f;
-          newyou->pvel.x -= 1.0f;
+          newme->pvel.x  += 0.2f;
+          newyou->pvel.x -= 0.2f;
         }
       }
 
@@ -184,6 +187,18 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
     assert("ob->size==sizeof(BULLET_t)",ob->size==sizeof(BULLET_t));
     BULLET_t *bu = ob->data;
     bu->ttl--;
+    for(i=0;i<objid;i++)  //find players to hit
+      if(fr[b].objs[i].type==OBJT_PLAYER) {
+        PLAYER_t *pl = fr[b].objs[i].data;
+        if( i==bu->owner                       || //player owns bullet
+            fabsf(bu->pos.x - pl->pos.x)>10.0f || //not touching
+            fabsf(bu->pos.y - pl->pos.y)>10.0f    )
+          continue;
+        pl->vel.y += -5.0f;
+        pl->vel.x += (bu->vel.x>0.0f?5.0f:-5.0f);
+        bu->ttl = 0; //delete bullet
+        break;
+      }
     if(bu->pos.x<=0.0f || bu->pos.x>=640.0f || bu->ttl==0) {
       if( fr[b].objs[bu->owner].type==OBJT_PLAYER )
         ((PLAYER_t *)fr[b].objs[bu->owner].data)->projectiles--;
