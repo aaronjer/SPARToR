@@ -134,7 +134,6 @@ extern Uint32 surefr; //newest frame we are sure of (i.e. it has all its inputs 
 extern Uint32 drawnfr;//most recently rendered frame
 extern Uint32 hotfr;  //newest fully advanced frame (it's hot and fresh)
 extern Uint32 cmdfr;  //newest frame with cmds inserted (possibly in future)
-extern int creatables;
 
 extern SDL_Surface *screen;
 extern Uint32 ticks;

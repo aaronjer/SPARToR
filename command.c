@@ -18,7 +18,6 @@
 #include "net.h"
 #include "host.h"
 #include "client.h"
-#include "tests.h"
 
 
 void command(const char *s){
@@ -53,10 +52,6 @@ void command(const char *s){
       SJC_Write("Speed is now fast");
       ticksaframe = 30;
       jogframebuffer(metafr,surefr);
-    }else if( strcmp(q,"test")==0 ){
-      SJC_Write("Running unit tests...");
-      run_tests();
-      SJC_Write("Done.");
     }else if( strcmp(q,"help")==0 ){
       SJC_Write("[ HELP ]");
       SJC_Write(" Press your ~ key to open and close this console.");

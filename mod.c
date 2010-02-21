@@ -54,11 +54,11 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
           if( fr[b].objs[j].type==OBJT_GHOST ) {
             gh = fr[b].objs[j].data;
             if(gh->client==i)
-              SJC_Write("%d Mother(%d): Client %i already has a ghost at obj#%d!",hotfr,objid,i,j);
+              SJC_Write("%d: Client %i already has a ghost at obj#%d!",hotfr,objid,i,j);
           }
         slot0 = findfreeslot(b);
         slot1 = findfreeslot(b);
-        SJC_Write("%d Mother(%d): New client %d detected, created ghost is obj#%d, player is obj#%d",
+        SJC_Write("%d: New client %d detected, created ghost is obj#%d, player is obj#%d",
                   hotfr,objid,i,slot0,slot1);
         fr[b].objs[slot0].type = OBJT_GHOST;
         fr[b].objs[slot0].flags = OBJF_POS;

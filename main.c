@@ -43,7 +43,6 @@ Uint32 surefr;
 Uint32 drawnfr;
 Uint32 hotfr;
 Uint32 cmdfr = 1; //DO NOT clear frame 1, it is prefilled with client-connect for local person
-int creatables;
 
 SDL_Surface *screen;
 Uint32 ticks,newticks;
@@ -227,23 +226,6 @@ void advance() {
       OBJ_t *ob = fr[b].objs+i;
       if(ob->type)
         mod_adv(i,a,b,oa,ob);
-    }
-    for(i=0;i<maxobjs && creatables>0;i++) { //create dummies if requested
-      OBJ_t *ob = fr[b].objs+i;
-      if(!ob->type) {
-        ob->type = OBJT_DUMMY;
-        ob->flags = OBJF_POS|OBJF_VIS;
-        ob->size = sizeof(V);
-        ob->data = malloc(ob->size);
-        V *pos = flex(ob,OBJF_POS);
-        *pos = (V){320.0f,20.0f+(float)(rand()%440),0.0f};
-        creatables--;
-        SJC_Write("Created new OBJ_t at frame %d, obj %d, addr %X",b,i,&ob);
-      }
-    }
-    if( creatables>0 ) {
-      SJC_Write("Could not create %d objects!",creatables);
-      creatables = 0;
     }
     setsurefr(hotfr>50 ? hotfr-50 : 0); //FIXME: UGLY HACK! surefr should be determined for REAL
   }

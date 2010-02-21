@@ -79,6 +79,8 @@ Uint8 *packframecmds(Uint32 packfr,size_t *n) {
     packbytes(data,pfr->cmds[i].mousex ,n,1);
     packbytes(data,pfr->cmds[i].mousey ,n,1);
     packbytes(data,pfr->cmds[i].flags  ,n,2);
+    if( pfr->cmds[i].flags & CMDF_NEW )
+      SJC_Write("%u: Packed CMDF_NEW for client %d",packfr,i);
   }
   return data;
 }
@@ -129,7 +131,7 @@ int unpackframecmds(Uint32 packfr,Uint8 *data,size_t len) {
     pfr->cmds[i].mousey  = unpackbytes(data,len,&n,1);
     pfr->cmds[i].flags   = unpackbytes(data,len,&n,2);
     if( pfr->cmds[i].flags & CMDF_NEW )
-      SJC_Write("%u Unpacked CMDF_NEW for client %d",packfr,i);
+      SJC_Write("%u: Unpacked CMDF_NEW for client %d",packfr,i);
   }
   return n;
 }
