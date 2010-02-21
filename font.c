@@ -1,9 +1,15 @@
 /**
- **  SuperJer Font
+ **  SPARToR 
+ **  Network Game Engine
+ **  Copyright (C) 2010  Jer Wilson
  **
- **  A simple library for drawing a 'system' font on sdl surfaces
- **  which requires no outside resources (images, fonts, etc.)
+ **  See LICENSE for details.
+ **
+ **  http://www.superjer.com/
+ **  http://www.spartor.com/
+ **  http://github.com/superjer/SPARToR
  **/
+
 
 #include "font.h"
 
@@ -15,7 +21,7 @@ SJF_t SJF = {NULL,8,12,128,
     7, 6, 6, 6, 6, 6, 6, 6, 6, 5, 6, 6, 6, 7, 7, 6,   //<@> - <O>
     6, 6, 6, 6, 7, 6, 7, 7, 7, 7, 6, 5, 6, 5, 7, 7,   //<P> - <_>
     4, 6, 6, 6, 6, 6, 5, 6, 6, 4, 5, 6, 4, 7, 6, 6,   //<`> - <o>
-    6, 6, 5, 6, 5, 6, 7, 7, 7, 6, 6, 5, 3, 5, 6, 0 }, //<p> - <127>
+    6, 6, 5, 6, 5, 6, 7, 7, 7, 6, 6, 5, 3, 5, 8, 0 }, //<p> - <127>
 {
 "                                                                                                                                "
 "                                                                                                                                "
@@ -110,8 +116,8 @@ SJF_t SJF = {NULL,8,12,128,
 
 "                                                                                                                                "
 "                                                                                                                                "
-"                                                                                           O     O       O        O O    OOOO   "
-"                                  O                                                       O      O        O      O O     O  O   "
+"                                                                                           O     O       O        OO  O  OOOO   "
+"                                  O                                                       O      O        O      O  OO   O  O   "
 " OOO      OOO    O O      OOO    OOO     O  O    O   O   O O O   O   O   O  O    OOOO     O      O        O              O  O   "
 " O  O    O  O    OO      O        O      O  O    O   O   O O O    O O    O  O       O    O       O         O             O  O   "
 " O  O    O  O    O        OO      O      O  O     O O    O O O     O     O  O     OO      O               O              O  O   "

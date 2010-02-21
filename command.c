@@ -1,3 +1,14 @@
+/**
+ **  SPARToR 
+ **  Network Game Engine
+ **  Copyright (C) 2010  Jer Wilson
+ **
+ **  See LICENSE for details.
+ **
+ **  http://www.superjer.com/
+ **  http://www.spartor.com/
+ **  http://github.com/superjer/SPARToR
+ **/
 
 #include "SDL.h"
 #include "SDL_net.h"
@@ -26,7 +37,7 @@ void command(const char *s){
       host_start(port?atoi(port):0);
     }else if( strcmp(q,"connect")==0 ){
       char *hostname = strtok(NULL," :");
-      char *port = strtok(NULL," ");
+      char *port = strtok(NULL," :");
       char *clientport = strtok(NULL," ");
       client_start(hostname,(port?atoi(port):0),(clientport?atoi(clientport):0));
     }else if( strcmp(q,"disconnect")==0 ){
@@ -46,6 +57,14 @@ void command(const char *s){
       SJC_Write("Running unit tests...");
       run_tests();
       SJC_Write("Done.");
+    }else if( strcmp(q,"help")==0 ){
+      SJC_Write("[ HELP ]");
+      SJC_Write(" Press your ~ key to open and close this console.");
+      SJC_Write(" Here are some commands you can type:");
+      SJC_Write("  listen -- start a server");
+      SJC_Write("  connect -- connect to a server");
+      SJC_Write("  quit -- quit the program");
+      SJC_Write(" Control the game with the arrow keys, Z and X");
     }else{
       SJC_Write("Huh?");
     }

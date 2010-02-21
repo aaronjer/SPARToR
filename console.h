@@ -1,7 +1,3 @@
-/**
- **  SPARToR Console
- **
- **/
 
 #ifndef SPARTOR_SJCONSOLE_H_
 #define SPARTOR_SJCONSOLE_H_

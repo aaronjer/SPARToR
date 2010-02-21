@@ -1,10 +1,13 @@
 /**
- **  SPARToR [CORE]
+ **  SPARToR 
  **  Network Game Engine
- **  by SuperJer
+ **  Copyright (C) 2010  Jer Wilson
  **
- **  www.superjer.com
- **  www.spartor.com
+ **  See LICENSE for details.
+ **
+ **  http://www.superjer.com/
+ **  http://www.spartor.com/
+ **  http://github.com/superjer/SPARToR
  **/
 
 
@@ -96,7 +99,11 @@ int main(int argc,char **argv) {
 
   SJF_Init();
 
-  SJC_Write("SPARToR CORE v%s",VERSION);
+  SJC_Write("SPARToR v%s  Copyright (C) 2010 Jer Wilson",VERSION);
+  SJC_Write(" ***************************");
+  SJC_Write("     Type 'help' for help.");
+  SJC_Write(" ***************************");
+  SJC_Write("");
 
   //main loop
   for(;;) {
@@ -143,7 +150,6 @@ void advance() {
   findfreeslot(-1); // reset slot finder
 
   while(hotfr < metafr) {
-if( hotfr<3 ) SJC_Write("Advance: hotfr=%d, metafr=%d",hotfr,metafr); //FIXME: remove
     sethotfr(hotfr+1);
     Uint32 a = (hotfr-1)%maxframes; //a: frame to advance from, b: frame to advance to
     Uint32 b = (hotfr  )%maxframes;

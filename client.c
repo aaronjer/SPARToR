@@ -1,3 +1,14 @@
+/**
+ **  SPARToR 
+ **  Network Game Engine
+ **  Copyright (C) 2010  Jer Wilson
+ **
+ **  See LICENSE for details.
+ **
+ **  http://www.superjer.com/
+ **  http://www.spartor.com/
+ **  http://github.com/superjer/SPARToR
+ **/
 
 #include "SDL.h"
 #include "SDL_net.h"
@@ -16,11 +27,11 @@ static int negotiated;
 void client_start(const char *hostname,int port,int clientport) {
   int i;
   pktnum = 1;
-  if( hostsock ) { SJC_Write("Already running as a host. Type disconnect to stop."); return; }
-  if( clientsock ) { SJC_Write("Already connected to a host. Type disconnect if that ain't cool."); return; }
-  if( !hostname || !*hostname ) { SJC_Write("Error: Please specify host."); return; }
+  if( !hostname || !*hostname ) {  SJC_Write("Usage: connect <host>:[<port>] [<localport>]");          return; }
+  if( hostsock ) {                 SJC_Write("Already running as a host. Type 'disconnect' to stop."); return; }
+  if( clientsock ) {               SJC_Write("Already connected to a host. Type 'disconnect' first."); return; }
   SDLNet_ResolveHost(&ipaddr,hostname,port?port:HOSTPORT);
-  if( ipaddr.host==INADDR_NONE ) { SJC_Write("Error: Could not resolve host!"); return; }
+  if( ipaddr.host==INADDR_NONE ) { SJC_Write("Error: Could not resolve host!");                        return; }
   clientport = clientport?clientport:CLIENTPORT;
   for(i=0;i<maxclients;i++) {
     if( (clientsock = SDLNet_UDP_Open(clientport)) )

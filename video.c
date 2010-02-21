@@ -1,3 +1,15 @@
+/**
+ **  SPARToR 
+ **  Network Game Engine
+ **  Copyright (C) 2010  Jer Wilson
+ **
+ **  See LICENSE for details.
+ **
+ **  http://www.superjer.com/
+ **  http://www.spartor.com/
+ **  http://github.com/superjer/SPARToR
+ **/
+
 
 #include "SDL.h"
 #include "SDL_net.h"
