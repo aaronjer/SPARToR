@@ -110,11 +110,17 @@ typedef struct{
 typedef struct{
   V pos;
   V vel;
-  V hull[2];
   int model;
   int owner;
   Uint8 ttl;
 } BULLET_t;
+
+typedef struct{
+  V pos;
+  V vel;
+  V hull[2];
+  int model;
+} DUMMY_t;
 
 //externs
 extern Uint32 ticksaframe;

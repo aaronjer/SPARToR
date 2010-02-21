@@ -19,6 +19,24 @@
 #include <math.h>
 
 
+void mod_setup(Uint32 setupfr) {
+  int i;
+  //make the mother object
+  fr[setupfr].objs[0] = (OBJ_t){OBJT_MOTHER,0,0,NULL};
+  //make some dummys
+  for(i=1;i<20;i++) {
+    fr[setupfr].objs[i].type = OBJT_DUMMY;
+    fr[setupfr].objs[i].flags = OBJF_POS|OBJF_VEL|OBJF_HULL|OBJF_VIS|OBJF_PLAT;
+    fr[setupfr].objs[i].size = sizeof(DUMMY_t);
+    DUMMY_t *du = fr[setupfr].objs[i].data = malloc(sizeof(DUMMY_t));
+    du->pos = (V){rand()%641,rand()%200+200,0.0f};
+    du->vel = (V){0.0f,0.0f,0.0f};
+    du->hull[0] = (V){-100+rand()%100, -40+rand()%40, 0.0f};
+    du->hull[1] = (V){ 100-rand()%100,  40-rand()%40, 0.0f};
+    du->model = 1;
+  }
+}
+
 void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
   int i;
   int slot0,slot1;
@@ -48,7 +66,7 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
         gh->client = i;
         gh->avatar = slot1;
         fr[b].objs[slot1].type = OBJT_PLAYER;
-        fr[b].objs[slot1].flags = OBJF_POS|OBJF_VEL|OBJF_HULL|OBJF_PVEL|OBJF_VIS;
+        fr[b].objs[slot1].flags = OBJF_POS|OBJF_VEL|OBJF_HULL|OBJF_PVEL|OBJF_VIS|OBJF_PLAT|OBJF_CLIP;
         fr[b].objs[slot1].size = sizeof(PLAYER_t);
         pl = fr[b].objs[slot1].data = malloc(sizeof(PLAYER_t));
         pl->pos  = (V){200.0f,200.0f,0.0f};
@@ -75,7 +93,14 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
     gh = ob->data;
     break;
   case OBJT_DUMMY:
-    ((V*)flex(ob,OBJF_POS))->x += (float)((hotfr-objid)%50) - 24.5f;
+    PLAYER_t *du = ob->data;
+
+    // friction
+    if(      du->vel.x> 0.1f ) du->vel.x -= 0.1f;
+    else if( du->vel.x>-0.1f ) du->vel.x  = 0.0f;
+    else                       du->vel.x += 0.1f;
+
+    du->vel.y += 0.8f;        //gravity
     break;
   case OBJT_PLAYER:
     assert("ob->size==sizeof(PLAYER_t)",ob->size==sizeof(PLAYER_t));
@@ -139,7 +164,7 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
     if( newme->firing && newme->cooldown==0 && newme->projectiles<3 ) { // create bullet
       slot0 = findfreeslot(b);
       fr[b].objs[slot0].type = OBJT_BULLET;
-      fr[b].objs[slot0].flags = OBJF_POS|OBJF_VEL|OBJF_HULL|OBJF_VIS;
+      fr[b].objs[slot0].flags = OBJF_POS|OBJF_VEL|OBJF_VIS;
       fr[b].objs[slot0].size = sizeof(BULLET_t);
       BULLET_t *bu = fr[b].objs[slot0].data = malloc(sizeof(BULLET_t));
       if( newme->facingr ) {
@@ -153,8 +178,6 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
         bu->vel.y +=-8.0f;
       if( newme->goingd )
         bu->vel.y += 8.0f;
-      bu->hull[0] = (V){-2.0f,-2.0f,0.0f};
-      bu->hull[1] = (V){ 2.0f, 2.0f,0.0f};
       bu->model = 1;
       bu->owner = objid;
       bu->ttl = 50;
@@ -197,7 +220,6 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
         pl->vel.y += -5.0f;
         pl->vel.x += (bu->vel.x>0.0f?5.0f:-5.0f);
         bu->ttl = 0; //delete bullet
-        break;
       }
     if(bu->pos.x<=0.0f || bu->pos.x>=640.0f || bu->ttl==0) {
       if( fr[b].objs[bu->owner].type==OBJT_PLAYER )

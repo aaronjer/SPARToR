@@ -47,11 +47,9 @@ void render() {
   //display objects
   for(i=0;i<maxobjs;i++) {
     OBJ_t *o = fr[vidfrmod].objs+i;
-    V *pos = flex(o,OBJF_POS);
+    V *pos  = flex(o,OBJF_POS);
+    V *hull = flex(o,OBJF_HULL);
     switch( o->type ) {
-      case OBJT_DUMMY:
-        SDL_FillRect(screen,&(SDL_Rect){pos->x-10,pos->y-10,20,20},black);
-        break;
       case OBJT_PLAYER:
         color = SDL_MapRGB(screen->format, 0x7F*((i/1)%3), 0x7F*((i/3)%3), 0x7F*((i/9)%3));
         SDL_FillRect(screen,&(SDL_Rect){pos->x-10,pos->y-10,20,20},color);
@@ -62,6 +60,9 @@ void render() {
       case OBJT_BULLET:
         color = SDL_MapRGB(screen->format, 0x7F*(hotfr%3), 0xFF*(hotfr%2), 0);
         SDL_FillRect(screen,&(SDL_Rect){pos->x-2,pos->y-2,4,4},color);
+        break;
+      case OBJT_DUMMY:
+        DrawSquare(screen,&(SDL_Rect){ pos->x+hull[0].x, pos->y+hull[1].y, hull[1].x-hull[0].x, hull[1].y-hull[0].y },black);
         break;
     }
   }

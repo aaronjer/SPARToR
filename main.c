@@ -71,8 +71,7 @@ int main(int argc,char **argv) {
     fr[i].cmds = calloc(sizeof(FCMD_t),maxclients);
     fr[i].objs = calloc(sizeof(OBJ_t),maxobjs);
   }
-  //make the mother object
-  fr[0].objs[0] = (OBJ_t){OBJT_MOTHER,0,0,0};
+  mod_setup(0);
   //server is a client
   fr[1].cmds[0].flags |= CMDF_NEW;
 
@@ -171,14 +170,15 @@ void advance() {
         V *pos  = flex(ob,OBJF_POS);
         V *vel  = flex(ob,OBJF_VEL);
         V *pvel = (ob->flags & OBJF_PVEL) ? flex(ob,OBJF_PVEL) : NULL;
+        V *hull = (ob->flags & OBJF_HULL) ? flex(ob,OBJF_HULL) : NULL;
         pos->x += vel->x + (pvel?pvel->x:0.0f);  //apply velocity
         pos->y += vel->y + (pvel?pvel->y:0.0f);
-        if( pos->x < 0.0f )    //screen edges
-          pos->x = 0.0f;
-        if( pos->x > 640.0f )
-          pos->x = 640.0f;
-        if( pos->y>400.0f ) { 
-          pos->y = 400.0f;
+        if( pos->x + (hull?hull[0].x:0.0f) < 0.0f )    //screen edges
+          pos->x = 0.0f   - (hull?hull[0].x:0.0f);
+        if( pos->x + (hull?hull[1].x:0.0f) > 640.0f )
+          pos->x = 640.0f - (hull?hull[1].x:0.0f);
+        if( pos->y + (hull?hull[1].y:0.0f) >400.0f ) {  //floor
+          pos->y = 400.0f - (hull?hull[1].y:0.0f);
           vel->y = 0.0f;
         }
       }
