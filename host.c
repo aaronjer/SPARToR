@@ -21,7 +21,7 @@ void host_start(int port) {
   me = 0;
   clients[me].connected = 1;
   clients[me].addr = (IPaddress){0,0};
-  SJC_Write("Host started on port %d.",port);
+  SJC_Write("Host started on port %u.",port);
 }
 
 
@@ -82,7 +82,7 @@ void host() {
     if( fr[i%maxframes].dirty ) {
       data = packframecmds(i,&n);
       if( pkt->len+4+n >= pkt->maxlen || pkt->data[1]>100 ) {
-        SJC_Write("%d: Packed too many cmds! Will get the rest next frame...",hotfr);
+        SJC_Write("%u: Packed too many cmds! Will get the rest next frame...",hotfr);
         free(data);
         break;
       }
@@ -113,7 +113,7 @@ void host_welcome() {
   char *p = (char *)pkt->data;
   Uint8 *q;
   if( strncmp(p,PROTONAME,strlen(PROTONAME)) ) {
-    SJC_Write("Junk packet from unknown client.");
+    SJC_Write("Junk packet from unknown client at %u:%u.",pkt->address.host,pkt->address.port);
     return;
   }
   p += strlen(PROTONAME);
@@ -130,14 +130,14 @@ void host_welcome() {
   for(i=0;i<maxclients;i++)
     if( !clients[i].connected ) break;
   if( i==maxclients ) {
-    SJC_Write("New client not accepted b/c server is full.");
+    SJC_Write("New client at %u:%u not accepted b/c server is full.",pkt->address.host,pkt->address.port);
     //TODO: inform client
     sprintf((char *)pkt->data,"MFULL: Server is full!");
     pkt->len = strlen((char *)pkt->data)+1;
     SDLNet_UDP_Send(hostsock,-1,pkt);
     return; 
   }
-  SJC_Write("New client accepted.");
+  SJC_Write("New client at %u:%u accepted.",pkt->address.host,pkt->address.port);
   clients[i].connected = 1;
   clients[i].addr = pkt->address;
   setcmdfr(metafr);
@@ -146,7 +146,7 @@ void host_welcome() {
   fr[metafr%maxframes].cmds[i].flags |= CMDF_NEW;
   // send state!
   q = packframe(surefr,&n);
-  SJC_Write("Frame %d packed into %d bytes, ready to send state.",surefr,n);
+  SJC_Write("Frame %u packed into %d bytes, ready to send state.",surefr,n);
   if( n+10>pkt->maxlen ) {
     SJC_Write("Error: Packed frame is too big to send!");
     free(q);
@@ -165,7 +165,7 @@ void host_welcome() {
     return;
   }
   //dirty all unsure frames
-  SJC_Write("%d: Dirtying all frames from %d to %d",hotfr,surefr,cmdfr);
+  SJC_Write("%u: Dirtying all frames from %u to %u",hotfr,surefr,cmdfr);
   for(i=surefr+1;i<cmdfr;i++)
     fr[i%maxframes].dirty = 1;
 
