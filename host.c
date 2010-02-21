@@ -36,6 +36,7 @@ void host() {
   Uint8 *data;
   size_t n;
   Uint32 packfr;
+  Uint32 pktnum;
   FCMD_t *pcmd;
 
   //recv from clients
@@ -60,7 +61,17 @@ void host() {
         break;
       case 'c': //cmd update
         n = 1;
+        pktnum = unpackbytes(pkt->data,pkt->len,&n,4);
+        SJC_Write("Received packet #%u from client %d",i);
         packfr = unpackbytes(pkt->data,pkt->len,&n,4);
+        if( packfr<metafr-30 ) {
+          SJC_Write("Ignoring too old cmd from client %d",i);
+          break;
+        }
+        if( packfr>metafr+10 ) {
+          SJC_Write("Ignoring too new cmd from client %d",i);
+          break;
+        }
         setcmdfr(packfr); //FIXME: totally just trusting the client here!
         if( hotfr>packfr-1 )
           sethotfr(packfr-1);

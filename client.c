@@ -8,12 +8,14 @@
 #include "net.h"
 
 
+static Uint32 pktnum;
 static Uint32 sentfr = 0;
 static int negotiated;
 
 
 void client_start(const char *hostname,int port,int clientport) {
   int i;
+  pktnum = 1;
   if( hostsock ) { SJC_Write("Already running as a host. Type disconnect to stop."); return; }
   if( clientsock ) { SJC_Write("Already connected to a host. Type disconnect if that ain't cool."); return; }
   if( !hostname || !*hostname ) { SJC_Write("Error: Please specify host."); return; }
@@ -53,13 +55,15 @@ void client() {
     sentfr++;
     Uint32 sentfrmod = sentfr%maxframes;
     if( fr[sentfrmod].dirty ) {
-      pkt->len = 9;
-      packbytes(pkt->data+0,'c'                           ,NULL,1);
-      packbytes(pkt->data+1,sentfr                        ,NULL,4);
-      packbytes(pkt->data+5,fr[sentfrmod].cmds[me].cmd    ,NULL,1);
-      packbytes(pkt->data+6,fr[sentfrmod].cmds[me].mousehi,NULL,1);
-      packbytes(pkt->data+7,fr[sentfrmod].cmds[me].mousex ,NULL,1);
-      packbytes(pkt->data+8,fr[sentfrmod].cmds[me].mousey ,NULL,1);
+      n = 0;
+      packbytes(pkt->data,'c'                           ,&n,1);
+      packbytes(pkt->data,pktnum                        ,&n,4);
+      packbytes(pkt->data,sentfr                        ,&n,4);
+      packbytes(pkt->data,fr[sentfrmod].cmds[me].cmd    ,&n,1);
+      packbytes(pkt->data,fr[sentfrmod].cmds[me].mousehi,&n,1);
+      packbytes(pkt->data,fr[sentfrmod].cmds[me].mousex ,&n,1);
+      packbytes(pkt->data,fr[sentfrmod].cmds[me].mousey ,&n,1);
+      pkt->len = n;
       if( !SDLNet_UDP_Send(clientsock,-1,pkt) ) {
         SJC_Write("Error: Could not send cmd update packet!");
         SJC_Write(SDL_GetError());
