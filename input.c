@@ -17,6 +17,7 @@
 #include "console.h"
 #include "net.h"
 #include "command.h"
+#include "mod.h"
 
 
 static char cmdbuf[256] = {0};
@@ -54,13 +55,10 @@ void input(int press,int sym,Uint16 unicode) {
       SJC_Rub();
     else if(sym==SDLK_ESCAPE && console_open)
       toggleconsole();
-  } else switch(sym) {
-  case SDLK_LEFT:  putcmd( press?CMDT_1LEFT :CMDT_0LEFT  ); break;
-  case SDLK_RIGHT: putcmd( press?CMDT_1RIGHT:CMDT_0RIGHT ); break;
-  case SDLK_UP:    putcmd( press?CMDT_1UP   :CMDT_0UP    ); break;
-  case SDLK_DOWN:  putcmd( press?CMDT_1DOWN :CMDT_0DOWN  ); break;
-  case SDLK_z:     putcmd( press?CMDT_1JUMP :CMDT_0JUMP  ); break;
-  case SDLK_x:     putcmd( press?CMDT_1FIRE :CMDT_0FIRE  ); break;
+  } else {
+    char cmd = mod_key2cmd(sym,press);
+    if( cmd )
+      putcmd(cmd);
   }
 }
 

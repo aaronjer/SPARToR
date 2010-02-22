@@ -295,6 +295,8 @@ void assert(const char *msg,int val) {
 }
 
 
+//get a pointer to a member in 'flexible' mod object -- whee fake polymorphism!
+//FIXME: find a more portable way to do this
 void *flex(OBJ_t *o,Uint32 part) {
   size_t offset = 0;
   if(!(o->flags & part))

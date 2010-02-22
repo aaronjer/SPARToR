@@ -15,6 +15,7 @@
 #include "main.h"
 #include "console.h"
 #include "net.h"
+#include "mod_private.h"
 #include <math.h>
 
 SDL_Surface *surf_player = NULL;
@@ -65,6 +66,18 @@ void mod_setvideo(int w,int h) {
   SDL_SetColorKey(surf_tmp,SDL_SRCCOLORKEY,key);
   surf_player = SDL_DisplayFormat(surf_tmp);
   SDL_FreeSurface(surf_tmp);
+}
+
+char mod_key2cmd(int sym,int press) {
+  switch(sym) {
+    case SDLK_LEFT:  return press?CMDT_1LEFT :CMDT_0LEFT ;
+    case SDLK_RIGHT: return press?CMDT_1RIGHT:CMDT_0RIGHT;
+    case SDLK_UP:    return press?CMDT_1UP   :CMDT_0UP   ;
+    case SDLK_DOWN:  return press?CMDT_1DOWN :CMDT_0DOWN ;
+    case SDLK_z:     return press?CMDT_1JUMP :CMDT_0JUMP ;
+    case SDLK_x:     return press?CMDT_1FIRE :CMDT_0FIRE ;
+  }
+  return 0;
 }
 
 void mod_draw(SDL_Surface *screen,int objid,OBJ_t *o) {

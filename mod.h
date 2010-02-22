@@ -8,6 +8,7 @@
 
 void mod_setup(Uint32 setupfr);
 void mod_setvideo(int w,int h);
+char mod_key2cmd(int sym,int press);
 void mod_draw(SDL_Surface *screen,int objid,OBJ_t *o);
 void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob);
 
