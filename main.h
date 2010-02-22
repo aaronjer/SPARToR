@@ -143,6 +143,8 @@ extern int me;
 extern int console_open;
 extern UDPpacket *pkt;
 
+extern int drawhulls;
+
 extern Uint32 idle_time;
 extern Uint32 render_time;
 extern Uint32 adv_move_time;

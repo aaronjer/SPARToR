@@ -51,6 +51,8 @@ int me;
 int console_open;
 UDPpacket *pkt;
 
+int drawhulls = 0;
+
 Uint32 idle_time = 0;
 Uint32 render_time = 0;
 Uint32 adv_move_time = 0;

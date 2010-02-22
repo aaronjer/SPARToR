@@ -93,6 +93,20 @@ void mod_draw(SDL_Surface *screen,int objid,OBJ_t *o) {
       SJF_DrawText(screen, pl->pos.x*scale, pl->pos.y*scale, txtbuf);
       break;
     }
+    case OBJT_BULLET: {
+      BULLET_t *bu = o->data;
+      color = SDL_MapRGB(screen->format, 0xFF*(hotfr%2), 0xFF*(hotfr%2), 0xFF*(hotfr%2));
+      SJDL_FillScaled(screen,&(SDL_Rect){bu->pos.x-2, bu->pos.y-2, 4, 4},color,scale);
+      break;
+    }
+    case OBJT_DUMMY: {
+      DUMMY_t *du = o->data;
+      drect = (SDL_Rect){du->pos.x+du->hull[0].x, du->pos.y+du->hull[0].y,
+                         du->hull[1].x-du->hull[0].x, du->hull[1].y-du->hull[0].y};
+      color = SDL_MapRGB(screen->format, 0x50+0x22*((objid/1)%3), 0x50+0x22*((objid/3)%3), 0x22*((objid/9)%3));
+      SJDL_FillScaled(screen,&drect,color,scale);
+      break;
+    }
   }
 }
 

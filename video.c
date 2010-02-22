@@ -32,7 +32,6 @@ void render() {
   static Uint32 unaccounted_start = 0;
   Uint32 tmp;
 
-  Uint32 black  = SDL_MapRGB(screen->format,  0,  0,  0);
   Uint32 dkgray = SDL_MapRGB(screen->format, 34, 34, 34);
   Uint32 blue   = SDL_MapRGB(screen->format,  0,  0,136);
   Uint32 color;
@@ -47,29 +46,26 @@ void render() {
   //display objects
   for(i=0;i<maxobjs;i++) {
     OBJ_t *o = fr[vidfrmod].objs+i;
-    if( !(o->flags&OBJF_VIS) )
-      continue;
     V *pos  = flex(o,OBJF_POS);
     V *hull = flex(o,OBJF_HULL);
-    SDL_Rect rect;
-    if( hull )
-      rect = (SDL_Rect){ (pos->x+hull[0].x)   *scale, (pos->y+hull[0].y)   *scale,
-                         (hull[1].x-hull[0].x)*scale, (hull[1].y-hull[0].y)*scale };
-    switch( o->type ) {
-      case OBJT_BULLET:
-        color = SDL_MapRGB(screen->format, 0x7F*(hotfr%3), 0xFF*(hotfr%2), 0);
-        SDL_FillRect(screen,&(SDL_Rect){(pos->x-2)*scale,(pos->y-2)*scale,4*scale,4*scale},color);
-        break;
-      case OBJT_DUMMY:
-        color = SDL_MapRGB(screen->format, 0x50+0x22*((i/1)%3), 0x50+0x22*((i/3)%3), 0x22*((i/9)%3));
-        SDL_FillRect(screen,&rect,color);
-        SJDL_DrawSquare( screen,&rect,black);
-        sprintf(buf,"%d",i);
-        SJF_DrawText(screen,(pos->x+hull[0].x+3)*scale, (pos->y+hull[0].y+2)*scale, buf);
-        break;
+
+    if( o->flags&OBJF_VIS )
+      mod_draw(screen,i,o); // have the mod draw the actual thing
+
+    if( pos && hull && drawhulls ) {
+      SDL_Rect rect;
+      rect = (SDL_Rect){pos->x+hull[0].x, pos->y+hull[0].y, hull[1].x-hull[0].x, hull[1].y-hull[0].y};
+      color = SDL_MapRGB(screen->format, 0x90+0x22*((i/1)%3), 0x90+0x22*((i/3)%3), 0x90+0x22*((i/9)%3));
+      rect.x *= scale;
+      rect.y *= scale;
+      rect.w *= scale;
+      rect.h *= scale;
+      SJDL_DrawSquare(screen,&rect,color);
     }
-    
-    mod_draw(screen,i,o); // have the mod draw the actual thing
+    if( pos && drawhulls ) {
+      sprintf(buf,"%d",i);
+      SJF_DrawText(screen, pos->x*scale, pos->y*scale, buf);
+    }
   }
 
   //display console

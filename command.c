@@ -44,6 +44,8 @@ void command(const char *s){
     }else if( strcmp(q,"reconnect")==0 ){
       disconnect();
       SJC_Write("Not implemented."); //TODO
+    }else if( strcmp(q,"drawhulls")==0 ){
+      drawhulls = drawhulls ? 0 : 1;
     }else if( strcmp(q,"slow")==0 ){
       SJC_Write("Speed is now slow");
       ticksaframe = 300;
