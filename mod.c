@@ -12,11 +12,12 @@
 
 
 #include "SDL.h"
-#include "SDL_net.h"
 #include "main.h"
 #include "console.h"
 #include "net.h"
 #include <math.h>
+
+SDL_Surface *surf_player = NULL;
 
 
 void mod_setup(Uint32 setupfr) {
@@ -29,13 +30,38 @@ void mod_setup(Uint32 setupfr) {
     fr[setupfr].objs[i].flags = OBJF_POS|OBJF_VEL|OBJF_HULL|OBJF_VIS|OBJF_PLAT;
     fr[setupfr].objs[i].size = sizeof(DUMMY_t);
     DUMMY_t *du = fr[setupfr].objs[i].data = malloc(sizeof(DUMMY_t));
-    du->pos = (V){(rand()%42)*10+110,i*30,0.0f};
+    du->pos = (V){(rand()%48)*8,-i*32,0.0f};
     du->vel = (V){0.0f,0.0f,0.0f};
-    float w = (float)((rand()%4+1)*10);
-    float h = (float)((rand()%3+1)*10);
+    float w = (float)((rand()%4+1)*8);
+    float h = (float)((rand()%3+1)*8);
+    if( rand()%2 && w>8 )
+      w = 8;
+    else
+      h = 8;
     du->hull[0] = (V){-w,-h,0.0f};
     du->hull[1] = (V){ w, h,0.0f};
     du->model = 1;
+  }
+}
+
+void mod_setvideo(int w,int h) {
+  if( surf_player ) SDL_FreeSurface(surf_player);
+//if( surf_etc... ) SDL_FreeSurface(surf_etc...);
+  if( w==0 )
+    return;
+  surf_player = IMG_Load("images/player.png");
+//surf_etc... = IMG_Load("images/etc....png");
+
+
+  const SDL_VideoInfo *vidinfo = SDL_GetVideoInfo();
+  if( scale>1 ) { //need to scale up images
+    surf_layer = SDL_CreateRGBSurface(0,200*scale,200*scale,
+                                      vidinfo->vfmt->BitsPerPixel,
+                                      vidinfo->vfmt->Rmask,
+                                      vidinfo->vfmt->Gmask,
+                                      vidinfo->vfmt->Bmask,
+                                      vidinfo->vfmt->Amask);
+    copy_scaled
   }
 }
 
@@ -73,8 +99,8 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
         pl = fr[b].objs[slot1].data = malloc(sizeof(PLAYER_t));
         pl->pos  = (V){200.0f,200.0f,0.0f};
         pl->vel  = (V){0.0f,0.0f,0.0f};
-        pl->hull[0] = (V){-10.0f,-10.0f,0.0f};
-        pl->hull[1] = (V){ 10.0f, 10.0f,0.0f};
+        pl->hull[0] = (V){-8.0f,-15.0f,0.0f};
+        pl->hull[1] = (V){ 8.0f, 15.0f,0.0f};
         pl->pvel = (V){0.0f,0.0f,0.0f};
         pl->model = 1;
         pl->ghost = slot0;
@@ -221,14 +247,14 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
       if(fr[b].objs[i].type==OBJT_PLAYER) {
         PLAYER_t *pl = fr[b].objs[i].data;
         if( i==bu->owner                       || //player owns bullet
-            fabsf(bu->pos.x - pl->pos.x)>10.0f || //not touching
-            fabsf(bu->pos.y - pl->pos.y)>10.0f    )
+            fabsf(bu->pos.x - pl->pos.x)>16.0f || //not touching
+            fabsf(bu->pos.y - pl->pos.y)> 9.0f    )
           continue;
         pl->vel.y += -5.0f;
         pl->vel.x += (bu->vel.x>0.0f?5.0f:-5.0f);
         bu->ttl = 0; //delete bullet
       }
-    if(bu->pos.x<=0.0f || bu->pos.x>=640.0f || bu->ttl==0) {
+    if(bu->pos.x<=0.0f || bu->pos.x>=384.0f || bu->ttl==0) {
       if( fr[b].objs[bu->owner].type==OBJT_PLAYER )
         ((PLAYER_t *)fr[b].objs[bu->owner].data)->projectiles--;
       ob->flags |= OBJF_DEL;

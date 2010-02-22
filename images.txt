@@ -1,0 +1,4 @@
+ 0, 0  20,30    CT_RIGHT
+ 0,30  20,30    CT_LEFT
+20, 0  24,12    MP5_LEFT
+20,12  24,12    MP5_RIGHT

@@ -163,8 +163,24 @@ void SJF_Init()
 }
 
 
+void SJF_CopyScaled(SDL_Surface *dst,SDL_Surface *src,int scale) {
+  SDL_LockSurface(dst);
+  for(u=0; u<128; u++)
+    for(v=0; v<128; v++)
+      if( SJF.raw[u+v*128]!=' ' )
+        SDL_SetPixel(SJF.surf, u, v, 255, 255, 255);
+      else if( (u<127 && SJF.raw[(u+1)+(v  )*128]!=' ')
+            || (u>0   && SJF.raw[(u-1)+(v  )*128]!=' ')
+            || (v<127 && SJF.raw[(u  )+(v+1)*128]!=' ')
+            || (v>0   && SJF.raw[(u  )+(v-1)*128]!=' ') )
+        SDL_SetPixel( SJF.surf, u, v, 0, 0, 1 ); 
+  SDL_UnlockSurface(dst);
+  return;
+}
+
+
 //draws a single character in system text on a surface 
-inline void SJF_DrawChar(SDL_Surface *surf, int x, int y, char c)
+void SJF_DrawChar(SDL_Surface *surf, int x, int y, char c)
 {
   SDL_Rect src;
   SDL_Rect dst;
@@ -184,7 +200,7 @@ inline void SJF_DrawChar(SDL_Surface *surf, int x, int y, char c)
 
 
 //draws a message in system text at location on a surface
-inline void SJF_DrawText(SDL_Surface *surf, int x, int y, const char *s)
+void SJF_DrawText(SDL_Surface *surf, int x, int y, const char *s)
 {
   SDL_Rect src;
   SDL_Rect dst;
@@ -209,7 +225,7 @@ inline void SJF_DrawText(SDL_Surface *surf, int x, int y, const char *s)
 
 //returns number of pixels text will consume horizontally
 //non-printable characters will cause unexpected behavior
-inline int SJF_TextExtents(const char *s)
+int SJF_TextExtents(const char *s)
 {
   int n = 0;
   if( s==NULL )

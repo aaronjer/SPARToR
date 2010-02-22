@@ -50,29 +50,31 @@ void render() {
     V *pos  = flex(o,OBJF_POS);
     V *hull = flex(o,OBJF_HULL);
     SDL_Rect rect;
+    if( hull )
+      rect = (SDL_Rect){ (pos->x+hull[0].x)   *scale, (pos->y+hull[0].y)   *scale,
+                         (hull[1].x-hull[0].x)*scale, (hull[1].y-hull[0].y)*scale };
     switch( o->type ) {
       case OBJT_PLAYER:
         color = SDL_MapRGB(screen->format, 0x7F*((i/1)%3), 0x7F*((i/3)%3), 0x7F*((i/9)%3));
-        SDL_FillRect(screen,&(SDL_Rect){pos->x-10,pos->y-10,20,20},color);
-        DrawSquare(  screen,&(SDL_Rect){pos->x-10,pos->y-10,20,20},white);
+        SDL_FillRect(screen,&rect,color);
+        DrawSquare(  screen,&rect,white);
         if( ((PLAYER_t *)o->data)->facingr )
-          SDL_FillRect(screen,&(SDL_Rect){pos->x+ 7,pos->y-1,6,2},white);
+          SDL_FillRect(screen, &(SDL_Rect){(pos->x+ 7)*scale,(pos->y-1)*scale,6*scale,2*scale}, white);
         else
-          SDL_FillRect(screen,&(SDL_Rect){pos->x-13,pos->y-1,6,2},white);
+          SDL_FillRect(screen, &(SDL_Rect){(pos->x-13)*scale,(pos->y-1)*scale,6*scale,2*scale}, white);
         sprintf(buf,"%d",i);
-        SJF_DrawText(screen,pos->x+hull[0].x+3,pos->y+hull[0].y+2,buf);
+        SJF_DrawText(screen,(pos->x+hull[0].x+3)*scale,(pos->y+hull[0].y+2)*scale,buf);
         break;
       case OBJT_BULLET:
         color = SDL_MapRGB(screen->format, 0x7F*(hotfr%3), 0xFF*(hotfr%2), 0);
-        SDL_FillRect(screen,&(SDL_Rect){pos->x-2,pos->y-2,4,4},color);
+        SDL_FillRect(screen,&(SDL_Rect){(pos->x-2)*scale,(pos->y-2)*scale,4*scale,4*scale},color);
         break;
       case OBJT_DUMMY:
         color = SDL_MapRGB(screen->format, 0x50+0x22*((i/1)%3), 0x50+0x22*((i/3)%3), 0x22*((i/9)%3));
-        rect = (SDL_Rect){ pos->x+hull[0].x, pos->y+hull[0].y, hull[1].x-hull[0].x, hull[1].y-hull[0].y };
         SDL_FillRect(screen,&rect,color);
-        DrawSquare(screen,&rect,black);
+        DrawSquare( screen,&rect,black);
         sprintf(buf,"%d",i);
-        SJF_DrawText(screen,pos->x+hull[0].x+3,pos->y+hull[0].y+2,buf);
+        SJF_DrawText(screen,(pos->x+hull[0].x+3)*scale, (pos->y+hull[0].y+2)*scale, buf);
         break;
     }
   }
@@ -121,7 +123,7 @@ void render() {
   SJF_DrawText(screen,w-20-SJF_TextExtents(buf),h-30,buf);
 
   SDL_Flip(screen);
-  SDL_FillRect(screen,&(SDL_Rect){0,0,w,h},blue);
+  SDL_FillRect(screen,&(SDL_Rect){0,0,384*scale,240*scale},blue);
 
   setdrawnfr(vidfr);
   render_time = SDL_GetTicks() - render_start; //keep track of render time
@@ -130,6 +132,12 @@ void render() {
 
 
 void setvideo(int w,int h) {
+  if( w/384 > h/240 )
+    scale = h/240;
+  else
+    scale = w/384;
+  if( scale<1 )
+    scale = 1;
   screen = SDL_SetVideoMode(w,h,SDL_GetVideoInfo()->vfmt->BitsPerPixel,SDL_RESIZABLE|SDL_DOUBLEBUF);
 }
 

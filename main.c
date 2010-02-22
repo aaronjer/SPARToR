@@ -45,6 +45,7 @@ Uint32 hotfr;
 Uint32 cmdfr = 1; //DO NOT clear frame 1, it is prefilled with client-connect for local person
 
 SDL_Surface *screen;
+Uint32 scale = 2;
 Uint32 ticks,newticks;
 int me;
 int console_open;
@@ -92,7 +93,7 @@ int main(int argc,char **argv) {
   SDL_Surface *iconsurf = IMG_Load("icon.png");
   SDL_WM_SetIcon(iconsurf,NULL);
   SDL_FreeSurface(iconsurf);
-  setvideo(640,480);
+  setvideo(768,480);
   vidinfo = SDL_GetVideoInfo();
 
   SJF_Init();
@@ -174,15 +175,15 @@ void advance() {
         pos->y += vel->y + (pvel?pvel->y:0.0f);
         if( pos->x + (hull?hull[0].x:0.0f) < 0.0f )    //screen edges
           pos->x = 0.0f   - (hull?hull[0].x:0.0f);
-        if( pos->x + (hull?hull[1].x:0.0f) > 640.0f )
-          pos->x = 640.0f - (hull?hull[1].x:0.0f);
-        if( pos->y + (hull?hull[1].y:0.0f) >400.0f ) {  //floor
-          pos->y = 400.0f - (hull?hull[1].y:0.0f);
+        if( pos->x + (hull?hull[1].x:0.0f) > 384.0f )
+          pos->x = 384.0f - (hull?hull[1].x:0.0f);
+        if( pos->y + (hull?hull[1].y:0.0f) >240.0f ) {  //floor
+          pos->y = 240.0f - (hull?hull[1].y:0.0f);
           vel->y = 0.0f;
         }
       }
     }
-    for(r=0;r<10;r++) { //"recurse" up to 10 times to sort out collisions
+    for(r=0;r<40;r++) { //"recurse" up to 10 times to sort out collisions
       memset(recheck[r%2],0,sizeof(recheck[0]));
       for(i=0;i<maxobjs;i++) {
         if(r!=0 && !recheck[(r+1)%2][i])
@@ -194,7 +195,7 @@ void advance() {
         V *newmevel  = flex(fr[b].objs+i,OBJF_VEL );
         V *oldmehull = flex(fr[b].objs+i,OBJF_HULL);
         V *newmehull = flex(fr[b].objs+i,OBJF_HULL);
-        for(j=0;j<(r<2?i:maxobjs);j++) { //find other objs to interact with -- don't need to check all on 1st 2 passes
+        for(j=0;j<(r==0?i:maxobjs);j++) { //find other objs to interact with -- don't need to check all on 1st 2 passes
           if(i==j || !fr[a].objs[i].data || !fr[a].objs[j].data )
             continue;
           if( (fr[b].objs[j].flags & (OBJF_POS|OBJF_VEL|OBJF_HULL)) != (OBJF_POS|OBJF_VEL|OBJF_HULL) )
