@@ -3,7 +3,7 @@
 #  libsdl-net1.2-dev
 #  libsdl-image1.2-dev
 EXE_NAME = spartor_mac
-OBJS = main.o font.o console.o command.o net.o host.o client.o input.o video.o mod.o
+OBJS = main.o font.o console.o command.o net.o host.o client.o input.o video.o mod.o sjdl.o
 CC = gcc
 FLAGS = -g -Wall
 LIBS = spartor_mac.app/SDLmain.m -lm -framework SDL -framework SDL_net -framework SDL_image -framework Cocoa -Fspartor_mac.app/Contents/Frameworks

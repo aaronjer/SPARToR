@@ -3,7 +3,7 @@
 #  libsdl-net1.2-dev
 #  libsdl-image1.2-dev
 EXE_NAME = spartor_win32.exe
-OBJS = main.o font.o console.o command.o net.o host.o client.o input.o video.o mod.o
+OBJS = main.o font.o console.o command.o net.o host.o client.o input.o video.o mod.o sjdl.o
 OBJSRES = icon.o
 CC = ~/mingw32/bin/i386-mingw32-gcc
 WINDRES = ~/mingw32/bin/i386-mingw32-windres

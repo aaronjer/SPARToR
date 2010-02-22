@@ -103,6 +103,7 @@ typedef struct{
   char firing;
   char cooldown;
   char projectiles;
+  char gunback,gundown;
   char grounded;
   char facingr;
 } PLAYER_t;

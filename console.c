@@ -3,7 +3,7 @@
  **  Network Game Engine
  **  Copyright (C) 2010  Jer Wilson
  **
- **  See LICENSE for details.
+ **  See COPYING for details.
  **
  **  http://www.superjer.com/
  **  http://www.spartor.com/

@@ -3,7 +3,7 @@
  **  Network Game Engine
  **  Copyright (C) 2010  Jer Wilson
  **
- **  See LICENSE for details.
+ **  See COPYING for details.
  **
  **  http://www.superjer.com/
  **  http://www.spartor.com/
@@ -17,6 +17,7 @@
 #include "main.h"
 #include "console.h"
 #include "font.h"
+#include "mod.h"
 
 
 void render() {
@@ -32,7 +33,6 @@ void render() {
   Uint32 tmp;
 
   Uint32 black  = SDL_MapRGB(screen->format,  0,  0,  0);
-  Uint32 white  = SDL_MapRGB(screen->format,255,255,255);
   Uint32 dkgray = SDL_MapRGB(screen->format, 34, 34, 34);
   Uint32 blue   = SDL_MapRGB(screen->format,  0,  0,136);
   Uint32 color;
@@ -47,6 +47,8 @@ void render() {
   //display objects
   for(i=0;i<maxobjs;i++) {
     OBJ_t *o = fr[vidfrmod].objs+i;
+    if( !(o->flags&OBJF_VIS) )
+      continue;
     V *pos  = flex(o,OBJF_POS);
     V *hull = flex(o,OBJF_HULL);
     SDL_Rect rect;
@@ -54,17 +56,6 @@ void render() {
       rect = (SDL_Rect){ (pos->x+hull[0].x)   *scale, (pos->y+hull[0].y)   *scale,
                          (hull[1].x-hull[0].x)*scale, (hull[1].y-hull[0].y)*scale };
     switch( o->type ) {
-      case OBJT_PLAYER:
-        color = SDL_MapRGB(screen->format, 0x7F*((i/1)%3), 0x7F*((i/3)%3), 0x7F*((i/9)%3));
-        SDL_FillRect(screen,&rect,color);
-        DrawSquare(  screen,&rect,white);
-        if( ((PLAYER_t *)o->data)->facingr )
-          SDL_FillRect(screen, &(SDL_Rect){(pos->x+ 7)*scale,(pos->y-1)*scale,6*scale,2*scale}, white);
-        else
-          SDL_FillRect(screen, &(SDL_Rect){(pos->x-13)*scale,(pos->y-1)*scale,6*scale,2*scale}, white);
-        sprintf(buf,"%d",i);
-        SJF_DrawText(screen,(pos->x+hull[0].x+3)*scale,(pos->y+hull[0].y+2)*scale,buf);
-        break;
       case OBJT_BULLET:
         color = SDL_MapRGB(screen->format, 0x7F*(hotfr%3), 0xFF*(hotfr%2), 0);
         SDL_FillRect(screen,&(SDL_Rect){(pos->x-2)*scale,(pos->y-2)*scale,4*scale,4*scale},color);
@@ -72,11 +63,13 @@ void render() {
       case OBJT_DUMMY:
         color = SDL_MapRGB(screen->format, 0x50+0x22*((i/1)%3), 0x50+0x22*((i/3)%3), 0x22*((i/9)%3));
         SDL_FillRect(screen,&rect,color);
-        DrawSquare( screen,&rect,black);
+        SJDL_DrawSquare( screen,&rect,black);
         sprintf(buf,"%d",i);
         SJF_DrawText(screen,(pos->x+hull[0].x+3)*scale, (pos->y+hull[0].y+2)*scale, buf);
         break;
     }
+    
+    mod_draw(screen,i,o); // have the mod draw the actual thing
   }
 
   //display console
@@ -122,6 +115,7 @@ void render() {
   unaccounted_start = tmp;
   SJF_DrawText(screen,w-20-SJF_TextExtents(buf),h-30,buf);
 
+
   SDL_Flip(screen);
   SDL_FillRect(screen,&(SDL_Rect){0,0,384*scale,240*scale},blue);
 
@@ -139,21 +133,8 @@ void setvideo(int w,int h) {
   if( scale<1 )
     scale = 1;
   screen = SDL_SetVideoMode(w,h,SDL_GetVideoInfo()->vfmt->BitsPerPixel,SDL_RESIZABLE|SDL_DOUBLEBUF);
+  mod_setvideo(w,h);
 }
 
-
-void DrawSquare(SDL_Surface *surf, SDL_Rect *rect, unsigned int color) {
-  SDL_Rect edge;
-  edge = *rect;
-  edge.w = 1;
-  SDL_FillRect(surf,&edge,color);
-  edge.x += rect->w - 1;
-  SDL_FillRect(surf,&edge,color);
-  edge = *rect;
-  edge.h = 1;
-  SDL_FillRect(surf,&edge,color);
-  edge.y += rect->h - 1;
-  SDL_FillRect(surf,&edge,color);
-}
 
 

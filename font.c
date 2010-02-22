@@ -3,14 +3,14 @@
  **  Network Game Engine
  **  Copyright (C) 2010  Jer Wilson
  **
- **  See LICENSE for details.
+ **  See COPYING for details.
  **
  **  http://www.superjer.com/
  **  http://www.spartor.com/
  **  http://github.com/superjer/SPARToR
  **/
 
-
+#include "SDL.h"
 #include "font.h"
 
 SJF_t SJF = {NULL,8,12,128,
@@ -153,29 +153,13 @@ void SJF_Init()
   for(u=0; u<128; u++)
     for(v=0; v<128; v++)
       if( SJF.raw[u+v*128]!=' ' )
-        SDL_SetPixel(SJF.surf, u, v, 255, 255, 255);
+        SJDL_SetPixel(SJF.surf, u, v, 255, 255, 255);
       else if( (u<127 && SJF.raw[(u+1)+(v  )*128]!=' ')
             || (u>0   && SJF.raw[(u-1)+(v  )*128]!=' ')
             || (v<127 && SJF.raw[(u  )+(v+1)*128]!=' ')
             || (v>0   && SJF.raw[(u  )+(v-1)*128]!=' ') )
-        SDL_SetPixel( SJF.surf, u, v, 0, 0, 1 ); 
+        SJDL_SetPixel( SJF.surf, u, v, 0, 0, 1 ); 
   SDL_UnlockSurface(SJF.surf);
-}
-
-
-void SJF_CopyScaled(SDL_Surface *dst,SDL_Surface *src,int scale) {
-  SDL_LockSurface(dst);
-  for(u=0; u<128; u++)
-    for(v=0; v<128; v++)
-      if( SJF.raw[u+v*128]!=' ' )
-        SDL_SetPixel(SJF.surf, u, v, 255, 255, 255);
-      else if( (u<127 && SJF.raw[(u+1)+(v  )*128]!=' ')
-            || (u>0   && SJF.raw[(u-1)+(v  )*128]!=' ')
-            || (v<127 && SJF.raw[(u  )+(v+1)*128]!=' ')
-            || (v>0   && SJF.raw[(u  )+(v-1)*128]!=' ') )
-        SDL_SetPixel( SJF.surf, u, v, 0, 0, 1 ); 
-  SDL_UnlockSurface(dst);
-  return;
 }
 
 
@@ -195,7 +179,7 @@ void SJF_DrawChar(SDL_Surface *surf, int x, int y, char c)
   dst.w = 8;
   dst.h = 12;
 
-  SDL_UpperBlit(SJF.surf,&src,surf,&dst);
+  SDL_BlitSurface(SJF.surf,&src,surf,&dst);
 }
 
 
@@ -234,52 +218,5 @@ int SJF_TextExtents(const char *s)
     n += SJF.space[(Uint8)*s++]-1;
   return n;
 }
-
-
-//sets a pixel on an sdl surface
-void SDL_SetPixel(SDL_Surface *surf, int x, int y, Uint8 R, Uint8 G, Uint8 B)
-{
-  Uint32 color = SDL_MapRGB(surf->format, R, G, B);
-  switch (surf->format->BytesPerPixel)
-  {
-  case 1: // 8-bpp
-    {
-      Uint8 *bufp;
-      bufp = (Uint8 *)surf->pixels + y*surf->pitch + x;
-      *bufp = color;
-    }
-    break;
-  case 2: // 15-bpp or 16-bpp
-    {
-      Uint16 *bufp;
-      bufp = (Uint16 *)surf->pixels + y*surf->pitch/2 + x;
-      *bufp = color;
-    }
-    break;
-  case 3: // 24-bpp mode, usually not used
-    {
-      Uint8 *bufp;
-      bufp = (Uint8 *)surf->pixels + y*surf->pitch + x * 3;
-      if(SDL_BYTEORDER == SDL_LIL_ENDIAN)
-      {
-        bufp[0] = color;
-        bufp[1] = color >> 8;
-        bufp[2] = color >> 16;
-      } else {
-        bufp[2] = color;
-        bufp[1] = color >> 8;
-        bufp[0] = color >> 16;
-      }
-    }
-    break;
-  case 4: // 32-bpp
-    {
-      Uint32 *bufp;
-      bufp = (Uint32 *)surf->pixels + y*surf->pitch/4 + x;
-      *bufp = color;
-    }
-    break;
-  }
-} 
 
 

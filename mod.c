@@ -3,7 +3,7 @@
  **  Network Game Engine
  **  Copyright (C) 2010  Jer Wilson
  **
- **  See LICENSE for details.
+ **  See COPYING for details.
  **
  **  http://www.superjer.com/
  **  http://www.spartor.com/
@@ -45,23 +45,52 @@ void mod_setup(Uint32 setupfr) {
 }
 
 void mod_setvideo(int w,int h) {
-  if( surf_player ) SDL_FreeSurface(surf_player);
-//if( surf_etc... ) SDL_FreeSurface(surf_etc...);
-  if( w==0 )
+  // free existing surfs
+  if( surf_player ) { SDL_FreeSurface(surf_player); surf_player = NULL; }
+
+  if( w==0 ) // no video, do not re-load surfaces
     return;
+
+  // load scale 1:1 surfs
   surf_player = IMG_Load("images/player.png");
-//surf_etc... = IMG_Load("images/etc....png");
 
+  // scale up?
+  if( scale>1 ) {
+    SDL_Surface *surf_tmp;
+    Uint32 key;
+    surf_tmp = SJDL_CopyScaled(surf_player, SDL_HWSURFACE|SDL_SRCCOLORKEY, scale);
+    SDL_FreeSurface(surf_player);
+    key = SDL_MapRGB(surf_tmp->format,0xFF,0xFF,0x00);
+    SDL_SetColorKey(surf_tmp,SDL_SRCCOLORKEY,key);
+    surf_player = SDL_DisplayFormat(surf_tmp);
+    SDL_FreeSurface(surf_tmp);
+  }
+}
 
-  const SDL_VideoInfo *vidinfo = SDL_GetVideoInfo();
-  if( scale>1 ) { //need to scale up images
-    surf_layer = SDL_CreateRGBSurface(0,200*scale,200*scale,
-                                      vidinfo->vfmt->BitsPerPixel,
-                                      vidinfo->vfmt->Rmask,
-                                      vidinfo->vfmt->Gmask,
-                                      vidinfo->vfmt->Bmask,
-                                      vidinfo->vfmt->Amask);
-    copy_scaled
+void mod_draw(SDL_Surface *screen,int objid,OBJ_t *o) {
+  Uint32 color;
+  char txtbuf[80];
+  //SDL_Rect srect = (SDL_Rect){0,0,200,200};
+  SDL_Rect drect;
+  switch(o->type)
+  {
+    case OBJT_PLAYER: {
+      PLAYER_t *pl = o->data;
+      color = SDL_MapRGB(screen->format, 0xFF, 0xFF, 0xFF);
+      drect = (SDL_Rect){(pl->pos.x-10),(pl->pos.y-15),0,0};
+      if( pl->facingr ) {
+        SJDL_BlitScaled(surf_player, &(SDL_Rect){ 0, 0,20,30}, screen, &drect, scale);
+        drect = (SDL_Rect){(pl->pos.x- 5-pl->gunback),(pl->pos.y-5+pl->gundown/5),0,0};
+        SJDL_BlitScaled(surf_player, &(SDL_Rect){20, 0,24,12}, screen, &drect, scale);
+      } else {
+        SJDL_BlitScaled(surf_player, &(SDL_Rect){ 0,30,20,30}, screen, &drect, scale);
+        drect = (SDL_Rect){(pl->pos.x-19+pl->gunback),(pl->pos.y-5+pl->gundown/5),0,0};
+        SJDL_BlitScaled(surf_player, &(SDL_Rect){20,12,24,12}, screen, &drect, scale);
+      }
+      sprintf(txtbuf,"%d",objid);
+      SJF_DrawText(screen, pl->pos.x*scale, pl->pos.y*scale, txtbuf);
+      break;
+    }
   }
 }
 
@@ -158,6 +187,12 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
     if( !oldme ) //FIXME why's this null?
       break;
 
+    newme->gunback = 0; //reset gun position
+    if(newme->goingr||newme->goingl)
+      newme->gundown = (newme->gundown+1)%10;
+    else
+      newme->gundown = 0;
+
     // friction
     if(      newme->vel.x> 0.2f ) newme->vel.x -= 0.2f;
     else if( newme->vel.x>-0.2f ) newme->vel.x  = 0.0f;
@@ -201,10 +236,10 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
       fr[b].objs[slot0].size = sizeof(BULLET_t);
       BULLET_t *bu = fr[b].objs[slot0].data = malloc(sizeof(BULLET_t));
       if( newme->facingr ) {
-        bu->pos = (V){newme->pos.x+10.0f,newme->pos.y,0.0f};
+        bu->pos = (V){newme->pos.x+19.0f,newme->pos.y-3.0f,0.0f};
         bu->vel = (V){ 8.0f,0.0f,0.0f};
       } else {
-        bu->pos = (V){newme->pos.x-10.0f,newme->pos.y,0.0f};
+        bu->pos = (V){newme->pos.x-19.0f,newme->pos.y-3.0f,0.0f};
         bu->vel = (V){-8.0f,0.0f,0.0f};
       }
       if( newme->goingu ) // aiming
@@ -216,6 +251,7 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
       bu->ttl = 50;
       newme->cooldown = 5;
       newme->projectiles++;
+      newme->gunback = 1;
     }
 
     for(i=0;i<objid;i++)  //find other players to interact with -- who've already MOVED
