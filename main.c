@@ -101,9 +101,9 @@ int main(int argc,char **argv) {
   SJF_Init();
 
   SJC_Write("SPARToR v%s  Copyright (C) 2010 Jer Wilson",VERSION);
-  SJC_Write(" ***************************");
-  SJC_Write("     Type 'help' for help.");
-  SJC_Write(" ***************************");
+  SJC_Write("Please visit github.com/superjer for updates and source code.");
+  SJC_Write("");
+  SJC_Write(" --->  Type 'help' for help.  <---");
   SJC_Write("");
 
   //main loop
