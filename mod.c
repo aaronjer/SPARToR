@@ -58,9 +58,11 @@ void mod_setvideo(int w,int h) {
   if( scale>1 ) {
     SDL_Surface *surf_tmp;
     Uint32 key;
+    Uint8 r,g,b;
     surf_tmp = SJDL_CopyScaled(surf_player, SDL_HWSURFACE|SDL_SRCCOLORKEY, scale);
     SDL_FreeSurface(surf_player);
-    key = SDL_MapRGB(surf_tmp->format,0xFF,0xFF,0x00);
+    SJDL_GetPixel(surf_tmp,0,0,&r,&g,&b); //assume upper-leftmost pixel is transparent color
+    key = SDL_MapRGB(surf_tmp->format,r,g,b);
     SDL_SetColorKey(surf_tmp,SDL_SRCCOLORKEY,key);
     surf_player = SDL_DisplayFormat(surf_tmp);
     SDL_FreeSurface(surf_tmp);
@@ -283,8 +285,8 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
       if(fr[b].objs[i].type==OBJT_PLAYER) {
         PLAYER_t *pl = fr[b].objs[i].data;
         if( i==bu->owner                       || //player owns bullet
-            fabsf(bu->pos.x - pl->pos.x)>16.0f || //not touching
-            fabsf(bu->pos.y - pl->pos.y)> 9.0f    )
+            fabsf(bu->pos.x - pl->pos.x)>10.0f || //not touching
+            fabsf(bu->pos.y - pl->pos.y)>15.0f    )
           continue;
         pl->vel.y += -5.0f;
         pl->vel.x += (bu->vel.x>0.0f?5.0f:-5.0f);
