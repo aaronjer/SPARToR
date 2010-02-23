@@ -44,7 +44,7 @@ void client_start(const char *hostname,int port,int clientport) {
   SJC_Write("Connecting from port %d...",clientport);
   negotiated = 0;
   pkt->address = ipaddr;
-  sprintf((char *)pkt->data,"%s/%s",PROTONAME,PROTOVERS);
+  sprintf((char *)pkt->data,"%s/%s",PROTONAME,VERSION);
   pkt->len = strlen((char *)pkt->data);
   if( !SDLNet_UDP_Send(clientsock,-1,pkt) ) {
     SJC_Write("Error: Could not send connect packet!");

@@ -143,7 +143,7 @@ void host_welcome() {
     return;
   }
   p++;
-  if( strncmp(p,PROTOVERS,strlen(PROTOVERS)) || pkt->len!=strlen(PROTONAME)+1+strlen(PROTOVERS) ) {
+  if( strncmp(p,VERSION,strlen(VERSION)) || pkt->len!=strlen(PROTONAME)+1+strlen(VERSION) ) {
     SJC_Write("Wrong protocol version from unknown client.");
     //TODO: inform client of the problem
     return;

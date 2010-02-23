@@ -4,7 +4,6 @@
 
 
 #define PROTONAME "SPARToR Protocol"
-#define PROTOVERS "0.9a"
 #define HOSTPORT 31103
 #define CLIENTPORT 31109
 
