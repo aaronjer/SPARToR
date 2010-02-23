@@ -175,10 +175,14 @@ void advance() {
         V *hull = (ob->flags & OBJF_HULL) ? flex(ob,OBJF_HULL) : NULL;
         pos->x += vel->x + (pvel?pvel->x:0.0f);  //apply velocity
         pos->y += vel->y + (pvel?pvel->y:0.0f);
-        if( pos->x + (hull?hull[0].x:0.0f) < 0.0f )    //screen edges
+        if( pos->x + (hull?hull[0].x:0.0f) < 0.0f ) {    //screen edges
           pos->x = 0.0f   - (hull?hull[0].x:0.0f);
-        if( pos->x + (hull?hull[1].x:0.0f) > 384.0f )
+          vel->x = 0.0f;
+        }
+        if( pos->x + (hull?hull[1].x:0.0f) > 384.0f ) {
           pos->x = 384.0f - (hull?hull[1].x:0.0f);
+          vel->x = 0.0f;
+        }
         if( pos->y + (hull?hull[1].y:0.0f) >240.0f ) {  //floor
           pos->y = 240.0f - (hull?hull[1].y:0.0f);
           vel->y = 0.0f;
