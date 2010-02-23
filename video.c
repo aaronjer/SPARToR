@@ -32,8 +32,7 @@ void render() {
   static Uint32 unaccounted_start = 0;
   Uint32 tmp;
 
-  Uint32 dkgray = SDL_MapRGB(screen->format, 34, 34, 34);
-  Uint32 blue   = SDL_MapRGB(screen->format,  0,  0,136);
+  Uint32 dkgray = SDL_MapRGB(screen->format,0x22,0x22,0x22);
   Uint32 color;
 
   if( metafr==0 || vidfr<=drawnfr ) //==0 prevent never-draw bug
@@ -42,6 +41,8 @@ void render() {
   vidinfo = SDL_GetVideoInfo();
   w = vidinfo->current_w;
   h = vidinfo->current_h;
+
+  mod_predraw(screen,vidfr);
 
   //display objects
   for(i=0;i<maxobjs;i++) {
@@ -113,7 +114,6 @@ void render() {
 
 
   SDL_Flip(screen);
-  SDL_FillRect(screen,&(SDL_Rect){0,0,384*scale,240*scale},blue);
 
   setdrawnfr(vidfr);
   render_time = SDL_GetTicks() - render_start; //keep track of render time

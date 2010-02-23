@@ -23,30 +23,59 @@
 static Uint32 loadsurfs_at = 0;
 
 SDL_Surface *surf_player = NULL;
+SDL_Surface *surf_world  = NULL;
 
 
 void mod_setup(Uint32 setupfr) {
-  int i;
   //make the mother object
   fr[setupfr].objs[0] = (OBJ_t){OBJT_MOTHER,0,0,NULL};
+
   //make some dummys
-  for(i=1;i<31;i++) {
-    fr[setupfr].objs[i].type = OBJT_DUMMY;
-    fr[setupfr].objs[i].flags = OBJF_POS|OBJF_VEL|OBJF_HULL|OBJF_VIS|OBJF_PLAT;
-    fr[setupfr].objs[i].size = sizeof(DUMMY_t);
-    DUMMY_t *du = fr[setupfr].objs[i].data = malloc(sizeof(DUMMY_t));
-    du->pos = (V){(rand()%48)*8,-i*32,0.0f};
-    du->vel = (V){0.0f,0.0f,0.0f};
-    float w = (float)((rand()%4+1)*8);
-    float h = (float)((rand()%3+1)*8);
-    if( rand()%2 && w>8 )
-      w = 8;
-    else
-      h = 8;
-    du->hull[0] = (V){-w,-h,0.0f};
-    du->hull[1] = (V){ w, h,0.0f};
-    du->model = 1;
-  }
+#define MAYBE_A_DUMMY(i,x,y,w,h) {                                            \
+  fr[setupfr].objs[i].type = OBJT_DUMMY;                                      \
+  fr[setupfr].objs[i].flags = OBJF_POS|OBJF_VEL|OBJF_HULL|OBJF_VIS|OBJF_PLAT; \
+  fr[setupfr].objs[i].size = sizeof(DUMMY_t);                                 \
+  DUMMY_t *du = fr[setupfr].objs[i].data = malloc(sizeof(DUMMY_t));           \
+  du->pos = (V){x*8,y*8,0.0f};                                          \
+  du->vel = (V){0.0f,0.0f,0.0f};                                              \
+  du->hull[0] = (V){-w*8,-h*8,0.0f};                                              \
+  du->hull[1] = (V){ w*8, h*8,0.0f};                                              \
+  du->model = 0;                 }
+
+  MAYBE_A_DUMMY( 1,  3, 25,1,5);
+  MAYBE_A_DUMMY( 2, 11, 25,1,5);
+  MAYBE_A_DUMMY( 3, 17, 25,1,2);
+  MAYBE_A_DUMMY( 4, 25, 25,1,2);
+  MAYBE_A_DUMMY( 5, 31, 25,1,2);
+  MAYBE_A_DUMMY( 6, 39, 25,1,3);
+  MAYBE_A_DUMMY( 7, 45, 25,1,3);
+
+  MAYBE_A_DUMMY( 8,  7, 15,5,1);
+  MAYBE_A_DUMMY( 9, 25, 15,9,1);
+  MAYBE_A_DUMMY(10, 43, 15,5,1);
+
+  MAYBE_A_DUMMY(11,  3,  5,1,3);
+  MAYBE_A_DUMMY(12, 11,  5,1,3);
+  MAYBE_A_DUMMY(13, 19,  5,1,2);
+  MAYBE_A_DUMMY(14, 25,  5,1,2);
+  MAYBE_A_DUMMY(15, 29,  5,1,2);
+  MAYBE_A_DUMMY(16, 41,  5,1,2);
+  MAYBE_A_DUMMY(17, 47,  5,1,2);
+
+  MAYBE_A_DUMMY(18,  7, -5,7,1);
+  MAYBE_A_DUMMY(19, 19, -5,3,1);
+  MAYBE_A_DUMMY(20, 27, -5,3,1);
+  MAYBE_A_DUMMY(21, 45, -5,4,1);
+
+  MAYBE_A_DUMMY(22,  1,-15,1,1);
+  MAYBE_A_DUMMY(23,  5,-15,1,1);
+  MAYBE_A_DUMMY(24,  9,-15,1,1);
+  MAYBE_A_DUMMY(25, 13,-15,1,1);
+  MAYBE_A_DUMMY(26, 15,-15,1,1);
+  MAYBE_A_DUMMY(27, 17,-15,1,1);
+  MAYBE_A_DUMMY(28, 21,-15,1,1);
+  MAYBE_A_DUMMY(29, 31,-15,1,1);
+  MAYBE_A_DUMMY(30, 37,-15,1,1);
 }
 
 void mod_setvideo(int w,int h) {
@@ -56,31 +85,6 @@ void mod_setvideo(int w,int h) {
 
 void mod_quit() {
   mod_loadsurfs(1);
-}
-
-void mod_loadsurfs(int quit) {
-  loadsurfs_at = 0;
-  drawhulls = 0;
-
-  // free existing surfs
-  if( surf_player ) { SDL_FreeSurface(surf_player); surf_player = NULL; }
-
-  if( quit ) return;
-
-  // load scale 1:1 surfs
-  surf_player = IMG_Load("images/player.png");
-
-  // scale up?
-  SDL_Surface *surf_tmp;
-  Uint32 key;
-  Uint8 r,g,b;
-  surf_tmp = SJDL_CopyScaled(surf_player, SDL_HWSURFACE|SDL_SRCCOLORKEY, scale);
-  SDL_FreeSurface(surf_player);
-  SJDL_GetPixel(surf_tmp,0,0,&r,&g,&b); //assume upper-leftmost pixel is transparent color
-  key = SDL_MapRGB(surf_tmp->format,r,g,b);
-  SDL_SetColorKey(surf_tmp,SDL_SRCCOLORKEY,key);
-  surf_player = SDL_DisplayFormat(surf_tmp);
-  SDL_FreeSurface(surf_tmp);
 }
 
 char mod_key2cmd(int sym,int press) {
@@ -93,6 +97,61 @@ char mod_key2cmd(int sym,int press) {
     case SDLK_x:     return press?CMDT_1FIRE :CMDT_0FIRE ;
   }
   return 0;
+}
+
+void mod_loadsurfs(int quit) {
+  loadsurfs_at = 0;
+  drawhulls = 0;
+
+  // free existing surfs
+  if( surf_player ) { SDL_FreeSurface(surf_player); surf_player = NULL; }
+  if( surf_world  ) { SDL_FreeSurface(surf_world ); surf_world  = NULL; }
+
+  if( quit ) return;
+
+  // load scale 1:1 surfs
+  surf_player = IMG_Load("images/player.png");
+  surf_world  = IMG_Load("images/world.png" );
+
+  // scale up?
+  SDL_Surface *surf_tmp;
+  Uint32 key;
+  Uint8 r,g,b;
+
+#define MAYBE_SCALE_UP(surf) {                                            \
+  surf_tmp = SJDL_CopyScaled(surf, SDL_HWSURFACE|SDL_SRCCOLORKEY, scale); \
+  SDL_FreeSurface(surf);                                                  \
+  SJDL_GetPixel(surf_tmp,0,0,&r,&g,&b);                                   \
+  key = SDL_MapRGB(surf_tmp->format,r,g,b);                               \
+  SDL_SetColorKey(surf_tmp,SDL_SRCCOLORKEY,key);                          \
+  surf = SDL_DisplayFormat(surf_tmp);                                     \
+  SDL_FreeSurface(surf_tmp); }
+
+  MAYBE_SCALE_UP(surf_player);
+  MAYBE_SCALE_UP(surf_world );
+}
+
+void mod_predraw(SDL_Surface *screen,Uint32 vidfr) {
+  int i=0,j;
+  while(i<23) {
+    int step = (i<6||i==10||i==15) ? 1 : 4; 
+    for(j=0;j<15;j++)
+      SJDL_BlitScaled(surf_world, &(SDL_Rect){80,16,step*16,16}, screen, &(SDL_Rect){i*16,j*16,0,0}, scale);
+    i += step;
+  }
+  for(i=8;i<15;i++)
+    SJDL_BlitScaled(surf_world, &(SDL_Rect){ 80,64,16,16}, screen, &(SDL_Rect){ 9*16, i*16,0,0}, scale); //low tall
+  SJDL_BlitScaled(  surf_world, &(SDL_Rect){ 96,48,16,16}, screen, &(SDL_Rect){ 9*16, 7*16,0,0}, scale); //corner nw
+  for(i=10;i<16;i++)
+    SJDL_BlitScaled(surf_world, &(SDL_Rect){112,32,16,16}, screen, &(SDL_Rect){ i*16, 7*16,0,0}, scale); //long horiz
+  SJDL_BlitScaled(  surf_world, &(SDL_Rect){112,80,16,16}, screen, &(SDL_Rect){11*16, 7*16,0,0}, scale); //t-piece
+  SJDL_BlitScaled(  surf_world, &(SDL_Rect){128,80,16,16}, screen, &(SDL_Rect){16*16, 7*16,0,0}, scale); //corner se
+  for(i=0;i<7;i++)
+    SJDL_BlitScaled(surf_world, &(SDL_Rect){ 80,64,16,16}, screen, &(SDL_Rect){16*16, i*16,0,0}, scale); //high tall
+  SJDL_BlitScaled(  surf_world, &(SDL_Rect){ 80,64,16,16}, screen, &(SDL_Rect){11*16, 6*16,0,0}, scale); //little pipe
+  SJDL_BlitScaled(  surf_world, &(SDL_Rect){ 80,48,16,16}, screen, &(SDL_Rect){11*16, 5*16,0,0}, scale); //pipe end
+  SJDL_BlitScaled(  surf_world, &(SDL_Rect){144,16,48,16}, screen, &(SDL_Rect){12*16, 8*16,0,0}, scale); //shadow
+  SJDL_BlitScaled(  surf_world, &(SDL_Rect){ 80,32,16,16}, screen, &(SDL_Rect){ 6*16, 7*16,0,0}, scale); //end cap
 }
 
 void mod_draw(SDL_Surface *screen,int objid,OBJ_t *o) {
@@ -137,8 +196,18 @@ void mod_draw(SDL_Surface *screen,int objid,OBJ_t *o) {
       DUMMY_t *du = o->data;
       drect = (SDL_Rect){du->pos.x+du->hull[0].x, du->pos.y+du->hull[0].y,
                          du->hull[1].x-du->hull[0].x, du->hull[1].y-du->hull[0].y};
-      color = SDL_MapRGB(screen->format, 0x50+0x22*((objid/1)%3), 0x50+0x22*((objid/3)%3), 0x22*((objid/9)%3));
-      SJDL_FillScaled(screen,&drect,color,scale);
+      Sint16 offs = drect.w==drect.h ? 48 : 0;
+      if( drect.w > drect.h ) while( drect.w>0 && drect.w<400 ) {
+        SJDL_BlitScaled(surf_world, &(SDL_Rect){0+offs,16,16,16}, screen, &(SDL_Rect){drect.x,drect.y,drect.w,drect.h}, scale);
+        drect.x += 16;
+        drect.w -= 16;
+        offs = drect.w==16 ? 32 : 16;
+      } else                  while( drect.h>0 && drect.h<400 ) {
+        SJDL_BlitScaled(surf_world, &(SDL_Rect){48,0+offs,16,16}, screen, &(SDL_Rect){drect.x,drect.y,drect.w,drect.h}, scale);
+        drect.y += 16;
+        drect.h -= 16;
+        offs = drect.h==16 ? 32 : 16;
+      }
       break;
     }
   }
@@ -176,7 +245,7 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
       fr[b].objs[slot1].flags = OBJF_POS|OBJF_VEL|OBJF_HULL|OBJF_PVEL|OBJF_VIS|OBJF_PLAT|OBJF_CLIP;
       fr[b].objs[slot1].size = sizeof(PLAYER_t);
       pl = fr[b].objs[slot1].data = malloc(sizeof(PLAYER_t));
-      pl->pos  = (V){200.0f,200.0f,0.0f};
+      pl->pos  = (V){(i+1)*32,0.0f,0.0f};
       pl->vel  = (V){0.0f,0.0f,0.0f};
       pl->hull[0] = (V){-8.0f,-15.0f,0.0f};
       pl->hull[1] = (V){ 8.0f, 15.0f,0.0f};
