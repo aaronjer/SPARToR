@@ -22,6 +22,7 @@
 
 static Uint32 loadsurfs_at = 0;
 static int    bg_invalid = 0;
+static int    setmodel = -1;
 
 
 SDL_Surface *surf_player = NULL;
@@ -100,6 +101,18 @@ char mod_key2cmd(int sym,int press) {
     case SDLK_x:     return press?CMDT_1FIRE :CMDT_0FIRE ;
   }
   return 0;
+}
+
+int mod_command(char *q) {
+  TRY
+    if( q==NULL ){
+      ;
+    }else if( strcmp(q,"model")==0 ){
+      setmodel = atoi(strtok(NULL," ")); // FIXME: lame hack
+      return 0;
+    }
+  HARDER
+  return 1;
 }
 
 void mod_loadsurfs(int quit) {
@@ -322,6 +335,11 @@ case OBJT_PLAYER:
 
   if( !oldme ) //FIXME why's this null?
     break;
+
+  if( setmodel>-1 && ((GHOST_t *)fr[b].objs[newme->ghost].data)->client==me ) {
+    newme->model = setmodel;
+    setmodel = -1;
+  }
 
   newme->gunback = 0; //reset gun position
   if(newme->goingr||newme->goingl)

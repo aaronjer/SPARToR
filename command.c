@@ -18,6 +18,7 @@
 #include "net.h"
 #include "host.h"
 #include "client.h"
+#include "mod.h"
 
 
 void command(const char *s){
@@ -62,7 +63,7 @@ void command(const char *s){
       SJC_Write("  connect -- connect to a server");
       SJC_Write("  quit -- quit the program");
       SJC_Write(" Control the game with the arrow keys, Z and X");
-    }else{
+    }else if( mod_command(q) ){
       SJC_Write("Huh?");
     }
   HARDER
