@@ -15,8 +15,12 @@
 #include "main.h"
 #include "console.h"
 #include "net.h"
+#include "mod.h"
 #include "mod_private.h"
 #include <math.h>
+
+
+static Uint32 loadsurfs_at = 0;
 
 SDL_Surface *surf_player = NULL;
 
@@ -46,11 +50,22 @@ void mod_setup(Uint32 setupfr) {
 }
 
 void mod_setvideo(int w,int h) {
+  loadsurfs_at = metafr+30;
+  drawhulls = 1;
+}
+
+void mod_quit() {
+  mod_loadsurfs(1);
+}
+
+void mod_loadsurfs(int quit) {
+  loadsurfs_at = 0;
+  drawhulls = 0;
+
   // free existing surfs
   if( surf_player ) { SDL_FreeSurface(surf_player); surf_player = NULL; }
 
-  if( w==0 ) // no video, do not re-load surfaces
-    return;
+  if( quit ) return;
 
   // load scale 1:1 surfs
   surf_player = IMG_Load("images/player.png");
@@ -84,6 +99,10 @@ void mod_draw(SDL_Surface *screen,int objid,OBJ_t *o) {
   Uint32 color;
   //SDL_Rect srect = (SDL_Rect){0,0,200,200};
   SDL_Rect drect;
+
+  if( loadsurfs_at && loadsurfs_at==metafr )
+    mod_loadsurfs(0);
+
   switch(o->type)
   {
     case OBJT_PLAYER: {
