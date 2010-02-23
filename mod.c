@@ -21,9 +21,12 @@
 
 
 static Uint32 loadsurfs_at = 0;
+static int    bg_invalid = 0;
+
 
 SDL_Surface *surf_player = NULL;
 SDL_Surface *surf_world  = NULL;
+SDL_Surface *surf_bg     = NULL;
 
 
 void mod_setup(Uint32 setupfr) {
@@ -106,12 +109,19 @@ void mod_loadsurfs(int quit) {
   // free existing surfs
   if( surf_player ) { SDL_FreeSurface(surf_player); surf_player = NULL; }
   if( surf_world  ) { SDL_FreeSurface(surf_world ); surf_world  = NULL; }
+  if( surf_bg     ) { SDL_FreeSurface(surf_bg    ); surf_bg     = NULL; }
 
   if( quit ) return;
 
   // load scale 1:1 surfs
   surf_player = IMG_Load("images/player.png");
   surf_world  = IMG_Load("images/world.png" );
+  surf_bg     = SDL_CreateRGBSurface(SDL_HWSURFACE,384*scale,240*scale,
+                                     screen->format->BitsPerPixel,
+                                     screen->format->Rmask,
+                                     screen->format->Gmask,
+                                     screen->format->Bmask,
+                                     0);
 
   // scale up?
   SDL_Surface *surf_tmp;
@@ -129,29 +139,36 @@ void mod_loadsurfs(int quit) {
 
   MAYBE_SCALE_UP(surf_player);
   MAYBE_SCALE_UP(surf_world );
+
+  bg_invalid = 1;
 }
 
 void mod_predraw(SDL_Surface *screen,Uint32 vidfr) {
-  int i=0,j;
-  while(i<23) {
-    int step = (i<6||i==10||i==15) ? 1 : 4; 
-    for(j=0;j<15;j++)
-      SJDL_BlitScaled(surf_world, &(SDL_Rect){80,16,step*16,16}, screen, &(SDL_Rect){i*16,j*16,0,0}, scale);
-    i += step;
+  if( bg_invalid ) {
+    int i=0,j;
+    while(i<23) {
+      int step = (i<6||i==10||i==15) ? 1 : 4; 
+      for(j=0;j<15;j++)
+        SJDL_BlitScaled(surf_world, &(SDL_Rect){80,16,step*16,16}, surf_bg, &(SDL_Rect){i*16,j*16,0,0}, scale);
+      i += step;
+    }
+    for(i=8;i<15;i++)
+      SJDL_BlitScaled(surf_world, &(SDL_Rect){ 80,64,16,16}, surf_bg, &(SDL_Rect){ 9*16, i*16,0,0}, scale); //low tall
+    SJDL_BlitScaled(  surf_world, &(SDL_Rect){ 96,48,16,16}, surf_bg, &(SDL_Rect){ 9*16, 7*16,0,0}, scale); //corner nw
+    for(i=10;i<16;i++)
+      SJDL_BlitScaled(surf_world, &(SDL_Rect){112,32,16,16}, surf_bg, &(SDL_Rect){ i*16, 7*16,0,0}, scale); //long horiz
+    SJDL_BlitScaled(  surf_world, &(SDL_Rect){112,80,16,16}, surf_bg, &(SDL_Rect){11*16, 7*16,0,0}, scale); //t-piece
+    SJDL_BlitScaled(  surf_world, &(SDL_Rect){128,80,16,16}, surf_bg, &(SDL_Rect){16*16, 7*16,0,0}, scale); //corner se
+    for(i=0;i<7;i++)
+      SJDL_BlitScaled(surf_world, &(SDL_Rect){ 80,64,16,16}, surf_bg, &(SDL_Rect){16*16, i*16,0,0}, scale); //high tall
+    SJDL_BlitScaled(  surf_world, &(SDL_Rect){ 80,64,16,16}, surf_bg, &(SDL_Rect){11*16, 6*16,0,0}, scale); //little pipe
+    SJDL_BlitScaled(  surf_world, &(SDL_Rect){ 80,48,16,16}, surf_bg, &(SDL_Rect){11*16, 5*16,0,0}, scale); //pipe end
+    SJDL_BlitScaled(  surf_world, &(SDL_Rect){144,16,48,16}, surf_bg, &(SDL_Rect){12*16, 8*16,0,0}, scale); //shadow
+    SJDL_BlitScaled(  surf_world, &(SDL_Rect){ 80,32,16,16}, surf_bg, &(SDL_Rect){ 6*16, 7*16,0,0}, scale); //end cap
+    bg_invalid = 0;
   }
-  for(i=8;i<15;i++)
-    SJDL_BlitScaled(surf_world, &(SDL_Rect){ 80,64,16,16}, screen, &(SDL_Rect){ 9*16, i*16,0,0}, scale); //low tall
-  SJDL_BlitScaled(  surf_world, &(SDL_Rect){ 96,48,16,16}, screen, &(SDL_Rect){ 9*16, 7*16,0,0}, scale); //corner nw
-  for(i=10;i<16;i++)
-    SJDL_BlitScaled(surf_world, &(SDL_Rect){112,32,16,16}, screen, &(SDL_Rect){ i*16, 7*16,0,0}, scale); //long horiz
-  SJDL_BlitScaled(  surf_world, &(SDL_Rect){112,80,16,16}, screen, &(SDL_Rect){11*16, 7*16,0,0}, scale); //t-piece
-  SJDL_BlitScaled(  surf_world, &(SDL_Rect){128,80,16,16}, screen, &(SDL_Rect){16*16, 7*16,0,0}, scale); //corner se
-  for(i=0;i<7;i++)
-    SJDL_BlitScaled(surf_world, &(SDL_Rect){ 80,64,16,16}, screen, &(SDL_Rect){16*16, i*16,0,0}, scale); //high tall
-  SJDL_BlitScaled(  surf_world, &(SDL_Rect){ 80,64,16,16}, screen, &(SDL_Rect){11*16, 6*16,0,0}, scale); //little pipe
-  SJDL_BlitScaled(  surf_world, &(SDL_Rect){ 80,48,16,16}, screen, &(SDL_Rect){11*16, 5*16,0,0}, scale); //pipe end
-  SJDL_BlitScaled(  surf_world, &(SDL_Rect){144,16,48,16}, screen, &(SDL_Rect){12*16, 8*16,0,0}, scale); //shadow
-  SJDL_BlitScaled(  surf_world, &(SDL_Rect){ 80,32,16,16}, screen, &(SDL_Rect){ 6*16, 7*16,0,0}, scale); //end cap
+
+  SDL_BlitSurface(surf_bg, &(SDL_Rect){0,0,384*scale,240*scale}, screen, &(SDL_Rect){0,0,0,0});
 }
 
 void mod_draw(SDL_Surface *screen,int objid,OBJ_t *o) {
