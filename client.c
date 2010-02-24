@@ -27,7 +27,7 @@ static int negotiated;
 void client_start(const char *hostname,int port,int clientport) {
   int i;
   pktnum = 1;
-  if( !hostname || !*hostname ) {  SJC_Write("Usage: connect <host>:[<port>] [<localport>]");          return; }
+  if( !hostname || !*hostname ) {  SJC_Write("Usage: connect <host> [<port>] [<localport>]");          return; }
   if( hostsock ) {                 SJC_Write("Already running as a host. Type 'disconnect' to stop."); return; }
   if( clientsock ) {               SJC_Write("Already connected to a host. Type 'disconnect' first."); return; }
   SDLNet_ResolveHost(&ipaddr,hostname,port?port:HOSTPORT);

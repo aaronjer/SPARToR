@@ -97,7 +97,7 @@ int main(int argc,char **argv) {
   vidinfo = SDL_GetVideoInfo();
   desktop_w = vidinfo->current_w;
   desktop_h = vidinfo->current_h;
-  setvideo(768,480,0);
+  setvideo(768,480,1);
   vidinfo = SDL_GetVideoInfo();
 
   SJF_Init();

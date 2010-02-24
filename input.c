@@ -16,6 +16,7 @@
 #include "main.h"
 #include "console.h"
 #include "net.h"
+#include "video.h"
 #include "command.h"
 #include "mod.h"
 
@@ -41,8 +42,12 @@ char getnextcmd() {
 
 
 void input(int press,int sym,Uint16 unicode) {
-
-  if(press && sym==SDLK_BACKQUOTE)
+  if(press && sym==SDLK_F11) {
+    if( !fullscreen )
+      command("fullscreen");
+    else
+      command("window");
+  } else if(press && sym==SDLK_BACKQUOTE)
     toggleconsole();
   else if(press && console_open) {
     if(unicode>31 && unicode<127)

@@ -79,13 +79,12 @@ void command(const char *s){
       ticksaframe = 30;
       jogframebuffer(metafr,surefr);
     }else if( strcmp(q,"help")==0 ){
-      SJC_Write("[ HELP ]");
-      SJC_Write(" Press your ~ key to open and close this console.");
-      SJC_Write(" Here are some commands you can type:");
-      SJC_Write("  listen -- start a server");
-      SJC_Write("  connect -- connect to a server");
-      SJC_Write("  quit -- quit the program");
-      SJC_Write(" Control the game with the arrow keys, Z and X");
+      SJC_Write("Press your ~ key to open and close this console. Commands you can type:");
+      SJC_Write("     listen -- start a server");
+      SJC_Write("     connect -- connect to a server");
+      SJC_Write("     fullscreen 1024 768 -- go fullscreen at 1024x768");
+      SJC_Write("     window 3x -- go windowed at 3x up-scale");
+      SJC_Write("Game controls: Z, X, ARROWS");
     }else if( mod_command(q) ){
       SJC_Write("Huh?");
     }

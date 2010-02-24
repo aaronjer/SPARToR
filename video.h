@@ -14,7 +14,7 @@ extern int video_reset;
 
 
 void render();
-void setvideo(int w,int h,Uint32 flags);
+void setvideo(int w,int h,int quiet);
 
 #endif
 

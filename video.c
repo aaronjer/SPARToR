@@ -146,8 +146,8 @@ void render() {
 }
 
 
-void setvideo(int w,int h,Uint32 flags) {
-  flags |= SDL_DOUBLEBUF|SDL_HWSURFACE|SDL_ANYFORMAT;
+void setvideo(int w,int h,int quiet) {
+  Uint32 flags = SDL_DOUBLEBUF|SDL_HWSURFACE|SDL_ANYFORMAT;
   if( fullscreen )
     flags |= SDL_FULLSCREEN;
   else
@@ -167,8 +167,8 @@ void setvideo(int w,int h,Uint32 flags) {
   if( scale<1 )
     scale = 1;
   mod_setvideo(w,h);
-  SJC_Write("Video mode set to %d x %d",w,h);
-  SJC_Write("Video mode set to %d x %d",w,h);
+  if( !quiet )
+    SJC_Write("Video mode set to %d x %d",w,h);
 }
 
 
