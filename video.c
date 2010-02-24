@@ -29,7 +29,7 @@ void render() {
   Uint32 vidfrmod = vidfr%maxframes;
 
   Uint32 render_start = SDL_GetTicks();
-  static Uint32 unaccounted_start = 0;
+  static Uint32 total_start = 0;
   Uint32 tmp;
 
   Uint32 dkgray = SDL_MapRGB(screen->format,0x22,0x22,0x22);
@@ -91,33 +91,42 @@ void render() {
   }
 
   //display stats
-  sprintf(buf,"fr: idx=%d meta=%d vid=%d hot=%d",metafr%maxframes,metafr,vidfr,hotfr);
-  SJF_DrawText(screen,w-20-SJF_TextExtents(buf),h-20,buf);
-
-  sprintf(buf,"idle_time %d",idle_time);
-  SJF_DrawText(screen,w-20-SJF_TextExtents(buf),h-90,buf);
-  sprintf(buf,"render_time %d",render_time);
-  SJF_DrawText(screen,w-20-SJF_TextExtents(buf),h-80,buf);
-  sprintf(buf,"adv_move_time %d",adv_move_time);
-  SJF_DrawText(screen,w-20-SJF_TextExtents(buf),h-70,buf);
-  sprintf(buf,"adv_collide_time %d",adv_collide_time);
-  SJF_DrawText(screen,w-20-SJF_TextExtents(buf),h-60,buf);
-  sprintf(buf,"adv_game_time %d",adv_game_time);
-  SJF_DrawText(screen,w-20-SJF_TextExtents(buf),h-50,buf);
-  sprintf(buf,"adv_frames %d",adv_frames);
-  SJF_DrawText(screen,w-20-SJF_TextExtents(buf),h-40,buf);
-  Uint32 accounted_time = idle_time + render_time + adv_move_time + adv_collide_time + adv_game_time;
-  Uint32 unaccounted_time = (tmp=SDL_GetTicks()) - unaccounted_start;
-  sprintf(buf,"unaccounted_time %d",accounted_time>unaccounted_time?0:unaccounted_time-accounted_time);
-  unaccounted_start = tmp;
-  SJF_DrawText(screen,w-20-SJF_TextExtents(buf),h-30,buf);
-
+  total_time += (tmp = SDL_GetTicks()) - total_start;
+  render_time += tmp - render_start;
+  total_start = tmp;
+  Uint32 unaccounted_time = total_time - (idle_time + render_time + adv_move_time + adv_collide_time + adv_game_time);
+  if( showstats ) {
+    Uint32 denom = vidfrmod+1;
+    sprintf(buf,"idle_time %4d"       ,       idle_time/denom);
+    SJF_DrawText(screen,w-20-SJF_TextExtents(buf),10,buf);
+    sprintf(buf,"render_time %4d"     ,     render_time/denom);
+    SJF_DrawText(screen,w-20-SJF_TextExtents(buf),20,buf);
+    sprintf(buf,"adv_move_time %4d"   ,   adv_move_time/denom);
+    SJF_DrawText(screen,w-20-SJF_TextExtents(buf),30,buf);
+    sprintf(buf,"adv_collide_time %4d",adv_collide_time/denom);
+    SJF_DrawText(screen,w-20-SJF_TextExtents(buf),40,buf);
+    sprintf(buf,"adv_game_time %4d"   ,   adv_game_time/denom);
+    SJF_DrawText(screen,w-20-SJF_TextExtents(buf),50,buf);
+    sprintf(buf,"unaccounted_time %4d",unaccounted_time/denom);
+    SJF_DrawText(screen,w-20-SJF_TextExtents(buf),60,buf);
+    sprintf(buf,"adv_frames  %2.2f"   ,(float)adv_frames/(float)denom);
+    SJF_DrawText(screen,w-20-SJF_TextExtents(buf),70,buf);
+    sprintf(buf,"fr: idx=%d meta=%d vid=%d hot=%d",metafr%maxframes,metafr,vidfr,hotfr);
+    SJF_DrawText(screen,w-20-SJF_TextExtents(buf),80,buf);
+  }
 
   SDL_Flip(screen);
-
   setdrawnfr(vidfr);
-  render_time = SDL_GetTicks() - render_start; //keep track of render time
-  idle_time = 0;
+
+  if( vidfrmod==maxframes-1 ) { // reset time stats
+    total_time       = 0;
+    idle_time        = 0;
+    render_time      = 0;
+    adv_move_time    = 0;
+    adv_collide_time = 0;
+    adv_game_time    = 0;
+    adv_frames       = 0;
+  }
 }
 
 

@@ -52,7 +52,9 @@ int console_open;
 UDPpacket *pkt;
 
 int drawhulls = 0;
+int showstats = 1;
 
+Uint32 total_time = 0;
 Uint32 idle_time = 0;
 Uint32 render_time = 0;
 Uint32 adv_move_time = 0;
@@ -156,6 +158,7 @@ void advance() {
     Uint32 b = (hotfr  )%maxframes;
     if( cmdfr<hotfr ) //need to clear out the cmds in forward frame since it hasn't been done yet!
       setcmdfr(hotfr);
+    Uint32 adv_move_start = SDL_GetTicks();
     for(i=0;i<maxobjs;i++) { //first pass -- copy forward, move, clip with world
       OBJ_t *oa = fr[a].objs+i;
       OBJ_t *ob = fr[b].objs+i;
@@ -189,6 +192,8 @@ void advance() {
         }
       }
     }
+    Uint32 adv_collide_start = SDL_GetTicks();
+    adv_move_time += adv_collide_start - adv_move_start;
     for(r=0;r<40;r++) { //"recurse" up to 10 times to sort out collisions
       memset(recheck[r%2],0,sizeof(recheck[0]));
       for(i=0;i<maxobjs;i++) {
@@ -228,12 +233,16 @@ void advance() {
         }
       }
     }
+    Uint32 adv_game_start = SDL_GetTicks();
+    adv_collide_time += adv_game_start - adv_collide_start;
     for(i=0;i<maxobjs;i++) { //mod pass
       OBJ_t *oa = fr[a].objs+i;
       OBJ_t *ob = fr[b].objs+i;
       if(ob->type)
         mod_adv(i,a,b,oa,ob);
     }
+    adv_game_time += SDL_GetTicks() - adv_game_start;
+    adv_frames++;
     setsurefr(hotfr>50 ? hotfr-50 : 0); //FIXME: UGLY HACK! surefr should be determined for REAL
   }
 }
