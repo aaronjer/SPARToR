@@ -94,6 +94,9 @@ int main(int argc,char **argv) {
   SDL_Surface *iconsurf = IMG_Load("icon.png");
   SDL_WM_SetIcon(iconsurf,NULL);
   SDL_FreeSurface(iconsurf);
+  vidinfo = SDL_GetVideoInfo();
+  desktop_w = vidinfo->current_w;
+  desktop_h = vidinfo->current_h;
   setvideo(768,480,0);
   vidinfo = SDL_GetVideoInfo();
 
@@ -104,6 +107,7 @@ int main(int argc,char **argv) {
   SJC_Write("");
   SJC_Write(" --->  Type 'help' for help.  <---");
   SJC_Write("");
+  SJC_Write("Desktop resolution detected as %d x %d",desktop_w,desktop_h);
 
   //main loop
   for(;;) {
@@ -179,12 +183,12 @@ void advance() {
           pos->x = 0.0f   - (hull?hull[0].x:0.0f);
           vel->x = 0.0f;
         }
-        if( pos->x + (hull?hull[1].x:0.0f) > 384.0f ) {
-          pos->x = 384.0f - (hull?hull[1].x:0.0f);
+        if( pos->x + (hull?hull[1].x:0.0f) > NATIVEW ) {
+          pos->x = NATIVEW - (hull?hull[1].x:0.0f);
           vel->x = 0.0f;
         }
-        if( pos->y + (hull?hull[1].y:0.0f) >240.0f ) {  //floor
-          pos->y = 240.0f - (hull?hull[1].y:0.0f);
+        if( pos->y + (hull?hull[1].y:0.0f) > NATIVEH ) {  //floor
+          pos->y = NATIVEH - (hull?hull[1].y:0.0f);
           vel->y = 0.0f;
         }
       }

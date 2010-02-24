@@ -50,6 +50,26 @@ void command(const char *s){
       drawhulls = drawhulls ? 0 : 1;
     }else if( strcmp(q,"stats")==0 ){
       showstats = showstats ? 0 : 1;
+    }else if( strcmp(q,"fullscreen")==0 || strncmp(q,"window",6)==0 ){
+      char *sw = strtok(NULL," x");
+      char *sh = strtok(NULL," ");
+      int w = sw?atoi(sw):0;
+      int h = sh?atoi(sh):0;
+      fullscreen = strcmp(q,"fullscreen")==0 ? 1 : 0;
+      video_reset = 1;
+      if( w>=320 && h>=200 ) {
+        screen_w = w;
+        screen_h = h;
+      } else if( w>=1 && w<=5 ) {
+        screen_w = NATIVEW*w;
+        screen_h = NATIVEH*w;
+      } else if( fullscreen ) {
+        screen_w = desktop_w;
+        screen_h = desktop_h;
+      } else {
+        screen_w = NATIVEW*2;
+        screen_h = NATIVEH*2;
+      }
     }else if( strcmp(q,"slow")==0 ){
       SJC_Write("Speed is now slow");
       ticksaframe = 300;

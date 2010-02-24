@@ -6,6 +6,11 @@
 #include "SDL_net.h"
 #include "main.h"
 
+
+#define NATIVEW 384
+#define NATIVEH 240
+
+
 void mod_setup(Uint32 setupfr);
 void mod_setvideo(int w,int h);
 void mod_quit();

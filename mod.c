@@ -130,7 +130,7 @@ void mod_loadsurfs(int quit) {
   // load scale 1:1 surfs
   surf_player = IMG_Load("images/player.png");
   surf_world  = IMG_Load("images/world.png" );
-  surf_bg     = SDL_CreateRGBSurface(SDL_HWSURFACE,384*scale,240*scale,
+  surf_bg     = SDL_CreateRGBSurface(SDL_HWSURFACE,NATIVEW*scale,NATIVEH*scale,
                                      screen->format->BitsPerPixel,
                                      screen->format->Rmask,
                                      screen->format->Gmask,
@@ -182,7 +182,7 @@ void mod_predraw(SDL_Surface *screen,Uint32 vidfr) {
     bg_invalid = 0;
   }
 
-  SDL_BlitSurface(surf_bg, &(SDL_Rect){0,0,384*scale,240*scale}, screen, &(SDL_Rect){0,0,0,0});
+  SDL_BlitSurface(surf_bg, &(SDL_Rect){0,0,NATIVEW*scale,NATIVEH*scale}, screen, &(SDL_Rect){0,0,0,0});
 }
 
 void mod_draw(SDL_Surface *screen,int objid,OBJ_t *o) {
@@ -449,7 +449,7 @@ case OBJT_PLAYER:
         pl->vel.x += (bu->vel.x>0.0f?5.0f:-5.0f);
         bu->ttl = 0; //delete bullet
       }
-    if(bu->pos.x<=0.0f || bu->pos.x>=384.0f || bu->ttl==0) {
+    if(bu->pos.x<=0.0f || bu->pos.x>=NATIVEW || bu->ttl==0) {
       if( fr[b].objs[bu->owner].type==OBJT_PLAYER )
         ((PLAYER_t *)fr[b].objs[bu->owner].data)->projectiles--;
       ob->flags |= OBJF_DEL;

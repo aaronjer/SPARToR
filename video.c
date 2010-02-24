@@ -19,9 +19,14 @@
 #include "font.h"
 #include "mod.h"
 
+
 int drawhulls = 0;
 int showstats = 1;
 int fullscreen = 0;
+int screen_w = NATIVEW;
+int screen_h = NATIVEH;
+int desktop_w = 1024;
+int desktop_h = 768;
 int video_reset = 0;
 
 
@@ -38,20 +43,19 @@ void render() {
   static Uint32 total_start = 0;
   Uint32 tmp;
 
-  Uint32 dkgray = SDL_MapRGB(screen->format,0x22,0x22,0x22);
   Uint32 color;
 
   if( metafr==0 || vidfr<=drawnfr ) //==0 prevent never-draw bug
     return;
 
+  if( video_reset ) {
+    setvideo(screen_w,screen_h,0);
+    video_reset = 0;
+  }
+
   vidinfo = SDL_GetVideoInfo();
   w = vidinfo->current_w;
   h = vidinfo->current_h;
-
-  if( video_reset ) {
-    setvideo(w,h,0);
-    video_reset = 0;
-  }
 
   mod_predraw(screen,vidfr);
 
@@ -84,7 +88,8 @@ void render() {
   if(console_open) {
     int conh = h/2 - 40;
     if(conh<40) conh = 40;
-    SDL_FillRect(screen,&(SDL_Rect){0,0,w,conh},dkgray);
+    color = SDL_MapRGB(screen->format,0x22,0x22,0x22);
+    SDL_FillRect(screen,&(SDL_Rect){0,0,w,conh},color);
     x = 10;
     y = conh-20;
     if((ticks/200)%2)
@@ -142,15 +147,28 @@ void render() {
 
 
 void setvideo(int w,int h,Uint32 flags) {
-  if( w/384 > h/240 )
-    scale = h/240;
+  flags |= SDL_DOUBLEBUF|SDL_HWSURFACE|SDL_ANYFORMAT;
+  if( fullscreen )
+    flags |= SDL_FULLSCREEN;
   else
-    scale = w/384;
+    flags |= SDL_RESIZABLE;
+  screen = SDL_SetVideoMode(w,h,SDL_GetVideoInfo()->vfmt->BitsPerPixel,flags);
+  if( !screen ){
+    screen = SDL_SetVideoMode(NATIVEW,NATIVEH,SDL_GetVideoInfo()->vfmt->BitsPerPixel,0);
+    SJC_Write("Error changing video mode. Using safe defaults.");
+    if( !screen ) {
+      fprintf(stderr,"Fatal error setting video mode!");
+      exit(-4);
+    }
+  }
+  w = SDL_GetVideoInfo()->current_w;
+  h = SDL_GetVideoInfo()->current_h;
+  scale = (w/NATIVEW > h/NATIVEH) ? h/NATIVEH : w/NATIVEW;
   if( scale<1 )
     scale = 1;
-  flags |= SDL_RESIZABLE|SDL_DOUBLEBUF|SDL_HWSURFACE|SDL_ANYFORMAT;
-  screen = SDL_SetVideoMode(w,h,SDL_GetVideoInfo()->vfmt->BitsPerPixel,flags);
   mod_setvideo(w,h);
+  SJC_Write("Video mode set to %d x %d",w,h);
+  SJC_Write("Video mode set to %d x %d",w,h);
 }
 
 
