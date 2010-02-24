@@ -102,7 +102,7 @@ void host() {
   for(i=surefr+1;i<=cmdfr;i++) { //scan for dirty frames to send
     if( fr[i%maxframes].dirty ) {
       data = packframecmds(i,&n);
-      if( pkt->len+4+n >= 2000 /*pkt->maxlen*/ || pkt->data[1]>100 ) { //FIXME: use a smaller pkt->maxlen
+      if( pkt->len+4+n >= 500 /*pkt->maxlen*/ || pkt->data[1]>100 ) { //FIXME: use a smaller pkt->maxlen
         SJC_Write("%u: Packed too many cmds! Will get the rest next frame...",hotfr);
         free(data);
         break;
