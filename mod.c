@@ -15,6 +15,7 @@
 #include "main.h"
 #include "console.h"
 #include "net.h"
+#include "video.h"
 #include "mod.h"
 #include "mod_private.h"
 #include <math.h>

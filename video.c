@@ -19,6 +19,12 @@
 #include "font.h"
 #include "mod.h"
 
+int drawhulls = 0;
+int showstats = 1;
+int fullscreen = 0;
+int video_reset = 0;
+
+
 
 void render() {
   const SDL_VideoInfo *vidinfo;
@@ -41,6 +47,11 @@ void render() {
   vidinfo = SDL_GetVideoInfo();
   w = vidinfo->current_w;
   h = vidinfo->current_h;
+
+  if( video_reset ) {
+    setvideo(w,h,0);
+    video_reset = 0;
+  }
 
   mod_predraw(screen,vidfr);
 
@@ -130,14 +141,15 @@ void render() {
 }
 
 
-void setvideo(int w,int h) {
+void setvideo(int w,int h,Uint32 flags) {
   if( w/384 > h/240 )
     scale = h/240;
   else
     scale = w/384;
   if( scale<1 )
     scale = 1;
-  screen = SDL_SetVideoMode(w,h,SDL_GetVideoInfo()->vfmt->BitsPerPixel,SDL_RESIZABLE|SDL_DOUBLEBUF);
+  flags |= SDL_RESIZABLE|SDL_DOUBLEBUF|SDL_HWSURFACE|SDL_ANYFORMAT;
+  screen = SDL_SetVideoMode(w,h,SDL_GetVideoInfo()->vfmt->BitsPerPixel,flags);
   mod_setvideo(w,h);
 }
 

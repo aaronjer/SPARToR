@@ -81,9 +81,6 @@ extern int me;
 extern int console_open;
 extern UDPpacket *pkt;
 
-extern int drawhulls;
-extern int showstats;
-
 extern Uint32 total_time;
 extern Uint32 idle_time;
 extern Uint32 render_time;

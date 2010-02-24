@@ -18,6 +18,7 @@
 #include "net.h"
 #include "host.h"
 #include "client.h"
+#include "video.h"
 #include "mod.h"
 
 

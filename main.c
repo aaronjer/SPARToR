@@ -51,9 +51,6 @@ int me;
 int console_open;
 UDPpacket *pkt;
 
-int drawhulls = 0;
-int showstats = 1;
-
 Uint32 total_time = 0;
 Uint32 idle_time = 0;
 Uint32 render_time = 0;
@@ -97,7 +94,7 @@ int main(int argc,char **argv) {
   SDL_Surface *iconsurf = IMG_Load("icon.png");
   SDL_WM_SetIcon(iconsurf,NULL);
   SDL_FreeSurface(iconsurf);
-  setvideo(768,480);
+  setvideo(768,480,0);
   vidinfo = SDL_GetVideoInfo();
 
   SJF_Init();
@@ -117,7 +114,7 @@ int main(int argc,char **argv) {
     metafr = ticks/ticksaframe + frameoffset;
     while( SDL_PollEvent(&event) ) switch(event.type) {
       case SDL_VIDEOEXPOSE:                                                         break;
-      case SDL_VIDEORESIZE: setvideo(event.resize.w,event.resize.h);                break;
+      case SDL_VIDEORESIZE: setvideo(event.resize.w,event.resize.h,0);              break;
       case SDL_KEYDOWN: input( 1, event.key.keysym.sym, event.key.keysym.unicode ); break;
       case SDL_KEYUP:   input( 0, event.key.keysym.sym, event.key.keysym.unicode ); break;
       case SDL_QUIT: cleanup();                                                     break;
