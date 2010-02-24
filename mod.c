@@ -379,7 +379,7 @@ case OBJT_PLAYER:
   if( !newme->jumping )              //low-jump, cancel jump velocity early
     newme->pvel.y   = 0.0f;
   if( (newme->vel.y==0.0f || oldme->vel.y==0.0f) && newme->jumping ) //FIXME 0 velocity means grounded? not really
-    newme->pvel.y  = -11.9f;         //initiate jump!
+    newme->pvel.y  = -11.1f;         //initiate jump!
 
   // -- FIRE --
   if( newme->cooldown>0 )
@@ -432,13 +432,13 @@ case OBJT_PLAYER:
         }
       }
 
-    newme->vel.y += 0.8f;        //gravity
+    newme->vel.y += 0.7f;        //gravity
     break;
   case OBJT_BULLET:
     assert("ob->size==sizeof(BULLET_t)",ob->size==sizeof(BULLET_t));
     BULLET_t *bu = ob->data;
     bu->ttl--;
-    for(i=0;i<objid;i++)  //find players to hit
+    for(i=0;i<maxobjs;i++)  //find players to hit
       if(fr[b].objs[i].type==OBJT_PLAYER) {
         PLAYER_t *pl = fr[b].objs[i].data;
         if( i==bu->owner                       || //player owns bullet
