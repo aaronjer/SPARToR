@@ -190,9 +190,8 @@ void mod_draw(SDL_Surface *screen,int objid,OBJ_t *o) {
   //SDL_Rect srect = (SDL_Rect){0,0,200,200};
   SDL_Rect drect;
 
-  if( loadsurfs_at && loadsurfs_at==metafr )
+  if( loadsurfs_at && loadsurfs_at<metafr )
     mod_loadsurfs(0);
-
   switch(o->type)
   {
     case OBJT_PLAYER: {
