@@ -161,14 +161,20 @@ void setvideo(int w,int h,int quiet) {
       exit(-4);
     }
   }
-  w = SDL_GetVideoInfo()->current_w;
-  h = SDL_GetVideoInfo()->current_h;
+  const SDL_VideoInfo *vidinfo = SDL_GetVideoInfo();
+  w = vidinfo->current_w;
+  h = vidinfo->current_h;
   scale = (w/NATIVEW > h/NATIVEH) ? h/NATIVEH : w/NATIVEW;
   if( scale<1 )
     scale = 1;
   mod_setvideo(w,h);
   if( !quiet )
-    SJC_Write("Video mode set to %d x %d",w,h);
+  {
+    char caps[200];
+    SJC_Write("Video mode set to %d x %d %s",w,h,vidinfo->hw_available?"hardware":"software");
+    VIDCAPS(caps,vidinfo);
+    SJC_Write(caps);
+  }
 }
 
 

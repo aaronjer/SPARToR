@@ -47,40 +47,39 @@ void mod_setup(Uint32 setupfr) {
   du->hull[1] = (V){ w*8, h*8,0.0f};                                              \
   du->model = 0;                 }
 
-  MAYBE_A_DUMMY( 1,  3, 25,1,5);
-  MAYBE_A_DUMMY( 2, 11, 25,1,5);
-  MAYBE_A_DUMMY( 3, 17, 25,1,2);
-  MAYBE_A_DUMMY( 4, 25, 25,1,2);
-  MAYBE_A_DUMMY( 5, 31, 25,1,2);
-  MAYBE_A_DUMMY( 6, 39, 25,1,3);
-  MAYBE_A_DUMMY( 7, 45, 25,1,3);
+  MAYBE_A_DUMMY( 1,  1, 25,1,5);
+  MAYBE_A_DUMMY( 2,  3, 25,1,5);
+  MAYBE_A_DUMMY( 3,  5, 25,1,5);
+  MAYBE_A_DUMMY( 4,  7, 25,1,5);
+  MAYBE_A_DUMMY( 5,  9, 25,1,5);
+  MAYBE_A_DUMMY( 6, 11, 25,1,5);
+  MAYBE_A_DUMMY( 7, 13, 25,1,5);
 
-  MAYBE_A_DUMMY( 8,  7, 15,5,1);
-  MAYBE_A_DUMMY( 9, 25, 15,9,1);
-  MAYBE_A_DUMMY(10, 43, 15,5,1);
+  MAYBE_A_DUMMY( 8,  7, 15,7,1);
+  MAYBE_A_DUMMY( 9, 22, 15,2,1);
+  MAYBE_A_DUMMY(10, 32, 15,2,1);
+  MAYBE_A_DUMMY(11, 44, 15,4,1);
 
-  MAYBE_A_DUMMY(11,  3,  5,1,3);
-  MAYBE_A_DUMMY(12, 11,  5,1,3);
-  MAYBE_A_DUMMY(13, 19,  5,1,2);
-  MAYBE_A_DUMMY(14, 25,  5,1,2);
-  MAYBE_A_DUMMY(15, 29,  5,1,2);
-  MAYBE_A_DUMMY(16, 41,  5,1,2);
-  MAYBE_A_DUMMY(17, 47,  5,1,2);
+  MAYBE_A_DUMMY(12, 21, 25,1,3);
+  MAYBE_A_DUMMY(13, 23, 25,1,3);
+  MAYBE_A_DUMMY(14, 31, 25,1,3);
+  MAYBE_A_DUMMY(15, 33, 25,1,3);
+  MAYBE_A_DUMMY(16, 41, 25,1,3);
+  MAYBE_A_DUMMY(17, 43, 25,1,3);
+  MAYBE_A_DUMMY(18, 45, 25,1,3);
+  MAYBE_A_DUMMY(19, 47, 25,1,3);
 
-  MAYBE_A_DUMMY(18,  7, -5,7,1);
-  MAYBE_A_DUMMY(19, 19, -5,3,1);
-  MAYBE_A_DUMMY(20, 27, -5,3,1);
-  MAYBE_A_DUMMY(21, 45, -5,4,1);
-
-  MAYBE_A_DUMMY(22,  1,-15,1,1);
-  MAYBE_A_DUMMY(23,  5,-15,1,1);
-  MAYBE_A_DUMMY(24,  9,-15,1,1);
-  MAYBE_A_DUMMY(25, 13,-15,1,1);
-  MAYBE_A_DUMMY(26, 15,-15,1,1);
-  MAYBE_A_DUMMY(27, 17,-15,1,1);
-  MAYBE_A_DUMMY(28, 21,-15,1,1);
-  MAYBE_A_DUMMY(29, 31,-15,1,1);
-  MAYBE_A_DUMMY(30, 37,-15,1,1);
+  MAYBE_A_DUMMY(20,  3,-25,1,1);
+  MAYBE_A_DUMMY(21,  3,-20,1,1);
+  MAYBE_A_DUMMY(22,  3,-15,1,1);
+  MAYBE_A_DUMMY(23,  3,-10,1,1);
+  MAYBE_A_DUMMY(24,  5,-15,1,1);
+  MAYBE_A_DUMMY(25,  9,-15,1,1);
+  MAYBE_A_DUMMY(26, 43,-20,1,1);
+  MAYBE_A_DUMMY(27, 43,-15,1,1);
+  MAYBE_A_DUMMY(28, 45,-25,1,1);
+  MAYBE_A_DUMMY(29, 45,-20,1,1);
+  MAYBE_A_DUMMY(30, 45,-15,1,1);
 }
 
 void mod_setvideo(int w,int h) {
@@ -276,7 +275,7 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
       fr[b].objs[slot1].flags = OBJF_POS|OBJF_VEL|OBJF_HULL|OBJF_PVEL|OBJF_VIS|OBJF_PLAT|OBJF_CLIP;
       fr[b].objs[slot1].size = sizeof(PLAYER_t);
       pl = fr[b].objs[slot1].data = malloc(sizeof(PLAYER_t));
-      pl->pos  = (V){(i+1)*32,0.0f,0.0f};
+      pl->pos  = (V){(i+1)*64,-50.0f,0.0f};
       pl->vel  = (V){0.0f,0.0f,0.0f};
       pl->hull[0] = (V){-8.0f,-15.0f,0.0f};
       pl->hull[1] = (V){ 8.0f, 15.0f,0.0f};

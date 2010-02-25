@@ -97,6 +97,8 @@ int main(int argc,char **argv) {
   vidinfo = SDL_GetVideoInfo();
   desktop_w = vidinfo->current_w;
   desktop_h = vidinfo->current_h;
+  char caps[200];
+  VIDCAPS(caps,vidinfo);
   setvideo(768,480,1);
   vidinfo = SDL_GetVideoInfo();
 
@@ -108,6 +110,9 @@ int main(int argc,char **argv) {
   SJC_Write(" --->  Type 'help' for help.  <---");
   SJC_Write("");
   SJC_Write("Desktop resolution detected as %d x %d",desktop_w,desktop_h);
+  SJC_Write(caps);
+  VIDCAPS(caps,vidinfo);
+  SJC_Write(caps);
 
   //main loop
   for(;;) {
