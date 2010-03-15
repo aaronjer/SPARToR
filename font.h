@@ -1,7 +1,7 @@
 /**
  **  SuperJer Font
  **
- **  A simple library for drawing a 'system' font on sdl surfaces
+ **  A simple library for drawing a 'system' font on SDL GL surfaces
  **  which requires no outside resources (images, fonts, etc.)
  **/
 
@@ -9,11 +9,12 @@
 #define SPARTOR_SJFONT_H_
 
 #include "SDL.h"
+#include "SDL_opengl.h"
 #include "sjdl.h"
 
 typedef struct
 {
-  SDL_Surface *surf;
+  GLuint tex;
   int w;
   int h;
   int pitch;
@@ -24,9 +25,9 @@ typedef struct
 extern SJF_t SJF;
 
 void SJF_Init();
-inline void SJF_DrawChar(SDL_Surface *surf, int x, int y, char c);
-inline void SJF_DrawText(SDL_Surface *surf, int x, int y, const char *s);
-inline int SJF_TextExtents(const char *s);
+inline void SJF_DrawChar(int x, int y, char ch);
+inline void SJF_DrawText(int x, int y, const char *str);
+inline int SJF_TextExtents(const char *str);
 
 #endif
 

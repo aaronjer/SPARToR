@@ -14,6 +14,7 @@
 #include "SDL.h"
 #include "SDL_net.h"
 #include "SDL_image.h"
+#include "SDL_opengl.h"
 #include "main.h"
 #include "font.h"
 #include "console.h"
@@ -80,6 +81,12 @@ int main(int argc,char **argv) {
     fprintf(stderr,"SDL_Init: %s\n",SDL_GetError());
     exit(-1);
   }
+  //try GL
+  SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
+  SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 5);
+  SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
+  SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER,1);
+
   if( SDLNet_Init()<0 ) {
     fprintf(stderr,"SDLNet_Init: %s\n",SDL_GetError());
     exit(-2);
@@ -122,11 +129,11 @@ int main(int argc,char **argv) {
     ticks = newticks;
     metafr = ticks/ticksaframe + frameoffset;
     while( SDL_PollEvent(&event) ) switch(event.type) {
-      case SDL_VIDEOEXPOSE:                                                         break;
-      case SDL_VIDEORESIZE: setvideo(event.resize.w,event.resize.h,0);              break;
-      case SDL_KEYDOWN: input( 1, event.key.keysym.sym, event.key.keysym.unicode ); break;
-      case SDL_KEYUP:   input( 0, event.key.keysym.sym, event.key.keysym.unicode ); break;
-      case SDL_QUIT: cleanup();                                                     break;
+      case SDL_VIDEOEXPOSE:                                            break;
+      case SDL_VIDEORESIZE: setvideo(event.resize.w,event.resize.h,0); break;
+      case SDL_KEYDOWN: input( 1, event.key.keysym );                  break;
+      case SDL_KEYUP:   input( 0, event.key.keysym );                  break;
+      case SDL_QUIT: cleanup();                                        break;
     }
     idle_time += SDL_GetTicks() - idle_start;
     readinput();

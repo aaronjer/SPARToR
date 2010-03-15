@@ -6,7 +6,7 @@
 #include "SDL_net.h"
 
 
-void input(int on,int sym,Uint16 unicode);
+void input(int press,SDL_keysym keysym);
 void readinput();
 
 #endif

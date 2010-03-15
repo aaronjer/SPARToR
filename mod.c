@@ -12,6 +12,7 @@
 
 
 #include "SDL.h"
+#include "SDL_opengl.h"
 #include "main.h"
 #include "console.h"
 #include "net.h"
@@ -22,13 +23,13 @@
 
 
 static Uint32 loadsurfs_at = 0;
-static int    bg_invalid = 0;
 static int    setmodel = -1;
 
 
-SDL_Surface *surf_player = NULL;
-SDL_Surface *surf_world  = NULL;
-SDL_Surface *surf_bg     = NULL;
+
+#define TEX_PLAYER 0
+#define TEX_WORLD  1
+GLuint textures[2];
 
 
 void mod_setup(Uint32 setupfr) {
@@ -119,74 +120,59 @@ void mod_loadsurfs(int quit) {
   loadsurfs_at = 0;
   drawhulls = 0;
 
-  // free existing surfs
-  if( surf_player ) { SDL_FreeSurface(surf_player); surf_player = NULL; }
-  if( surf_world  ) { SDL_FreeSurface(surf_world ); surf_world  = NULL; }
-  if( surf_bg     ) { SDL_FreeSurface(surf_bg    ); surf_bg     = NULL; }
+  SDL_Surface *surf;
+  GLint err;
+
+  // free existing textures
+  glDeleteTextures(2,textures);
 
   if( quit ) return;
 
-  // load scale 1:1 surfs
-  surf_player = IMG_Load("images/player.png");
-  surf_world  = IMG_Load("images/world.png" );
-  surf_bg     = SDL_CreateRGBSurface(SDL_HWSURFACE,NATIVEW*scale,NATIVEH*scale,
-                                     screen->format->BitsPerPixel,
-                                     screen->format->Rmask,
-                                     screen->format->Gmask,
-                                     screen->format->Bmask,
-                                     0);
+  glPixelStorei(GL_UNPACK_ALIGNMENT,4);
+  glGenTextures(2,textures);
 
-  // scale up?
-  SDL_Surface *surf_tmp;
-  Uint32 key;
-  Uint8 r,g,b;
+  glBindTexture(GL_TEXTURE_2D,textures[TEX_PLAYER]);
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+  surf = IMG_Load("images/player.png");
+  err = gluBuild2DMipmaps(GL_TEXTURE_2D,GL_RGBA,surf->w,surf->h,GL_RGBA,GL_UNSIGNED_BYTE,surf->pixels);
+  if( err ) fprintf(stderr,"gluBuild2DMipmaps() error: %d\n",err);
+  SDL_FreeSurface(surf);
 
-#define MAYBE_SCALE_UP(surf) {                                            \
-  surf_tmp = SJDL_CopyScaled(surf, SDL_HWSURFACE|SDL_SRCCOLORKEY, scale); \
-  SDL_FreeSurface(surf);                                                  \
-  SJDL_GetPixel(surf_tmp,0,0,&r,&g,&b);                                   \
-  key = SDL_MapRGB(surf_tmp->format,r,g,b);                               \
-  SDL_SetColorKey(surf_tmp,SDL_SRCCOLORKEY,key);                          \
-  surf = SDL_DisplayFormat(surf_tmp);                                     \
-  SDL_FreeSurface(surf_tmp); }
-
-  MAYBE_SCALE_UP(surf_player);
-  MAYBE_SCALE_UP(surf_world );
-
-  bg_invalid = 1;
+  glBindTexture(GL_TEXTURE_2D,textures[TEX_WORLD]);
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+  surf = IMG_Load("images/world.png" );
+  err = gluBuild2DMipmaps(GL_TEXTURE_2D,GL_RGBA,surf->w,surf->h,GL_RGBA,GL_UNSIGNED_BYTE,surf->pixels);
+  if( err ) fprintf(stderr,"gluBuild2DMipmaps() error: %d\n",err);
+  SDL_FreeSurface(surf);
 }
 
 void mod_predraw(SDL_Surface *screen,Uint32 vidfr) {
-  if( bg_invalid ) {
-    int i=0,j;
-    while(i<23) {
-      int step = (i<6||i==10||i==15) ? 1 : 4; 
-      for(j=0;j<15;j++)
-        SJDL_BlitScaled(surf_world, &(SDL_Rect){80,16,step*16,16}, surf_bg, &(SDL_Rect){i*16,j*16,0,0}, scale);
-      i += step;
-    }
-    for(i=8;i<15;i++)
-      SJDL_BlitScaled(surf_world, &(SDL_Rect){ 80,64,16,16}, surf_bg, &(SDL_Rect){ 9*16, i*16,0,0}, scale); //low tall
-    SJDL_BlitScaled(  surf_world, &(SDL_Rect){ 96,48,16,16}, surf_bg, &(SDL_Rect){ 9*16, 7*16,0,0}, scale); //corner nw
-    for(i=10;i<16;i++)
-      SJDL_BlitScaled(surf_world, &(SDL_Rect){112,32,16,16}, surf_bg, &(SDL_Rect){ i*16, 7*16,0,0}, scale); //long horiz
-    SJDL_BlitScaled(  surf_world, &(SDL_Rect){112,80,16,16}, surf_bg, &(SDL_Rect){11*16, 7*16,0,0}, scale); //t-piece
-    SJDL_BlitScaled(  surf_world, &(SDL_Rect){128,80,16,16}, surf_bg, &(SDL_Rect){16*16, 7*16,0,0}, scale); //corner se
-    for(i=0;i<7;i++)
-      SJDL_BlitScaled(surf_world, &(SDL_Rect){ 80,64,16,16}, surf_bg, &(SDL_Rect){16*16, i*16,0,0}, scale); //high tall
-    SJDL_BlitScaled(  surf_world, &(SDL_Rect){ 80,64,16,16}, surf_bg, &(SDL_Rect){11*16, 6*16,0,0}, scale); //little pipe
-    SJDL_BlitScaled(  surf_world, &(SDL_Rect){ 80,48,16,16}, surf_bg, &(SDL_Rect){11*16, 5*16,0,0}, scale); //pipe end
-    SJDL_BlitScaled(  surf_world, &(SDL_Rect){144,16,48,16}, surf_bg, &(SDL_Rect){12*16, 8*16,0,0}, scale); //shadow
-    SJDL_BlitScaled(  surf_world, &(SDL_Rect){ 80,32,16,16}, surf_bg, &(SDL_Rect){ 6*16, 7*16,0,0}, scale); //end cap
-    bg_invalid = 0;
+  //draw background
+  int i=0,j;
+  while(i<23) {
+    int step = (i<6||i==10||i==15) ? 1 : 4; 
+    for(j=0;j<15;j++)
+      SJGL_BlitScaled(textures[TEX_WORLD], &(SDL_Rect){80,16,step*16,16}, &(SDL_Rect){i*16,j*16,0,0}, scale);
+    i += step;
   }
-
-  SDL_BlitSurface(surf_bg, &(SDL_Rect){0,0,NATIVEW*scale,NATIVEH*scale}, screen, &(SDL_Rect){0,0,0,0});
+  for(i=8;i<15;i++)
+    SJGL_BlitScaled(textures[TEX_WORLD], &(SDL_Rect){ 80,64,16,16}, &(SDL_Rect){ 9*16, i*16,0,0}, scale); //low tall
+  SJGL_BlitScaled(  textures[TEX_WORLD], &(SDL_Rect){ 96,48,16,16}, &(SDL_Rect){ 9*16, 7*16,0,0}, scale); //corner nw
+  for(i=10;i<16;i++)
+    SJGL_BlitScaled(textures[TEX_WORLD], &(SDL_Rect){112,32,16,16}, &(SDL_Rect){ i*16, 7*16,0,0}, scale); //long horiz
+  SJGL_BlitScaled(  textures[TEX_WORLD], &(SDL_Rect){112,80,16,16}, &(SDL_Rect){11*16, 7*16,0,0}, scale); //t-piece
+  SJGL_BlitScaled(  textures[TEX_WORLD], &(SDL_Rect){128,80,16,16}, &(SDL_Rect){16*16, 7*16,0,0}, scale); //corner se
+  for(i=0;i<7;i++)
+    SJGL_BlitScaled(textures[TEX_WORLD], &(SDL_Rect){ 80,64,16,16}, &(SDL_Rect){16*16, i*16,0,0}, scale); //high tall
+  SJGL_BlitScaled(  textures[TEX_WORLD], &(SDL_Rect){ 80,64,16,16}, &(SDL_Rect){11*16, 6*16,0,0}, scale); //little pipe
+  SJGL_BlitScaled(  textures[TEX_WORLD], &(SDL_Rect){ 80,48,16,16}, &(SDL_Rect){11*16, 5*16,0,0}, scale); //pipe end
+  SJGL_BlitScaled(  textures[TEX_WORLD], &(SDL_Rect){144,16,48,16}, &(SDL_Rect){12*16, 8*16,0,0}, scale); //shadow
+  SJGL_BlitScaled(  textures[TEX_WORLD], &(SDL_Rect){ 80,32,16,16}, &(SDL_Rect){ 6*16, 7*16,0,0}, scale); //end cap
 }
 
 void mod_draw(SDL_Surface *screen,int objid,OBJ_t *o) {
-  Uint32 color;
-  //SDL_Rect srect = (SDL_Rect){0,0,200,200};
   SDL_Rect drect;
 
   if( loadsurfs_at && loadsurfs_at<metafr )
@@ -203,23 +189,22 @@ void mod_draw(SDL_Surface *screen,int objid,OBJ_t *o) {
       drect = (SDL_Rect){(pl->pos.x-10),(pl->pos.y-15),0,0};
       if( pl->facingr ) {
         if( pl->model==4 ) //girl hair
-          SJDL_BlitScaled(surf_player, &(SDL_Rect){ 80,120,20,15}, screen, &(SDL_Rect){drect.x-4,drect.y+pl->gundown/7,0,0},scale);
-        SJDL_BlitScaled(surf_player, &(SDL_Rect){ 0, 0+pl->model*30,20,30}, screen, &drect, scale);
+          SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){ 80,120,20,15}, &(SDL_Rect){drect.x-4,drect.y+pl->gundown/7,0,0},scale);
+        SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){ 0, 0+pl->model*30,20,30}, &drect, scale);
         drect = (SDL_Rect){(pl->pos.x- 5-pl->gunback),(pl->pos.y-10+pl->gundown/5),0,0};
-        SJDL_BlitScaled(surf_player, &(SDL_Rect){ 0+gunshift,150,24,21}, screen, &drect, scale);
+        SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){ 0+gunshift,150,24,21}, &drect, scale);
       } else {
         if( pl->model==4 ) //girl hair
-          SJDL_BlitScaled(surf_player, &(SDL_Rect){100,120,20,15}, screen, &(SDL_Rect){drect.x+4,drect.y+pl->gundown/7,0,0},scale);
-        SJDL_BlitScaled(surf_player, &(SDL_Rect){20, 0+pl->model*30,20,30}, screen, &drect, scale);
+          SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){100,120,20,15}, &(SDL_Rect){drect.x+4,drect.y+pl->gundown/7,0,0},scale);
+        SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){20, 0+pl->model*30,20,30}, &drect, scale);
         drect = (SDL_Rect){(pl->pos.x-19+pl->gunback),(pl->pos.y-10+pl->gundown/5),0,0};
-        SJDL_BlitScaled(surf_player, &(SDL_Rect){24+gunshift,150,24,21}, screen, &drect, scale);
+        SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){24+gunshift,150,24,21}, &drect, scale);
       }
       break;
     }
     case OBJT_BULLET: {
       BULLET_t *bu = o->data;
-      color = SDL_MapRGB(screen->format, 0xFF*(hotfr%2), 0xFF*(hotfr%2), 0xFF*(hotfr%2));
-      SJDL_FillScaled(screen,&(SDL_Rect){bu->pos.x-2, bu->pos.y-2, 4, 4},color,scale);
+      SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){141,150,4,4}, &(SDL_Rect){bu->pos.x-2, bu->pos.y-2, 4, 4}, scale);
       break;
     }
     case OBJT_DUMMY: {
@@ -228,12 +213,12 @@ void mod_draw(SDL_Surface *screen,int objid,OBJ_t *o) {
                          du->hull[1].x-du->hull[0].x, du->hull[1].y-du->hull[0].y};
       Sint16 offs = drect.w==drect.h ? 48 : 0;
       if( drect.w > drect.h ) while( drect.w>0 && drect.w<400 ) {
-        SJDL_BlitScaled(surf_world, &(SDL_Rect){0+offs,16,16,16}, screen, &(SDL_Rect){drect.x,drect.y,drect.w,drect.h}, scale);
+        SJGL_BlitScaled(textures[TEX_WORLD], &(SDL_Rect){0+offs,16,16,16}, &(SDL_Rect){drect.x,drect.y,drect.w,drect.h}, scale);
         drect.x += 16;
         drect.w -= 16;
         offs = drect.w==16 ? 32 : 16;
       } else                  while( drect.h>0 && drect.h<400 ) {
-        SJDL_BlitScaled(surf_world, &(SDL_Rect){48,0+offs,16,16}, screen, &(SDL_Rect){drect.x,drect.y,drect.w,drect.h}, scale);
+        SJGL_BlitScaled(textures[TEX_WORLD], &(SDL_Rect){48,0+offs,16,16}, &(SDL_Rect){drect.x,drect.y,drect.w,drect.h}, scale);
         drect.y += 16;
         drect.h -= 16;
         offs = drect.h==16 ? 32 : 16;

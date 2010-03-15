@@ -13,6 +13,7 @@
 
 #include "SDL.h"
 #include "SDL_net.h"
+#include "SDL_opengl.h"
 #include "video.h"
 #include "main.h"
 #include "console.h"
@@ -57,6 +58,26 @@ void render() {
   w = vidinfo->current_w;
   h = vidinfo->current_h;
 
+  glViewport(0,0,w,h);
+
+  glMatrixMode(GL_TEXTURE);
+  glLoadIdentity();
+  glScalef(1.0f/256.0f, 1.0f/256.0f, 1);
+
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  glOrtho(0,w,h,0,0,1);
+
+  glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity();
+
+  glColor4f(1.0f,1.0f,1.0f,1.0f);
+  glEnable(GL_TEXTURE_2D);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glEnable(GL_BLEND);
+
+  glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+
   mod_predraw(screen,vidfr);
 
   //display objects
@@ -80,7 +101,7 @@ void render() {
     }
     if( pos && drawhulls ) {
       sprintf(buf,"%d",i);
-      SJF_DrawText(screen, pos->x*scale, pos->y*scale, buf);
+      SJF_DrawText(pos->x*scale, pos->y*scale, buf);
     }
   }
 
@@ -88,21 +109,26 @@ void render() {
   if(console_open) {
     int conh = h/2 - 40;
     if(conh<40) conh = 40;
-    color = SDL_MapRGB(screen->format,0x22,0x22,0x22);
-    SDL_FillRect(screen,&(SDL_Rect){0,0,w,conh},color);
+    glDisable(GL_TEXTURE_2D);
+    glColor4f(0.15,0.15,0.15,0.85);
+    glBegin(GL_QUADS);
+    glVertex2f(0,0); glVertex2f(w,0); glVertex2f(w,conh); glVertex2f(0,conh);
+    glEnd();
+    glEnable(GL_TEXTURE_2D);
+    glColor4f(1.0f,1.0f,1.0f,1.0f);
     x = 10;
     y = conh-20;
     if((ticks/200)%2)
-      SJF_DrawChar(screen, x+SJF_TextExtents(SJC.buf[0]), y, '_');
+      SJF_DrawChar(x+SJF_TextExtents(SJC.buf[0]), y, '_');
     for(i=0;y>0;i++) {
       if(SJC.buf[i])
-        SJF_DrawText(screen,x,y,SJC.buf[i]);
+        SJF_DrawText(x,y,SJC.buf[i]);
       y -= 10;
     }
     if( SJC.buf[0] && SJC.buf[0][0] ) {
       char s[10];
       sprintf(s,"%d",SJC.buf[0][strlen(SJC.buf[0])-1]);
-      SJF_DrawText(screen,w-20,conh-20,s);
+      SJF_DrawText(w-20,conh-20,s);
     }
   }
 
@@ -114,24 +140,24 @@ void render() {
   if( showstats ) {
     Uint32 denom = vidfrmod+1;
     sprintf(buf,"idle_time %4d"       ,       idle_time/denom);
-    SJF_DrawText(screen,w-20-SJF_TextExtents(buf),10,buf);
+    SJF_DrawText(w-20-SJF_TextExtents(buf),10,buf);
     sprintf(buf,"render_time %4d"     ,     render_time/denom);
-    SJF_DrawText(screen,w-20-SJF_TextExtents(buf),20,buf);
+    SJF_DrawText(w-20-SJF_TextExtents(buf),20,buf);
     sprintf(buf,"adv_move_time %4d"   ,   adv_move_time/denom);
-    SJF_DrawText(screen,w-20-SJF_TextExtents(buf),30,buf);
+    SJF_DrawText(w-20-SJF_TextExtents(buf),30,buf);
     sprintf(buf,"adv_collide_time %4d",adv_collide_time/denom);
-    SJF_DrawText(screen,w-20-SJF_TextExtents(buf),40,buf);
+    SJF_DrawText(w-20-SJF_TextExtents(buf),40,buf);
     sprintf(buf,"adv_game_time %4d"   ,   adv_game_time/denom);
-    SJF_DrawText(screen,w-20-SJF_TextExtents(buf),50,buf);
+    SJF_DrawText(w-20-SJF_TextExtents(buf),50,buf);
     sprintf(buf,"unaccounted_time %4d",unaccounted_time/denom);
-    SJF_DrawText(screen,w-20-SJF_TextExtents(buf),60,buf);
+    SJF_DrawText(w-20-SJF_TextExtents(buf),60,buf);
     sprintf(buf,"adv_frames  %2.2f"   ,(float)adv_frames/(float)denom);
-    SJF_DrawText(screen,w-20-SJF_TextExtents(buf),70,buf);
+    SJF_DrawText(w-20-SJF_TextExtents(buf),70,buf);
     sprintf(buf,"fr: idx=%d meta=%d vid=%d hot=%d",metafr%maxframes,metafr,vidfr,hotfr);
-    SJF_DrawText(screen,w-20-SJF_TextExtents(buf),80,buf);
+    SJF_DrawText(w-20-SJF_TextExtents(buf),80,buf);
   }
 
-  SDL_Flip(screen);
+  SDL_GL_SwapBuffers();
   setdrawnfr(vidfr);
 
   if( vidfrmod==maxframes-1 ) { // reset time stats
@@ -147,7 +173,7 @@ void render() {
 
 
 void setvideo(int w,int h,int quiet) {
-  Uint32 flags = SDL_DOUBLEBUF|SDL_HWSURFACE|SDL_ANYFORMAT;
+  Uint32 flags = SDL_OPENGL;
   if( fullscreen )
     flags |= SDL_FULLSCREEN;
   else

@@ -8,7 +8,7 @@ OBJSRES = icon.o
 CC = ~/mingw32/bin/i386-mingw32-gcc
 WINDRES = ~/mingw32/bin/i386-mingw32-windres
 FLAGS = -g -Wall -mwindows
-LIBS = -lmingw32 -lSDLmain -lSDL -lSDL_net -lSDL_image -lm
+LIBS = -lmingw32 -lSDLmain -lSDL -lSDL_net -lSDL_image -lopengl32 -lglu32 -lm
 INC = -I ~/mingw32/include/SDL
 
 

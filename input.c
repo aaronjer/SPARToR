@@ -41,8 +41,15 @@ char getnextcmd() {
 }
 
 
-void input(int press,int sym,Uint16 unicode) {
-  if(press && sym==SDLK_F11) {
+void input(int press,SDL_keysym keysym) {
+  SDLKey sym = keysym.sym;
+  SDLMod mod = keysym.mod;
+  Uint16 unicode = keysym.unicode;
+
+  if( (sym==SDLK_q  && mod&(KMOD_LCTRL|KMOD_RCTRL)) ||
+      (sym==SDLK_F4 && mod&(KMOD_LALT |KMOD_RALT )) )
+    command("exit");
+  else if(press && sym==SDLK_F11) {
     if( !fullscreen )
       command("fullscreen");
     else

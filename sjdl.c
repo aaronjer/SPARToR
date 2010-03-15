@@ -38,6 +38,32 @@ SDL_Surface *SJDL_CopyScaled(SDL_Surface *src,Uint32 flags,int scale) {
   return dst;
 }
 
+//uses GL to do the same thing as SJDL_BlitScaled
+int SJGL_BlitScaled(GLuint tex, SDL_Rect *s, SDL_Rect *d, int scale) {
+  static GLuint pretex = (GLuint)-1;
+  if( tex!=pretex ) {
+    glBindTexture(GL_TEXTURE_2D,tex);
+    pretex = tex;
+  }
+  d->x *= scale;
+  d->y *= scale;
+  d->w = s->w*scale;
+  d->h = s->h*scale;
+
+  glBegin(GL_QUADS);
+/*glTexCoord2f((s->x     )/256.0f,(s->y     )/256.0f); glVertex2f(d->x     ,d->y     );
+  glTexCoord2f((s->x+s->w)/256.0f,(s->y     )/256.0f); glVertex2f(d->x+d->w,d->y     );
+  glTexCoord2f((s->x+s->w)/256.0f,(s->y+s->h)/256.0f); glVertex2f(d->x+d->w,d->y+d->h);
+  glTexCoord2f((s->x     )/256.0f,(s->y+s->h)/256.0f); glVertex2f(d->x     ,d->y+d->h);*/
+  glTexCoord2i(s->x     ,s->y     ); glVertex2f(d->x     ,d->y     );
+  glTexCoord2i(s->x+s->w,s->y     ); glVertex2f(d->x+d->w,d->y     );
+  glTexCoord2i(s->x+s->w,s->y+s->h); glVertex2f(d->x+d->w,d->y+d->h);
+  glTexCoord2i(s->x     ,s->y+s->h); glVertex2f(d->x     ,d->y+d->h);
+  glEnd();
+
+  return 0;
+}
+
 //blits from one surface to another after scaling s/drect positions and sizes
 int SJDL_BlitScaled(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst, SDL_Rect *dstrect, int scale) {
   SDL_Rect srcrect2 = (SDL_Rect){srcrect->x*scale, srcrect->y*scale, srcrect->w*scale, srcrect->h*scale};
@@ -141,6 +167,12 @@ void SJDL_GetPixel(SDL_Surface *surf, int x, int y, Uint8 *R, Uint8 *G, Uint8 *B
 
 void SJDL_DrawSquare(SDL_Surface *surf, SDL_Rect *rect, unsigned int color) {
   SDL_Rect edge;
+  glBegin(GL_LINE_LOOP);
+  glVertex2f(rect->x        ,rect->y        );
+  glVertex2f(rect->x+rect->w,rect->y        );
+  glVertex2f(rect->x+rect->w,rect->y+rect->h);
+  glVertex2f(rect->x        ,rect->y+rect->h);
+  glEnd();
   edge = *rect;
   edge.w = 1;
   SDL_FillRect(surf,&edge,color);

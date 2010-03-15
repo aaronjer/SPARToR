@@ -11,9 +11,10 @@
  **/
 
 #include "SDL.h"
+#include "SDL_opengl.h"
 #include "font.h"
 
-SJF_t SJF = {NULL,8,12,128,
+SJF_t SJF = {0,8,12,128,
   { 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   //non-printable
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   //non-printable
     6, 3, 5, 7, 7, 6, 7, 3, 5, 5, 6, 7, 3, 6, 3, 6,   //<space> - </>
@@ -135,87 +136,91 @@ SJF_t SJF = {NULL,8,12,128,
 //initializes the SuperJer Font library
 void SJF_Init()
 {
-  const SDL_VideoInfo *vidinfo;
+  Uint32 pixels[256*256];
   Uint32 u;
   Uint32 v;
+  GLint err;
 
-  vidinfo = SDL_GetVideoInfo();
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+  Uint32 black = 0x000000FF, white = 0xFFFFFFFF, clear = 0x00000000;
+#else
+  Uint32 black = 0xFF000000, white = 0xFFFFFFFF, clear = 0x00000000;
+#endif
 
-  SJF.surf = SDL_CreateRGBSurface(SDL_SRCCOLORKEY,128,128,
-                                  vidinfo->vfmt->BitsPerPixel,
-                                  vidinfo->vfmt->Rmask,
-                                  vidinfo->vfmt->Gmask,
-                                  vidinfo->vfmt->Bmask,
-                                  vidinfo->vfmt->Amask);
-  SDL_SetColorKey(SJF.surf,SDL_SRCCOLORKEY,SDL_MapRGB(SJF.surf->format,0,0,0));
-  SDL_FillRect(SJF.surf,NULL,SDL_MapRGB(SJF.surf->format,0,0,0));
-  SDL_LockSurface(SJF.surf);
   for(u=0; u<128; u++)
     for(v=0; v<128; v++)
       if( SJF.raw[u+v*128]!=' ' )
-        SJDL_SetPixel(SJF.surf, u, v, 255, 255, 255);
+        pixels[u+v*256] = white;
       else if( (u<127 && SJF.raw[(u+1)+(v  )*128]!=' ')
             || (u>0   && SJF.raw[(u-1)+(v  )*128]!=' ')
             || (v<127 && SJF.raw[(u  )+(v+1)*128]!=' ')
             || (v>0   && SJF.raw[(u  )+(v-1)*128]!=' ') )
-        SJDL_SetPixel( SJF.surf, u, v, 0, 0, 1 ); 
-  SDL_UnlockSurface(SJF.surf);
+        pixels[u+v*256] = black;
+      else
+        pixels[u+v*256] = clear;
+
+  //make into a GL texture
+  glPixelStorei(GL_UNPACK_ALIGNMENT,4);
+  glGenTextures(1,&SJF.tex);
+
+  glBindTexture(GL_TEXTURE_2D,SJF.tex);
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+  err = gluBuild2DMipmaps(GL_TEXTURE_2D,GL_RGBA,256,256,GL_RGBA,GL_UNSIGNED_BYTE,pixels);
+  if( err ) fprintf(stderr,"SJF: gluBuild2DMipmaps() error: %d\n",err);
 }
 
 
-//draws a single character in system text on a surface 
-void SJF_DrawChar(SDL_Surface *surf, int x, int y, char c)
+//draws a single character in system text in GL
+void SJF_DrawChar(int x, int y, char ch)
 {
-  SDL_Rect src;
-  SDL_Rect dst;
+  SDL_Rect s = (SDL_Rect){ (ch%16)*SJF.w, (ch/16)*SJF.h, 8, 12 };
+  SDL_Rect d = (SDL_Rect){             x,             y, 8, 12 };
 
-  src.x = (c%16)*SJF.w;
-  src.y = ((c)/16)*SJF.h;
-  src.w = 8;
-  src.h = 12;
-
-  dst.x = x;
-  dst.y = y;
-  dst.w = 8;
-  dst.h = 12;
-
-  SDL_BlitSurface(SJF.surf,&src,surf,&dst);
+  glBindTexture(GL_TEXTURE_2D,SJF.tex);
+  glBegin(GL_QUADS);
+  glTexCoord2i(s.x    ,s.y    ); glVertex2f(d.x    ,d.y    );
+  glTexCoord2i(s.x+s.w,s.y    ); glVertex2f(d.x+d.w,d.y    );
+  glTexCoord2i(s.x+s.w,s.y+s.h); glVertex2f(d.x+d.w,d.y+d.h);
+  glTexCoord2i(s.x    ,s.y+s.h); glVertex2f(d.x    ,d.y+d.h);
+  glEnd();
 }
 
 
-//draws a message in system text at location on a surface
-void SJF_DrawText(SDL_Surface *surf, int x, int y, const char *s)
+//draws a message in system text at location in GL
+void SJF_DrawText(int x, int y, const char *str)
 {
-  SDL_Rect src;
-  SDL_Rect dst;
+  SDL_Rect s = (SDL_Rect){ 0, 0, 0, 12 };
+  SDL_Rect d = (SDL_Rect){ x, y, 0, 12 };
 
-  src.h = 12;
-  dst.x = x;
-  dst.y = y;
-  dst.h = 12;
-
-  while( *s )
+  glBindTexture(GL_TEXTURE_2D,SJF.tex);
+  glBegin(GL_QUADS);
+  while( *str )
   {
-    src.x = (*s%16)*SJF.w;
-    src.y = ((*s)/16)*SJF.h;
-        src.w = SJF.space[(Uint8)*s];
-        dst.w = src.w;
-    SDL_UpperBlit(SJF.surf,&src,surf,&dst);
-    dst.x += src.w-1;
-    s++;
+    s.x = (*str%16)*SJF.w;
+    s.y = (*str/16)*SJF.h;
+    s.w = SJF.space[(Uint8)*str];
+    d.w = s.w;
+    glTexCoord2i(s.x    ,s.y    ); glVertex2f(d.x    ,d.y    );
+    glTexCoord2i(s.x+s.w,s.y    ); glVertex2f(d.x+d.w,d.y    );
+    glTexCoord2i(s.x+s.w,s.y+s.h); glVertex2f(d.x+d.w,d.y+d.h);
+    glTexCoord2i(s.x    ,s.y+s.h); glVertex2f(d.x    ,d.y+d.h);
+    d.x += s.w-1;
+    str++;
   }
+  glEnd();
 }
 
 
 //returns number of pixels text will consume horizontally
 //non-printable characters will cause unexpected behavior
-int SJF_TextExtents(const char *s)
+int SJF_TextExtents(const char *str)
 {
   int n = 0;
-  if( s==NULL )
+  if( str==NULL )
     return 0;
-  while(*s)
-    n += SJF.space[(Uint8)*s++]-1;
+  while(*str)
+    n += SJF.space[(Uint8)*str++]-1;
   return n;
 }
 
