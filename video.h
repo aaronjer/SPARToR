@@ -22,11 +22,11 @@ extern int screen_w;
 extern int screen_h;
 extern int desktop_w;
 extern int desktop_h;
-extern int video_reset;
 
 
 void render();
 void setvideo(int w,int h,int quiet);
+void setvideosoon(int w,int h,int delay);
 
 #endif
 

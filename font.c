@@ -139,13 +139,15 @@ void SJF_Init()
   Uint32 pixels[256*256];
   Uint32 u;
   Uint32 v;
-  GLint err;
 
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
   Uint32 black = 0x000000FF, white = 0xFFFFFFFF, clear = 0x00000000;
 #else
   Uint32 black = 0xFF000000, white = 0xFFFFFFFF, clear = 0x00000000;
 #endif
+
+  if( glIsTexture(SJF.tex) ) // bailout if already loaded
+    return;
 
   for(u=0; u<128; u++)
     for(v=0; v<128; v++)
@@ -161,13 +163,13 @@ void SJF_Init()
 
   //make into a GL texture
   glPixelStorei(GL_UNPACK_ALIGNMENT,4);
+  glDeleteTextures(1,&SJF.tex);
   glGenTextures(1,&SJF.tex);
 
   glBindTexture(GL_TEXTURE_2D,SJF.tex);
   glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
-  err = gluBuild2DMipmaps(GL_TEXTURE_2D,GL_RGBA,256,256,GL_RGBA,GL_UNSIGNED_BYTE,pixels);
-  if( err ) fprintf(stderr,"SJF: gluBuild2DMipmaps() error: %d\n",err);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 }
 
 
@@ -177,6 +179,7 @@ void SJF_DrawChar(int x, int y, char ch)
   SDL_Rect s = (SDL_Rect){ (ch%16)*SJF.w, (ch/16)*SJF.h, 8, 12 };
   SDL_Rect d = (SDL_Rect){             x,             y, 8, 12 };
 
+  glBindTexture(GL_TEXTURE_2D,0); //FIXME: hack 4 win
   glBindTexture(GL_TEXTURE_2D,SJF.tex);
   glBegin(GL_QUADS);
   glTexCoord2i(s.x    ,s.y    ); glVertex2f(d.x    ,d.y    );
@@ -193,6 +196,7 @@ void SJF_DrawText(int x, int y, const char *str)
   SDL_Rect s = (SDL_Rect){ 0, 0, 0, 12 };
   SDL_Rect d = (SDL_Rect){ x, y, 0, 12 };
 
+  glBindTexture(GL_TEXTURE_2D,0); //FIXME: hack 4 win
   glBindTexture(GL_TEXTURE_2D,SJF.tex);
   glBegin(GL_QUADS);
   while( *str )

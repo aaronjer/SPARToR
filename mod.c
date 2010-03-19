@@ -22,7 +22,6 @@
 #include <math.h>
 
 
-static Uint32 loadsurfs_at = 0;
 static int    setmodel = -1;
 
 
@@ -84,8 +83,7 @@ void mod_setup(Uint32 setupfr) {
 }
 
 void mod_setvideo(int w,int h) {
-  loadsurfs_at = metafr+30;
-  drawhulls = 1;
+  mod_loadsurfs(0);
 }
 
 void mod_quit() {
@@ -117,11 +115,9 @@ int mod_command(char *q) {
 }
 
 void mod_loadsurfs(int quit) {
-  loadsurfs_at = 0;
   drawhulls = 0;
 
   SDL_Surface *surf;
-  GLint err;
 
   // free existing textures
   glDeleteTextures(2,textures);
@@ -135,16 +131,14 @@ void mod_loadsurfs(int quit) {
   glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
   surf = IMG_Load("images/player.png");
-  err = gluBuild2DMipmaps(GL_TEXTURE_2D,GL_RGBA,surf->w,surf->h,GL_RGBA,GL_UNSIGNED_BYTE,surf->pixels);
-  if( err ) fprintf(stderr,"gluBuild2DMipmaps() error: %d\n",err);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, surf->w, surf->h, 0, SJDL_GLFormatOf(surf), GL_UNSIGNED_BYTE, surf->pixels);
   SDL_FreeSurface(surf);
 
   glBindTexture(GL_TEXTURE_2D,textures[TEX_WORLD]);
   glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
   surf = IMG_Load("images/world.png" );
-  err = gluBuild2DMipmaps(GL_TEXTURE_2D,GL_RGBA,surf->w,surf->h,GL_RGBA,GL_UNSIGNED_BYTE,surf->pixels);
-  if( err ) fprintf(stderr,"gluBuild2DMipmaps() error: %d\n",err);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, surf->w, surf->h, 0, SJDL_GLFormatOf(surf), GL_UNSIGNED_BYTE, surf->pixels);
   SDL_FreeSurface(surf);
 }
 
@@ -174,9 +168,6 @@ void mod_predraw(SDL_Surface *screen,Uint32 vidfr) {
 
 void mod_draw(SDL_Surface *screen,int objid,OBJ_t *o) {
   SDL_Rect drect;
-
-  if( loadsurfs_at && loadsurfs_at<metafr )
-    mod_loadsurfs(0);
 
   switch(o->type)
   {

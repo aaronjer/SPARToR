@@ -31,6 +31,10 @@ void command(const char *s){
   TRY
     if( q==NULL ){
       ;
+    }else if( strcmp(q,"tex")==0 ){
+      char *val = strtok(NULL," ");
+      if( val )
+        SJF.tex = atoi(val);
     }else if( strcmp(q,"exit")==0 || strcmp(q,"quit")==0 ){
       cleanup();
     }else if( strcmp(q,"listen")==0 ){
@@ -56,20 +60,14 @@ void command(const char *s){
       int w = sw?atoi(sw):0;
       int h = sh?atoi(sh):0;
       fullscreen = strcmp(q,"fullscreen")==0 ? 1 : 0;
-      video_reset = 1;
-      if( w>=320 && h>=200 ) {
-        screen_w = w;
-        screen_h = h;
-      } else if( w>=1 && w<=5 ) {
-        screen_w = NATIVEW*w;
-        screen_h = NATIVEH*w;
-      } else if( fullscreen ) {
-        screen_w = desktop_w;
-        screen_h = desktop_h;
-      } else {
-        screen_w = NATIVEW*2;
-        screen_h = NATIVEH*2;
-      }
+      if( w>=320 && h>=200 )
+        setvideosoon(w,h,1);
+      else if( w>=1 && w<=5 )
+        setvideosoon(NATIVEW*w,NATIVEH*w,1);
+      else if( fullscreen )
+        setvideosoon(desktop_w,desktop_h,1);
+      else
+        setvideosoon(NATIVEW*2,NATIVEH*2,1);
     }else if( strcmp(q,"slow")==0 ){
       SJC_Write("Speed is now slow");
       ticksaframe = 300;

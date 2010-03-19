@@ -61,7 +61,6 @@ Uint32 adv_game_time = 0;
 Uint32 adv_frames = 0;
 
 
-
 int main(int argc,char **argv) {
   SDL_Event event;
   const SDL_VideoInfo *vidinfo;
@@ -104,12 +103,8 @@ int main(int argc,char **argv) {
   vidinfo = SDL_GetVideoInfo();
   desktop_w = vidinfo->current_w;
   desktop_h = vidinfo->current_h;
-  char caps[200];
-  VIDCAPS(caps,vidinfo);
   setvideo(768,480,1);
   vidinfo = SDL_GetVideoInfo();
-
-  SJF_Init();
 
   SJC_Write("SPARToR v%s  Copyright (C) 2010 Jer Wilson",VERSION);
   SJC_Write("Please visit github.com/superjer for updates and source code.");
@@ -117,9 +112,6 @@ int main(int argc,char **argv) {
   SJC_Write(" --->  Type 'help' for help.  <---");
   SJC_Write("");
   SJC_Write("Desktop resolution detected as %d x %d",desktop_w,desktop_h);
-  SJC_Write(caps);
-  VIDCAPS(caps,vidinfo);
-  SJC_Write(caps);
 
   //main loop
   for(;;) {
@@ -129,11 +121,11 @@ int main(int argc,char **argv) {
     ticks = newticks;
     metafr = ticks/ticksaframe + frameoffset;
     while( SDL_PollEvent(&event) ) switch(event.type) {
-      case SDL_VIDEOEXPOSE:                                            break;
-      case SDL_VIDEORESIZE: setvideo(event.resize.w,event.resize.h,0); break;
-      case SDL_KEYDOWN: input( 1, event.key.keysym );                  break;
-      case SDL_KEYUP:   input( 0, event.key.keysym );                  break;
-      case SDL_QUIT: cleanup();                                        break;
+      case SDL_VIDEOEXPOSE:                                                 break;
+      case SDL_VIDEORESIZE: setvideosoon(event.resize.w,event.resize.h,10); break;
+      case SDL_KEYDOWN:     input( 1, event.key.keysym );                   break;
+      case SDL_KEYUP:       input( 0, event.key.keysym );                   break;
+      case SDL_QUIT:        cleanup();                                      break;
     }
     idle_time += SDL_GetTicks() - idle_start;
     readinput();

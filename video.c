@@ -28,7 +28,9 @@ int screen_w = NATIVEW;
 int screen_h = NATIVEH;
 int desktop_w = 1024;
 int desktop_h = 768;
-int video_reset = 0;
+int soon = 1;
+int soon_w = 0;
+int soon_h = 0;
 
 
 
@@ -49,10 +51,10 @@ void render() {
   if( metafr==0 || vidfr<=drawnfr ) //==0 prevent never-draw bug
     return;
 
-  if( video_reset ) {
-    setvideo(screen_w,screen_h,0);
-    video_reset = 0;
-  }
+  if( soon==1 )
+    setvideo(soon_w,soon_h,0);
+  if( soon>0 )
+    soon--;
 
   vidinfo = SDL_GetVideoInfo();
   w = vidinfo->current_w;
@@ -109,8 +111,8 @@ void render() {
   if(console_open) {
     int conh = h/2 - 40;
     if(conh<40) conh = 40;
-    glDisable(GL_TEXTURE_2D);
     glColor4f(0.15,0.15,0.15,0.85);
+    glDisable(GL_TEXTURE_2D);
     glBegin(GL_QUADS);
     glVertex2f(0,0); glVertex2f(w,0); glVertex2f(w,conh); glVertex2f(0,conh);
     glEnd();
@@ -193,15 +195,15 @@ void setvideo(int w,int h,int quiet) {
   scale = (w/NATIVEW > h/NATIVEH) ? h/NATIVEH : w/NATIVEW;
   if( scale<1 )
     scale = 1;
+  SJF_Init();
   mod_setvideo(w,h);
   if( !quiet )
-  {
-    char caps[200];
-    SJC_Write("Video mode set to %d x %d %s",w,h,vidinfo->hw_available?"hardware":"software");
-    VIDCAPS(caps,vidinfo);
-    SJC_Write(caps);
-  }
+    SJC_Write("Video mode set to %d x %d",w,h);
 }
 
-
+void setvideosoon(int w,int h,int delay) {
+  soon_w = w;
+  soon_h = h;
+  soon = delay;
+}
 

@@ -12,6 +12,7 @@
 
 
 #include "SDL.h"
+#include "SDL_opengl.h"
 #include "sjdl.h"
 
 //create a new surface by copying and scaling another
@@ -42,6 +43,7 @@ SDL_Surface *SJDL_CopyScaled(SDL_Surface *src,Uint32 flags,int scale) {
 int SJGL_BlitScaled(GLuint tex, SDL_Rect *s, SDL_Rect *d, int scale) {
   static GLuint pretex = (GLuint)-1;
   if( tex!=pretex ) {
+    glBindTexture(GL_TEXTURE_2D,0); //FIXME: hack 4 win
     glBindTexture(GL_TEXTURE_2D,tex);
     pretex = tex;
   }
@@ -183,6 +185,22 @@ void SJDL_DrawSquare(SDL_Surface *surf, SDL_Rect *rect, unsigned int color) {
   SDL_FillRect(surf,&edge,color);
   edge.y += rect->h - 1;
   SDL_FillRect(surf,&edge,color);
+}
+
+
+// returns the equivalent opengl format of an sdl surface
+GLenum SJDL_GLFormatOf(SDL_Surface *surf) {
+  if( surf->format->Amask > 0 ) {
+    if( surf->format->Rmask > surf->format->Bmask )
+      return (SDL_BYTEORDER==SDL_LIL_ENDIAN ? GL_BGRA : GL_RGBA);
+    else
+      return (SDL_BYTEORDER==SDL_LIL_ENDIAN ? GL_RGBA : GL_BGRA);
+  } else {
+    if( surf->format->Rmask > surf->format->Bmask )
+      return (SDL_BYTEORDER==SDL_LIL_ENDIAN ? GL_BGR : GL_RGB);
+    else
+      return (SDL_BYTEORDER==SDL_LIL_ENDIAN ? GL_RGB : GL_BGR);
+  }
 }
 
 
