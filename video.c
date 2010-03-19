@@ -26,6 +26,8 @@ int showstats = 1;
 int fullscreen = 0;
 int screen_w = NATIVEW;
 int screen_h = NATIVEH;
+int pad_left;
+int pad_top;
 int desktop_w = 1024;
 int desktop_h = 768;
 int soon = 1;
@@ -68,7 +70,9 @@ void render() {
 
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  glOrtho(0,w,h,0,0,1);
+  pad_left = (w - NATIVEW*scale)/2;
+  pad_top  = (h - NATIVEH*scale)/2;
+  glOrtho(-pad_left,w-pad_left,h-pad_top,-pad_top,0,1);
 
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
@@ -114,23 +118,24 @@ void render() {
     glColor4f(0.15,0.15,0.15,0.85);
     glDisable(GL_TEXTURE_2D);
     glBegin(GL_QUADS);
-    glVertex2f(0,0); glVertex2f(w,0); glVertex2f(w,conh); glVertex2f(0,conh);
+    glVertex2f( -pad_left,    -pad_top); glVertex2f(w-pad_left,    -pad_top);
+    glVertex2f(w-pad_left,conh-pad_top); glVertex2f( -pad_left,conh-pad_top);
     glEnd();
     glEnable(GL_TEXTURE_2D);
     glColor4f(1.0f,1.0f,1.0f,1.0f);
     x = 10;
     y = conh-20;
     if((ticks/200)%2)
-      SJF_DrawChar(x+SJF_TextExtents(SJC.buf[0]), y, '_');
+      SJF_DrawChar(x+SJF_TextExtents(SJC.buf[0])-pad_left, y-pad_top, '_');
     for(i=0;y>0;i++) {
       if(SJC.buf[i])
-        SJF_DrawText(x,y,SJC.buf[i]);
+        SJF_DrawText(x-pad_left,y-pad_top,SJC.buf[i]);
       y -= 10;
     }
     if( SJC.buf[0] && SJC.buf[0][0] ) {
       char s[10];
       sprintf(s,"%d",SJC.buf[0][strlen(SJC.buf[0])-1]);
-      SJF_DrawText(w-20,conh-20,s);
+      SJF_DrawText(w-20-pad_left,conh-20-pad_top,s);
     }
   }
 
@@ -142,21 +147,21 @@ void render() {
   if( showstats ) {
     Uint32 denom = vidfrmod+1;
     sprintf(buf,"idle_time %4d"       ,       idle_time/denom);
-    SJF_DrawText(w-20-SJF_TextExtents(buf),10,buf);
+    SJF_DrawText(w-20-SJF_TextExtents(buf)-pad_left,10-pad_top,buf);
     sprintf(buf,"render_time %4d"     ,     render_time/denom);
-    SJF_DrawText(w-20-SJF_TextExtents(buf),20,buf);
+    SJF_DrawText(w-20-SJF_TextExtents(buf)-pad_left,20-pad_top,buf);
     sprintf(buf,"adv_move_time %4d"   ,   adv_move_time/denom);
-    SJF_DrawText(w-20-SJF_TextExtents(buf),30,buf);
+    SJF_DrawText(w-20-SJF_TextExtents(buf)-pad_left,30-pad_top,buf);
     sprintf(buf,"adv_collide_time %4d",adv_collide_time/denom);
-    SJF_DrawText(w-20-SJF_TextExtents(buf),40,buf);
+    SJF_DrawText(w-20-SJF_TextExtents(buf)-pad_left,40-pad_top,buf);
     sprintf(buf,"adv_game_time %4d"   ,   adv_game_time/denom);
-    SJF_DrawText(w-20-SJF_TextExtents(buf),50,buf);
+    SJF_DrawText(w-20-SJF_TextExtents(buf)-pad_left,50-pad_top,buf);
     sprintf(buf,"unaccounted_time %4d",unaccounted_time/denom);
-    SJF_DrawText(w-20-SJF_TextExtents(buf),60,buf);
+    SJF_DrawText(w-20-SJF_TextExtents(buf)-pad_left,60-pad_top,buf);
     sprintf(buf,"adv_frames  %2.2f"   ,(float)adv_frames/(float)denom);
-    SJF_DrawText(w-20-SJF_TextExtents(buf),70,buf);
+    SJF_DrawText(w-20-SJF_TextExtents(buf)-pad_left,70-pad_top,buf);
     sprintf(buf,"fr: idx=%d meta=%d vid=%d hot=%d",metafr%maxframes,metafr,vidfr,hotfr);
-    SJF_DrawText(w-20-SJF_TextExtents(buf),80,buf);
+    SJF_DrawText(w-20-SJF_TextExtents(buf)-pad_left,80-pad_top,buf);
   }
 
   SDL_GL_SwapBuffers();
