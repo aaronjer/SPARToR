@@ -213,7 +213,7 @@ void render() {
 
 
 void setvideo(int w,int h,int go_full,int quiet) {
-  Uint32 flags; 
+  Uint32 flags = 0;
   if( !w || !h ) { //default to previous res
     w = prev_w;
     h = prev_h;
