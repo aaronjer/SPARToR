@@ -21,13 +21,15 @@ extern int usealpha;
 extern int fullscreen;
 extern int screen_w;
 extern int screen_h;
+extern int prev_w;
+extern int prev_h;
 extern int desktop_w;
 extern int desktop_h;
 
 
 void render();
-void setvideo(int w,int h,int quiet);
-void setvideosoon(int w,int h,int delay);
+void setvideo(int w,int h,int go_full,int quiet);
+void setvideosoon(int w,int h,int go_full,int delay);
 
 #endif
 

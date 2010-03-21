@@ -61,15 +61,15 @@ void command(const char *s){
       char *sh = strtok(NULL," ");
       int w = sw?atoi(sw):0;
       int h = sh?atoi(sh):0;
-      fullscreen = strcmp(q,"fullscreen")==0 ? 1 : 0;
+      int full = strcmp(q,"fullscreen")==0 ? 1 : 0;
       if( w>=320 && h>=200 )
-        setvideosoon(w,h,1);
+        setvideosoon(w,h,full,1);
       else if( w>=1 && w<=5 )
-        setvideosoon(NATIVEW*w,NATIVEH*w,1);
-      else if( fullscreen )
-        setvideosoon(desktop_w,desktop_h,1);
+        setvideosoon(NATIVEW*w,NATIVEH*w,full,1);
+      else if( full )
+        setvideosoon(desktop_w,desktop_h,full,1);
       else
-        setvideosoon(NATIVEW*2,NATIVEH*2,1);
+        setvideosoon(0,0,0,1);
     }else if( strcmp(q,"slow")==0 ){
       SJC_Write("Speed is now slow");
       ticksaframe = 300;

@@ -30,12 +30,13 @@ int prev_w = NATIVEW;
 int prev_h = NATIVEH;
 int desktop_w = 1024;
 int desktop_h = 768;
-int soon = 1;
-int soon_w = 0;
-int soon_h = 0;
 
 static int pad_left;
 static int pad_top;
+static int soon = 0;
+static int soon_w = 0;
+static int soon_h = 0;
+static int soon_full = 0;
 
 
 
@@ -57,7 +58,7 @@ void render() {
     return;
 
   if( soon==1 )
-    setvideo(soon_w,soon_h,0);
+    setvideo(soon_w,soon_h,soon_full,0);
   if( soon>0 )
     soon--;
 
@@ -211,15 +212,22 @@ void render() {
 }
 
 
-void setvideo(int w,int h,int quiet) {
-  Uint32 flags = SDL_OPENGL;
-  if( fullscreen )
-    flags |= SDL_FULLSCREEN;
-  else
-    flags |= SDL_RESIZABLE;
-  screen = SDL_SetVideoMode(w,h,SDL_GetVideoInfo()->vfmt->BitsPerPixel,flags);
+void setvideo(int w,int h,int go_full,int quiet) {
+  Uint32 flags = 0;
+  if( !w || !h ) { //default to previous res
+    w = prev_w;
+    h = prev_h;
+  }
+  if( go_full && !fullscreen ) { // record previous res when changing to fullscreen
+    prev_w = screen_w;
+    prev_h = screen_h;
+  }
+  fullscreen = go_full;
+  flags |= (go_full ? SDL_FULLSCREEN : SDL_RESIZABLE);
+  screen = SDL_SetVideoMode(w,h,SDL_GetVideoInfo()->vfmt->BitsPerPixel,SDL_OPENGL|flags);
   if( !screen ){
-    screen = SDL_SetVideoMode(NATIVEW,NATIVEH,SDL_GetVideoInfo()->vfmt->BitsPerPixel,0);
+    fullscreen = 0;
+    screen = SDL_SetVideoMode(NATIVEW,NATIVEH,SDL_GetVideoInfo()->vfmt->BitsPerPixel,SDL_OPENGL|SDL_RESIZABLE);
     SJC_Write("Error changing video mode. Using safe defaults.");
     if( !screen ) {
       fprintf(stderr,"Fatal error setting video mode!");
@@ -227,8 +235,8 @@ void setvideo(int w,int h,int quiet) {
     }
   }
   const SDL_VideoInfo *vidinfo = SDL_GetVideoInfo();
-  w = vidinfo->current_w;
-  h = vidinfo->current_h;
+  screen_w = w = vidinfo->current_w;
+  screen_h = h = vidinfo->current_h;
   scale = (w/NATIVEW > h/NATIVEH) ? h/NATIVEH : w/NATIVEW;
   if( scale<1 )
     scale = 1;
@@ -238,9 +246,10 @@ void setvideo(int w,int h,int quiet) {
     SJC_Write("Video mode set to %d x %d",w,h);
 }
 
-void setvideosoon(int w,int h,int delay) {
+void setvideosoon(int w,int h,int go_full,int delay) {
   soon_w = w;
   soon_h = h;
+  soon_full = go_full;
   soon = delay;
 }
 
