@@ -82,19 +82,6 @@ void readinput() {
   infr %= maxframes;
   if( fr[infr].cmds[me].cmd==0 && cmdbuf[cbread] ) {
     char cmd;
-/*  int i; //FIXME: remove
-    char s[257];
-    char t[257];
-    for(i=0;i<256;i++) {
-      s[i] = cmdbuf[i]?cmdbuf[i]+'0':'-';
-      t[i] = ' ';
-    }
-    t[cbread] = 'R';
-    t[cbwrite] = 'W';
-    s[256] = '\0';
-    t[256] = '\0';
-    SJC_Write(s);
-    SJC_Write(t); */
     if( (cmd = getnextcmd()) ) { // dirty frame if new cmd inserted
       fr[infr].cmds[me].cmd = cmd;
       fr[infr].dirty = 1;

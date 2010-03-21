@@ -73,14 +73,12 @@ int main(int argc,char **argv) {
     fr[i].objs = calloc(sizeof(OBJ_t),maxobjs);
   }
   mod_setup(0);
-  //server is a client
-  fr[1].cmds[0].flags |= CMDF_NEW;
+  fr[1].cmds[0].flags |= CMDF_NEW; //server is a client
 
   if( SDL_Init(SDL_INIT_TIMER|SDL_INIT_AUDIO|SDL_INIT_VIDEO)<0 || !SDL_GetVideoInfo() ) {
     fprintf(stderr,"SDL_Init: %s\n",SDL_GetError());
     exit(-1);
   }
-  //try GL
   SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
   SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 5);
   SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);

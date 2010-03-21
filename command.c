@@ -33,8 +33,10 @@ void command(const char *s){
       ;
     }else if( strcmp(q,"tex")==0 ){
       char *val = strtok(NULL," ");
-      if( val )
-        SJF.tex = atoi(val);
+      if( val ) SJF.tex = atoi(val);
+    }else if( strcmp(q,"alpha")==0 ){
+      char *val = strtok(NULL," ");
+      if( val ) usealpha = atoi(val);
     }else if( strcmp(q,"exit")==0 || strcmp(q,"quit")==0 ){
       cleanup();
     }else if( strcmp(q,"listen")==0 ){

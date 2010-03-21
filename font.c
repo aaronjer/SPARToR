@@ -146,9 +146,6 @@ void SJF_Init()
   Uint32 black = 0xFF000000, white = 0xFFFFFFFF, clear = 0x00000000;
 #endif
 
-  if( glIsTexture(SJF.tex) ) // bailout if already loaded
-    return;
-
   for(u=0; u<128; u++)
     for(v=0; v<128; v++)
       if( SJF.raw[u+v*128]!=' ' )

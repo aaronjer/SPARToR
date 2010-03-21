@@ -37,10 +37,10 @@ void mod_setup(Uint32 setupfr) {
 
   //make some dummys
 #define MAYBE_A_DUMMY(i,x,y,w,h) {                                            \
-  fr[setupfr].objs[i].type = OBJT_DUMMY;                                      \
-  fr[setupfr].objs[i].flags = OBJF_POS|OBJF_VEL|OBJF_HULL|OBJF_VIS|OBJF_PLAT; \
-  fr[setupfr].objs[i].size = sizeof(DUMMY_t);                                 \
-  DUMMY_t *du = fr[setupfr].objs[i].data = malloc(sizeof(DUMMY_t));           \
+  fr[setupfr].objs[i+20].type = OBJT_DUMMY;                                      \
+  fr[setupfr].objs[i+20].flags = OBJF_POS|OBJF_VEL|OBJF_HULL|OBJF_VIS|OBJF_PLAT; \
+  fr[setupfr].objs[i+20].size = sizeof(DUMMY_t);                                 \
+  DUMMY_t *du = fr[setupfr].objs[i+20].data = malloc(sizeof(DUMMY_t));           \
   du->pos = (V){x*8,y*8,0.0f};                                          \
   du->vel = (V){0.0f,0.0f,0.0f};                                              \
   du->hull[0] = (V){-w*8,-h*8,0.0f};                                              \
@@ -148,22 +148,22 @@ void mod_predraw(SDL_Surface *screen,Uint32 vidfr) {
   while(i<23) {
     int step = (i<6||i==10||i==15) ? 1 : 4; 
     for(j=0;j<15;j++)
-      SJGL_BlitScaled(textures[TEX_WORLD], &(SDL_Rect){80,16,step*16,16}, &(SDL_Rect){i*16,j*16,0,0}, scale);
+      SJGL_BlitScaled(textures[TEX_WORLD], &(SDL_Rect){80,16,step*16,16}, &(SDL_Rect){i*16,j*16,0,0}, scale, 0);
     i += step;
   }
   for(i=8;i<15;i++)
-    SJGL_BlitScaled(textures[TEX_WORLD], &(SDL_Rect){ 80,64,16,16}, &(SDL_Rect){ 9*16, i*16,0,0}, scale); //low tall
-  SJGL_BlitScaled(  textures[TEX_WORLD], &(SDL_Rect){ 96,48,16,16}, &(SDL_Rect){ 9*16, 7*16,0,0}, scale); //corner nw
+    SJGL_BlitScaled(textures[TEX_WORLD], &(SDL_Rect){ 80,64,16,16}, &(SDL_Rect){ 9*16, i*16,0,0}, scale, 0); //low tall
+  SJGL_BlitScaled(  textures[TEX_WORLD], &(SDL_Rect){ 96,48,16,16}, &(SDL_Rect){ 9*16, 7*16,0,0}, scale, 0); //corner nw
   for(i=10;i<16;i++)
-    SJGL_BlitScaled(textures[TEX_WORLD], &(SDL_Rect){112,32,16,16}, &(SDL_Rect){ i*16, 7*16,0,0}, scale); //long horiz
-  SJGL_BlitScaled(  textures[TEX_WORLD], &(SDL_Rect){112,80,16,16}, &(SDL_Rect){11*16, 7*16,0,0}, scale); //t-piece
-  SJGL_BlitScaled(  textures[TEX_WORLD], &(SDL_Rect){128,80,16,16}, &(SDL_Rect){16*16, 7*16,0,0}, scale); //corner se
+    SJGL_BlitScaled(textures[TEX_WORLD], &(SDL_Rect){112,32,16,16}, &(SDL_Rect){ i*16, 7*16,0,0}, scale, 0); //long horiz
+  SJGL_BlitScaled(  textures[TEX_WORLD], &(SDL_Rect){112,80,16,16}, &(SDL_Rect){11*16, 7*16,0,0}, scale, 0); //t-piece
+  SJGL_BlitScaled(  textures[TEX_WORLD], &(SDL_Rect){128,80,16,16}, &(SDL_Rect){16*16, 7*16,0,0}, scale, 0); //corner se
   for(i=0;i<7;i++)
-    SJGL_BlitScaled(textures[TEX_WORLD], &(SDL_Rect){ 80,64,16,16}, &(SDL_Rect){16*16, i*16,0,0}, scale); //high tall
-  SJGL_BlitScaled(  textures[TEX_WORLD], &(SDL_Rect){ 80,64,16,16}, &(SDL_Rect){11*16, 6*16,0,0}, scale); //little pipe
-  SJGL_BlitScaled(  textures[TEX_WORLD], &(SDL_Rect){ 80,48,16,16}, &(SDL_Rect){11*16, 5*16,0,0}, scale); //pipe end
-  SJGL_BlitScaled(  textures[TEX_WORLD], &(SDL_Rect){144,16,48,16}, &(SDL_Rect){12*16, 8*16,0,0}, scale); //shadow
-  SJGL_BlitScaled(  textures[TEX_WORLD], &(SDL_Rect){ 80,32,16,16}, &(SDL_Rect){ 6*16, 7*16,0,0}, scale); //end cap
+    SJGL_BlitScaled(textures[TEX_WORLD], &(SDL_Rect){ 80,64,16,16}, &(SDL_Rect){16*16, i*16,0,0}, scale, 0); //high tall
+  SJGL_BlitScaled(  textures[TEX_WORLD], &(SDL_Rect){ 80,64,16,16}, &(SDL_Rect){11*16, 6*16,0,0}, scale, 0); //little pipe
+  SJGL_BlitScaled(  textures[TEX_WORLD], &(SDL_Rect){ 80,48,16,16}, &(SDL_Rect){11*16, 5*16,0,0}, scale, 0); //pipe end
+  SJGL_BlitScaled(  textures[TEX_WORLD], &(SDL_Rect){144,16,48,16}, &(SDL_Rect){12*16, 8*16,0,0}, scale, 0); //shadow
+  SJGL_BlitScaled(  textures[TEX_WORLD], &(SDL_Rect){ 80,32,16,16}, &(SDL_Rect){ 6*16, 7*16,0,0}, scale, 0); //end cap
 }
 
 void mod_draw(SDL_Surface *screen,int objid,OBJ_t *o) {
@@ -178,38 +178,39 @@ void mod_draw(SDL_Surface *screen,int objid,OBJ_t *o) {
       if( pl->goingd ) gunshift = 48;
       if( !(pl->goingu^pl->goingd) ) gunshift = 0;
       drect = (SDL_Rect){(pl->pos.x-10),(pl->pos.y-15),0,0};
+      int z = drect.y + pl->hull[1].y;
       if( pl->facingr ) {
         if( pl->model==4 ) //girl hair
-          SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){ 80,120,20,15}, &(SDL_Rect){drect.x-4,drect.y+pl->gundown/7,0,0},scale);
-        SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){ 0, 0+pl->model*30,20,30}, &drect, scale);
+          SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){ 80,120,20,15}, &(SDL_Rect){drect.x-4,drect.y+pl->gundown/7,0,0},scale,z);
+        SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){ 0, 0+pl->model*30,20,30}, &drect, scale, z);
         drect = (SDL_Rect){(pl->pos.x- 5-pl->gunback),(pl->pos.y-10+pl->gundown/5),0,0};
-        SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){ 0+gunshift,150,24,21}, &drect, scale);
+        SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){ 0+gunshift,150,24,21}, &drect, scale, z);
       } else {
         if( pl->model==4 ) //girl hair
-          SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){100,120,20,15}, &(SDL_Rect){drect.x+4,drect.y+pl->gundown/7,0,0},scale);
-        SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){20, 0+pl->model*30,20,30}, &drect, scale);
+          SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){100,120,20,15}, &(SDL_Rect){drect.x+4,drect.y+pl->gundown/7,0,0},scale,z);
+        SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){20, 0+pl->model*30,20,30}, &drect, scale, z);
         drect = (SDL_Rect){(pl->pos.x-19+pl->gunback),(pl->pos.y-10+pl->gundown/5),0,0};
-        SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){24+gunshift,150,24,21}, &drect, scale);
+        SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){24+gunshift,150,24,21}, &drect, scale, z);
       }
       break;
     }
     case OBJT_BULLET: {
       BULLET_t *bu = o->data;
-      SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){141,150,4,4}, &(SDL_Rect){bu->pos.x-2, bu->pos.y-2, 4, 4}, scale);
+      SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){141,150,4,4}, &(SDL_Rect){bu->pos.x-2, bu->pos.y-2, 4, 4}, scale,NATIVEH);
       break;
     }
     case OBJT_DUMMY: {
       DUMMY_t *du = o->data;
-      drect = (SDL_Rect){du->pos.x+du->hull[0].x, du->pos.y+du->hull[0].y,
+      drect = (SDL_Rect){du->pos.x    +du->hull[0].x, du->pos.y    +du->hull[0].y,
                          du->hull[1].x-du->hull[0].x, du->hull[1].y-du->hull[0].y};
       Sint16 offs = drect.w==drect.h ? 48 : 0;
       if( drect.w > drect.h ) while( drect.w>0 && drect.w<400 ) {
-        SJGL_BlitScaled(textures[TEX_WORLD], &(SDL_Rect){0+offs,16,16,16}, &(SDL_Rect){drect.x,drect.y,drect.w,drect.h}, scale);
+        SJGL_BlitScaled(textures[TEX_WORLD], &(SDL_Rect){0+offs,16,16,16}, &(SDL_Rect){drect.x,drect.y,drect.w,drect.h}, scale, 0);
         drect.x += 16;
         drect.w -= 16;
         offs = drect.w==16 ? 32 : 16;
       } else                  while( drect.h>0 && drect.h<400 ) {
-        SJGL_BlitScaled(textures[TEX_WORLD], &(SDL_Rect){48,0+offs,16,16}, &(SDL_Rect){drect.x,drect.y,drect.w,drect.h}, scale);
+        SJGL_BlitScaled(textures[TEX_WORLD], &(SDL_Rect){48,0+offs,16,16}, &(SDL_Rect){drect.x,drect.y,drect.w,drect.h}, scale, 0);
         drect.y += 16;
         drect.h -= 16;
         offs = drect.h==16 ? 32 : 16;

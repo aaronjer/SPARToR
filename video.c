@@ -20,19 +20,22 @@
 #include "font.h"
 #include "mod.h"
 
-
 int drawhulls = 0;
 int showstats = 1;
+int usealpha = 1;
 int fullscreen = 0;
 int screen_w = NATIVEW;
 int screen_h = NATIVEH;
-int pad_left;
-int pad_top;
+int prev_w = NATIVEW;
+int prev_h = NATIVEH;
 int desktop_w = 1024;
 int desktop_h = 768;
 int soon = 1;
 int soon_w = 0;
 int soon_h = 0;
+
+static int pad_left;
+static int pad_top;
 
 
 
@@ -72,19 +75,29 @@ void render() {
   glLoadIdentity();
   pad_left = (w - NATIVEW*scale)/2;
   pad_top  = (h - NATIVEH*scale)/2;
-  glOrtho(-pad_left,w-pad_left,h-pad_top,-pad_top,0,1);
+  glOrtho(-pad_left,w-pad_left,h-pad_top,-pad_top,-NATIVEH*3-1,NATIVEH*3+1);
 
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
 
   glColor4f(1.0f,1.0f,1.0f,1.0f);
   glEnable(GL_TEXTURE_2D);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  if( usealpha )
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  else
+    glBlendFunc(GL_ONE, GL_ZERO);
   glEnable(GL_BLEND);
 
-  glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+  glAlphaFunc(GL_GREATER,0.01);
+  glEnable(GL_ALPHA_TEST);
+
+  glDepthFunc(GL_LEQUAL);
+  glEnable(GL_DEPTH_TEST);
+
+  glClear(GL_DEPTH_BUFFER_BIT);
 
   mod_predraw(screen,vidfr);
+
 
   //display objects
   for(i=0;i<maxobjs;i++) {
@@ -111,10 +124,29 @@ void render() {
     }
   }
 
+  //paint over border areas just a lil bit
+  {
+    float outerl =  -pad_left;   float innerl = 0;
+    float outert =  -pad_top;    float innert = 0;
+    float outerr = w-pad_left;   float innerr = NATIVEW*scale;
+    float outerb = h-pad_top;    float innerb = NATIVEH*scale;
+    glColor4f(0.0,0.0,0.0,0.1);
+    glDisable(GL_TEXTURE_2D);
+    glBegin(GL_QUADS);
+    glVertex2f(outerl,outert); glVertex2f(outerr,outert); glVertex2f(outerr,innert); glVertex2f(outerl,innert); //top
+    glVertex2f(outerl,innerb); glVertex2f(outerr,innerb); glVertex2f(outerr,outerb); glVertex2f(outerl,outerb); //bottom
+    glVertex2f(outerl,innert); glVertex2f(innerl,innert); glVertex2f(innerl,innerb); glVertex2f(outerl,innerb); //left
+    glVertex2f(innerr,innert); glVertex2f(outerr,innert); glVertex2f(outerr,innerb); glVertex2f(innerr,innerb); //right
+    glEnd();
+    glEnable(GL_TEXTURE_2D);
+    glColor4f(1.0f,1.0f,1.0f,1.0f);
+  }
+
   //display console
   if(console_open) {
     int conh = h/2 - 40;
     if(conh<40) conh = 40;
+    glDepthFunc(GL_ALWAYS);
     glColor4f(0.15,0.15,0.15,0.85);
     glDisable(GL_TEXTURE_2D);
     glBegin(GL_QUADS);

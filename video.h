@@ -17,6 +17,7 @@
 
 extern int drawhulls;
 extern int showstats;
+extern int usealpha;
 extern int fullscreen;
 extern int screen_w;
 extern int screen_h;

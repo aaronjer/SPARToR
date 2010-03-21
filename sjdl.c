@@ -40,27 +40,22 @@ SDL_Surface *SJDL_CopyScaled(SDL_Surface *src,Uint32 flags,int scale) {
 }
 
 //uses GL to do the same thing as SJDL_BlitScaled
-int SJGL_BlitScaled(GLuint tex, SDL_Rect *s, SDL_Rect *d, int scale) {
-  static GLuint pretex = (GLuint)-1;
-  if( tex!=pretex ) {
-    glBindTexture(GL_TEXTURE_2D,0); //FIXME: hack 4 win
-    glBindTexture(GL_TEXTURE_2D,tex);
-    pretex = tex;
-  }
+int SJGL_BlitScaled(GLuint tex, SDL_Rect *s, SDL_Rect *d, int scale, int z) {
+  glBindTexture(GL_TEXTURE_2D,0); //FIXME: hack 4 win
+  glBindTexture(GL_TEXTURE_2D,tex);
+
+  if( z<0 ) z = (d->y+s->h)*-z;
+
   d->x *= scale;
   d->y *= scale;
   d->w = s->w*scale;
   d->h = s->h*scale;
 
   glBegin(GL_QUADS);
-/*glTexCoord2f((s->x     )/256.0f,(s->y     )/256.0f); glVertex2f(d->x     ,d->y     );
-  glTexCoord2f((s->x+s->w)/256.0f,(s->y     )/256.0f); glVertex2f(d->x+d->w,d->y     );
-  glTexCoord2f((s->x+s->w)/256.0f,(s->y+s->h)/256.0f); glVertex2f(d->x+d->w,d->y+d->h);
-  glTexCoord2f((s->x     )/256.0f,(s->y+s->h)/256.0f); glVertex2f(d->x     ,d->y+d->h);*/
-  glTexCoord2i(s->x     ,s->y     ); glVertex2f(d->x     ,d->y     );
-  glTexCoord2i(s->x+s->w,s->y     ); glVertex2f(d->x+d->w,d->y     );
-  glTexCoord2i(s->x+s->w,s->y+s->h); glVertex2f(d->x+d->w,d->y+d->h);
-  glTexCoord2i(s->x     ,s->y+s->h); glVertex2f(d->x     ,d->y+d->h);
+  glTexCoord3i(s->x     ,s->y     ,z); glVertex3f(d->x     ,d->y     ,z);
+  glTexCoord3i(s->x+s->w,s->y     ,z); glVertex3f(d->x+d->w,d->y     ,z);
+  glTexCoord3i(s->x+s->w,s->y+s->h,z); glVertex3f(d->x+d->w,d->y+d->h,z);
+  glTexCoord3i(s->x     ,s->y+s->h,z); glVertex3f(d->x     ,d->y+d->h,z);
   glEnd();
 
   return 0;
