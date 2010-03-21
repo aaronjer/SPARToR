@@ -101,8 +101,7 @@ int main(int argc,char **argv) {
   vidinfo = SDL_GetVideoInfo();
   desktop_w = vidinfo->current_w;
   desktop_h = vidinfo->current_h;
-  setvideo(768,480,1);
-  vidinfo = SDL_GetVideoInfo();
+  setvideo(NATIVEW*2,NATIVEH*2,0,0);
 
   SJC_Write("SPARToR v%s  Copyright (C) 2010 Jer Wilson",VERSION);
   SJC_Write("Please visit github.com/superjer for updates and source code.");
@@ -119,11 +118,11 @@ int main(int argc,char **argv) {
     ticks = newticks;
     metafr = ticks/ticksaframe + frameoffset;
     while( SDL_PollEvent(&event) ) switch(event.type) {
-      case SDL_VIDEOEXPOSE:                                                 break;
-      case SDL_VIDEORESIZE: setvideosoon(event.resize.w,event.resize.h,10); break;
-      case SDL_KEYDOWN:     input( 1, event.key.keysym );                   break;
-      case SDL_KEYUP:       input( 0, event.key.keysym );                   break;
-      case SDL_QUIT:        cleanup();                                      break;
+      case SDL_VIDEOEXPOSE:                                                   break;
+      case SDL_VIDEORESIZE: setvideosoon(event.resize.w,event.resize.h,0,10); break;
+      case SDL_KEYDOWN:     input( 1, event.key.keysym );                     break;
+      case SDL_KEYUP:       input( 0, event.key.keysym );                     break;
+      case SDL_QUIT:        cleanup();                                        break;
     }
     idle_time += SDL_GetTicks() - idle_start;
     readinput();
