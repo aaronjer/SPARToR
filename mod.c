@@ -296,18 +296,18 @@ case OBJT_PLAYER:
   PLAYER_t *newme = ob->data;
   gh = fr[b].objs[newme->ghost].data;
   switch( fr[b].cmds[gh->client].cmd ) {
-    case CMDT_1LEFT:  newme->goingl  = 1; newme->facingr = 0; break;
-    case CMDT_0LEFT:  newme->goingl  = 0;                     break;
-    case CMDT_1RIGHT: newme->goingr  = 1; newme->facingr = 1; break;
-    case CMDT_0RIGHT: newme->goingr  = 0;                     break; 
-    case CMDT_1UP:    newme->goingu  = 1;                     break;
-    case CMDT_0UP:    newme->goingu  = 0;                     break;
-    case CMDT_1DOWN:  newme->goingd  = 1;                     break;
-    case CMDT_0DOWN:  newme->goingd  = 0;                     break; 
-    case CMDT_1JUMP:  newme->jumping = 1;                     break;
-    case CMDT_0JUMP:  newme->jumping = 0;                     break;
-    case CMDT_1FIRE:  newme->firing  = 1;                     break;
-    case CMDT_0FIRE:  newme->firing  = 0;                     break;
+    case CMDT_1LEFT:  newme->goingl  = 1; newme->facingr = 0;  break;
+    case CMDT_0LEFT:  newme->goingl  = 0;                      break;
+    case CMDT_1RIGHT: newme->goingr  = 1; newme->facingr = 1;  break;
+    case CMDT_0RIGHT: newme->goingr  = 0;                      break;
+    case CMDT_1UP:    newme->goingu  = 1;                      break;
+    case CMDT_0UP:    newme->goingu  = 0;                      break;
+    case CMDT_1DOWN:  newme->goingd  = 1;                      break;
+    case CMDT_0DOWN:  newme->goingd  = 0;                      break;
+    case CMDT_1JUMP:  newme->jumping = 1;                      break;
+    case CMDT_0JUMP:  newme->jumping = 0;                      break;
+    case CMDT_1FIRE:  newme->firing  = 1;                      break;
+    case CMDT_0FIRE:  newme->firing  = 0; newme->cooldown = 0; break;
   }
 
   if( !oldme ) //FIXME why's this null?
