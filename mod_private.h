@@ -11,6 +11,7 @@
 #define OBJT_DUMMY    3
 #define OBJT_PLAYER   4
 #define OBJT_BULLET   5
+#define OBJT_SLUG     6
 
 //cmd types
 #define CMDT_1LEFT    ((char)1)
@@ -52,6 +53,7 @@ typedef struct{
   char gunback,gundown;
   char grounded;
   char facingr;
+  char stabbing;
 } PLAYER_t;
 
 typedef struct{
@@ -61,6 +63,14 @@ typedef struct{
   int owner;
   Uint8 ttl;
 } BULLET_t;
+
+typedef struct{
+  V pos;
+  V vel;
+  V hull[2];
+  int model;
+  int dead;
+} SLUG_t;
 
 typedef struct{
   V pos;
