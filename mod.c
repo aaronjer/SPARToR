@@ -23,6 +23,8 @@
 
 
 static int    setmodel = -1;
+static int    camx = 0;
+static int    camy = 0;
 
 
 
@@ -33,18 +35,19 @@ GLuint textures[2];
 
 void mod_setup(Uint32 setupfr) {
   //make the mother object
-  fr[setupfr].objs[0] = (OBJ_t){OBJT_MOTHER,0,0,NULL};
+  fr[setupfr].objs[0] = (OBJ_t){OBJT_MOTHER,0,0,malloc(sizeof(MOTHER_t))};
+  *(MOTHER_t *)fr[setupfr].objs[0].data = (MOTHER_t){0,0};
 
   //make some dummys
-#define MAYBE_A_DUMMY(i,x,y,w,h) {                                            \
-  fr[setupfr].objs[i+20].type = OBJT_DUMMY;                                      \
-  fr[setupfr].objs[i+20].flags = OBJF_POS|OBJF_VEL|OBJF_HULL|OBJF_VIS|OBJF_PLAT; \
-  fr[setupfr].objs[i+20].size = sizeof(DUMMY_t);                                 \
-  DUMMY_t *du = fr[setupfr].objs[i+20].data = malloc(sizeof(DUMMY_t));           \
-  du->pos = (V){x*8,y*8,0.0f};                                          \
-  du->vel = (V){0.0f,0.0f,0.0f};                                              \
-  du->hull[0] = (V){-w*8,-h*8,0.0f};                                              \
-  du->hull[1] = (V){ w*8, h*8,0.0f};                                              \
+#define MAYBE_A_DUMMY(i,x,y,w,h) {                                                         \
+  fr[setupfr].objs[i+20].type = OBJT_DUMMY;                                                \
+  fr[setupfr].objs[i+20].flags = OBJF_POS|OBJF_VEL|OBJF_HULL|OBJF_VIS|OBJF_PLAT|OBJF_CLIP; \
+  fr[setupfr].objs[i+20].size = sizeof(DUMMY_t);                                           \
+  DUMMY_t *du = fr[setupfr].objs[i+20].data = malloc(sizeof(DUMMY_t));                     \
+  du->pos = (V){x*8,y*8,0.0f};                                                             \
+  du->vel = (V){0.0f,0.0f,0.0f};                                                           \
+  du->hull[0] = (V){-w*8,-h*8,0.0f};                                                       \
+  du->hull[1] = (V){ w*8, h*8,0.0f};                                                       \
   du->model = 0;                 }
 
   MAYBE_A_DUMMY( 1,  1, 25,1,5);
@@ -181,14 +184,16 @@ void mod_draw(SDL_Surface *screen,int objid,OBJ_t *o) {
       int z = drect.y + pl->hull[1].y;
       if( pl->facingr ) {
         if( pl->model==4 ) //girl hair
-          SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){ 80,120,20,15}, &(SDL_Rect){drect.x-4,drect.y+pl->gundown/7,0,0},scale,z);
+          SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){ 80,120,20,15},
+                                                &(SDL_Rect){drect.x-4,drect.y+pl->gundown/7,0,0}, scale, z);
         SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){ 0, 0+pl->model*30,20,30}, &drect, scale, z);
         drect = (SDL_Rect){(pl->pos.x- 5-pl->gunback),(pl->pos.y-10+pl->gundown/5),0,0};
         if( !pl->stabbing ) //gun
           SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){ 0+gunshift,150,24,21}, &drect, scale, z);
       } else {
         if( pl->model==4 ) //girl hair
-          SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){100,120,20,15}, &(SDL_Rect){drect.x+4,drect.y+pl->gundown/7,0,0},scale,z);
+          SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){100,120,20,15},
+                                                &(SDL_Rect){drect.x+4,drect.y+pl->gundown/7,0,0}, scale, z);
         SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){20, 0+pl->model*30,20,30}, &drect, scale, z);
         drect = (SDL_Rect){(pl->pos.x-19+pl->gunback),(pl->pos.y-10+pl->gundown/5),0,0};
         if( !pl->stabbing ) //gun
@@ -202,7 +207,8 @@ void mod_draw(SDL_Surface *screen,int objid,OBJ_t *o) {
     }
     case OBJT_BULLET: {
       BULLET_t *bu = o->data;
-      SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){144,150,4,4}, &(SDL_Rect){bu->pos.x-2, bu->pos.y-2, 4, 4}, scale,NATIVEH);
+      SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){144,150,4,4},
+                                            &(SDL_Rect){bu->pos.x-2, bu->pos.y-2, 4, 4}, scale,NATIVEH);
       break;
     }
     case OBJT_SLUG: {
@@ -217,12 +223,14 @@ void mod_draw(SDL_Surface *screen,int objid,OBJ_t *o) {
                          du->hull[1].x-du->hull[0].x, du->hull[1].y-du->hull[0].y};
       Sint16 offs = drect.w==drect.h ? 48 : 0;
       if( drect.w > drect.h ) while( drect.w>0 && drect.w<400 ) {
-        SJGL_BlitScaled(textures[TEX_WORLD], &(SDL_Rect){0+offs,16,16,16}, &(SDL_Rect){drect.x,drect.y,drect.w,drect.h}, scale, 0);
+        SJGL_BlitScaled(textures[TEX_WORLD], &(SDL_Rect){0+offs,16,16,16},
+                                             &(SDL_Rect){drect.x,drect.y,drect.w,drect.h}, scale, 0);
         drect.x += 16;
         drect.w -= 16;
         offs = drect.w==16 ? 32 : 16;
       } else                  while( drect.h>0 && drect.h<400 ) {
-        SJGL_BlitScaled(textures[TEX_WORLD], &(SDL_Rect){48,0+offs,16,16}, &(SDL_Rect){drect.x,drect.y,drect.w,drect.h}, scale, 0);
+        SJGL_BlitScaled(textures[TEX_WORLD], &(SDL_Rect){48,0+offs,16,16},
+                                             &(SDL_Rect){drect.x,drect.y,drect.w,drect.h}, scale, 0);
         drect.y += 16;
         drect.h -= 16;
         offs = drect.h==16 ? 32 : 16;
@@ -288,7 +296,7 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
         SLUG_t *sl;
         slot0 = findfreeslot(b);
         fr[b].objs[slot0].type = OBJT_SLUG;
-        fr[b].objs[slot0].flags = OBJF_POS|OBJF_VEL|OBJF_HULL|OBJF_VIS|OBJF_PLAT;
+        fr[b].objs[slot0].flags = OBJF_POS|OBJF_VEL|OBJF_HULL|OBJF_VIS|OBJF_PLAT|OBJF_CLIP;
         fr[b].objs[slot0].size = sizeof(SLUG_t);
         sl = fr[b].objs[slot0].data = malloc(sizeof(SLUG_t));
         sl->pos  = (V){(hotfr%2)*368.0f+8.0f,0.0f,0.0f};
@@ -340,14 +348,19 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
       if( !oldme ) //FIXME why's this null?
         break;
 
-      if( setmodel>-1 && ((GHOST_t *)fr[b].objs[newme->ghost].data)->client==me ) {
-        newme->model = setmodel;
-        setmodel = -1;
+      if( ((GHOST_t *)fr[b].objs[newme->ghost].data)->client==me ) //local client match
+      {
+        camx = newme->pos.x - NATIVEW/2;
+        camy = newme->pos.y - NATIVEH/2;
+        if( setmodel>-1 ) { //FIXME -- just for fun, will not sync!
+          newme->model = setmodel;
+          setmodel = -1;
+        }
       }
 
       //not firing and freefalling and pressing up/down => stabbing
-      newme->stabbing = (!newme->firing && newme->vel.y!=0.0f && oldme->vel.y!=0.0f
-                         && (newme->goingu || newme->goingd)) ? 1 : 0;
+      newme->stabbing = (!newme->firing && newme->vel.y!=0.0f &&
+                         (newme->goingu || newme->goingd)) ? 1 : 0;
 
       newme->gunback = 0; //reset gun position
       if(newme->goingr||newme->goingl)
@@ -394,7 +407,7 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
       if( newme->firing && newme->cooldown==0 && newme->projectiles<5 ) { // create bullet
         slot0 = findfreeslot(b);
         fr[b].objs[slot0].type = OBJT_BULLET;
-        fr[b].objs[slot0].flags = OBJF_POS|OBJF_VEL|OBJF_VIS;
+        fr[b].objs[slot0].flags = OBJF_POS|OBJF_VEL|OBJF_VIS|OBJF_CLIP;
         fr[b].objs[slot0].size = sizeof(BULLET_t);
         BULLET_t *bu = fr[b].objs[slot0].data = malloc(sizeof(BULLET_t));
         if( newme->facingr ) {
@@ -481,6 +494,7 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
             sl->vel.x /= 100.0f;
             sl->vel.y = -5.0f;
             sl->dead = 1;
+            ob->flags &= ~OBJF_PLAT;
           } else if( pl->goingd &&
               fabsf(sl->pos.x -  pl->pos.x       )<8.0f && //down stab contact
               fabsf(sl->pos.y - (pl->pos.y+20.0f))<12.0f   )
@@ -489,6 +503,7 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
             sl->vel.x /= 100.0f;
             sl->vel.y = 0.0f;
             sl->dead = 1;
+            ob->flags &= ~OBJF_PLAT;
           }
         } else if(fr[b].objs[i].type==OBJT_BULLET) {
           BULLET_t *bu = fr[b].objs[i].data;
@@ -499,8 +514,11 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
           sl->vel.x /= 100.0f;
           sl->vel.y = -3.0f;
           sl->dead = 1;
+          ob->flags &= ~OBJF_PLAT;
         }
-      if(sl->vel.x==0 || sl->dead>10)
+      if( sl->dead==5 )
+        ob->flags &= ~OBJF_CLIP;
+      if(sl->vel.x==0 || sl->dead>100)
         ob->flags |= OBJF_DEL;
       break;
   } //end switch ob->type

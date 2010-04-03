@@ -6,7 +6,7 @@
 #include "SDL_net.h"
 #include "SDL_image.h"
 
-#define VERSION "0.1l"
+#define VERSION "0.1m"
 
 #define TICKSAFRAME 30
 #define PACKET_SIZE 5000
@@ -17,6 +17,7 @@
 #define SWAP(a,b) {a ^= b;b ^= a;a ^= b;}
 #define TRY do{
 #define HARDER }while(0);
+#define HAS(v,flags) (((v)&(flags)) == (flags))
 
 //obj flags
 #define OBJF_POS  0x00000001 //has position

@@ -28,6 +28,10 @@
 #define CMDT_0FIRE    ((char)12)
 
 
+typedef struct{
+  int camx;
+  int camy;
+} MOTHER_t;
 
 typedef struct{
   V pos;

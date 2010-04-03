@@ -174,24 +174,27 @@ void advance() {
         ob->data = malloc(oa->size);
         memcpy(ob->data,oa->data,oa->size);
       }
-      if( (ob->flags & (OBJF_POS|OBJF_VEL)) == (OBJF_POS|OBJF_VEL) ) {
+      if( HAS(ob->flags,OBJF_POS|OBJF_VEL) ) {
         V *pos  = flex(ob,OBJF_POS);
         V *vel  = flex(ob,OBJF_VEL);
         V *pvel = (ob->flags & OBJF_PVEL) ? flex(ob,OBJF_PVEL) : NULL;
         V *hull = (ob->flags & OBJF_HULL) ? flex(ob,OBJF_HULL) : NULL;
         pos->x += vel->x + (pvel?pvel->x:0.0f);  //apply velocity
         pos->y += vel->y + (pvel?pvel->y:0.0f);
-        if( pos->x + (hull?hull[0].x:0.0f) < 0.0f ) {    //screen edges
-          pos->x = 0.0f   - (hull?hull[0].x:0.0f);
-          vel->x = 0.0f;
-        }
-        if( pos->x + (hull?hull[1].x:0.0f) > NATIVEW ) {
-          pos->x = NATIVEW - (hull?hull[1].x:0.0f);
-          vel->x = 0.0f;
-        }
-        if( pos->y + (hull?hull[1].y:0.0f) > NATIVEH ) {  //floor
-          pos->y = NATIVEH - (hull?hull[1].y:0.0f);
-          vel->y = 0.0f;
+        if( ob->flags & OBJF_CLIP )
+        {
+          if( pos->x + (hull?hull[0].x:0.0f) < 0.0f ) {    //screen edges
+            pos->x = 0.0f   - (hull?hull[0].x:0.0f);
+            vel->x = 0.0f;
+          }
+          if( pos->x + (hull?hull[1].x:0.0f) > NATIVEW ) {
+            pos->x = NATIVEW - (hull?hull[1].x:0.0f);
+            vel->x = 0.0f;
+          }
+          if( pos->y + (hull?hull[1].y:0.0f) > NATIVEH ) {  //floor
+            pos->y = NATIVEH - (hull?hull[1].y:0.0f);
+            vel->y = 0.0f;
+          }
         }
       }
     }
@@ -202,33 +205,37 @@ void advance() {
       for(i=0;i<maxobjs;i++) {
         if(r!=0 && !recheck[(r+1)%2][i])
           continue;
-        if( (fr[b].objs[i].flags & (OBJF_POS|OBJF_VEL|OBJF_HULL)) != (OBJF_POS|OBJF_VEL|OBJF_HULL) )
+        if( !HAS(fr[b].objs[i].flags,OBJF_POS|OBJF_VEL|OBJF_HULL) )
           continue;
-        V *oldmepos  = flex(fr[a].objs+i,OBJF_POS );
-        V *newmepos  = flex(fr[b].objs+i,OBJF_POS );
-        V *newmevel  = flex(fr[b].objs+i,OBJF_VEL );
-        V *oldmehull = flex(fr[b].objs+i,OBJF_HULL);
-        V *newmehull = flex(fr[b].objs+i,OBJF_HULL);
+        OBJ_t *oldme = fr[a].objs+i, *newme = fr[b].objs+i;
+        V *oldmepos  = flex(oldme,OBJF_POS );
+        V *newmepos  = flex(newme,OBJF_POS );
+        V *newmevel  = flex(newme,OBJF_VEL );
+        V *oldmehull = flex(oldme,OBJF_HULL);
+        V *newmehull = flex(newme,OBJF_HULL);
         for(j=0;j<(r==0?i:maxobjs);j++) { //find other objs to interact with -- don't need to check all on 1st 2 passes
           if(i==j || !fr[a].objs[i].data || !fr[a].objs[j].data )
             continue;
-          if( (fr[b].objs[j].flags & (OBJF_POS|OBJF_VEL|OBJF_HULL)) != (OBJF_POS|OBJF_VEL|OBJF_HULL) )
+          if( !HAS(fr[b].objs[j].flags,OBJF_POS|OBJF_VEL|OBJF_HULL) )
             continue;
-          V *oldyoupos  = flex(fr[a].objs+j,OBJF_POS );
-          V *newyoupos  = flex(fr[b].objs+j,OBJF_POS );
-          V *newyouvel  = flex(fr[b].objs+j,OBJF_VEL );
-          V *oldyouhull = flex(fr[b].objs+j,OBJF_HULL);
-          V *newyouhull = flex(fr[b].objs+j,OBJF_HULL);
+          OBJ_t *oldyou = fr[a].objs+j, *newyou = fr[b].objs+j;
+          V *oldyoupos  = flex(oldyou,OBJF_POS );
+          V *newyoupos  = flex(newyou,OBJF_POS );
+          V *newyouvel  = flex(newyou,OBJF_VEL );
+          V *oldyouhull = flex(oldyou,OBJF_HULL);
+          V *newyouhull = flex(newyou,OBJF_HULL);
           if( newmepos->x+newmehull[0].x >= newyoupos->x+newyouhull[1].x ||   //we dont collide NOW
               newmepos->x+newmehull[1].x <= newyoupos->x+newyouhull[0].x ||
               newmepos->y+newmehull[0].y >= newyoupos->y+newyouhull[1].y ||
               newmepos->y+newmehull[1].y <= newyoupos->y+newyouhull[0].y    )
             continue;
-          if(        oldyoupos->y+oldyouhull[0].y >= oldmepos->y+oldmehull[1].y ) { //I was above BEFORE
+          if(        oldyoupos->y+oldyouhull[0].y >= oldmepos->y+oldmehull[1].y     //I was above BEFORE
+                  && (newyou->flags&OBJF_PLAT) && (newme->flags&OBJF_CLIP)      ) {
             newmepos->y = newyoupos->y + newyouhull[0].y - newmehull[1].y;
             newmevel->y = 0.0f;
             recheck[r%2][i] = 1; //I've moved, so recheck me
-          } else if( oldyoupos->y+oldyouhull[1].y <= oldmepos->y+oldmehull[0].y ) { //You were above BEFORE
+          } else if( oldyoupos->y+oldyouhull[1].y <= oldmepos->y+oldmehull[0].y     //You were above BEFORE
+                  && (newme->flags&OBJF_PLAT) && (newyou->flags&OBJF_CLIP)      ) {
             newyoupos->y = newmepos->y + newmehull[0].y - newyouhull[1].y;
             newyouvel->y = 0.0f;
             recheck[r%2][j] = 1; //you've moved, so recheck you
