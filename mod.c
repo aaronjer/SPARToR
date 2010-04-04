@@ -62,12 +62,12 @@ void mod_setup(Uint32 setupfr) {
   MAYBE_BIND(INP_KEYB,SDLK_DOWN ,DOWN );
   MAYBE_BIND(INP_KEYB,SDLK_z    ,JUMP );
   MAYBE_BIND(INP_KEYB,SDLK_x    ,FIRE );
-/*MAYBE_BIND(INP_JAXN,3         ,LEFT );
-  MAYBE_BIND(INP_JAXP,3         ,RIGHT);
-  MAYBE_BIND(INP_JAXN,4         ,UP   );
-  MAYBE_BIND(INP_JAXP,4         ,DOWN );
+  MAYBE_BIND(INP_JAXN,0         ,LEFT ); MAYBE_BIND(INP_JAXN,3         ,LEFT );
+  MAYBE_BIND(INP_JAXP,0         ,RIGHT); MAYBE_BIND(INP_JAXP,3         ,RIGHT);
+  MAYBE_BIND(INP_JAXN,1         ,UP   ); MAYBE_BIND(INP_JAXN,4         ,UP   );
+  MAYBE_BIND(INP_JAXP,1         ,DOWN ); MAYBE_BIND(INP_JAXP,4         ,DOWN );
   MAYBE_BIND(INP_JBUT,1         ,JUMP );
-  MAYBE_BIND(INP_JBUT,2         ,FIRE );*/
+  MAYBE_BIND(INP_JBUT,2         ,FIRE );
 
   //make the mother object
   fr[setupfr].objs[0] = (OBJ_t){OBJT_MOTHER,0,0,malloc(sizeof(MOTHER_t))};

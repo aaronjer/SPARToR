@@ -100,7 +100,8 @@ void command(const char *s){
       SJC_Write("     connect -- connect to a server");
       SJC_Write("     fullscreen 1024 768 -- go fullscreen at 1024x768");
       SJC_Write("     window 3x -- go windowed at 3x up-scale");
-      SJC_Write("Game controls: Z, X, ARROWS");
+      SJC_Write("     bind -- choose input keys");
+      SJC_Write("Default controls: Z, X, ARROWS, F11");
     }else if( mod_command(q) ){
       SJC_Write("Huh?");
     }
