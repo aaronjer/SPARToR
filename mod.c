@@ -17,6 +17,7 @@
 #include "console.h"
 #include "net.h"
 #include "video.h"
+#include "input.h"
 #include "mod.h"
 #include "mod_private.h"
 #include <math.h>
@@ -93,14 +94,35 @@ void mod_quit() {
   mod_loadsurfs(1);
 }
 
-char mod_key2cmd(int sym,int press) {
-  switch(sym) {
-    case SDLK_LEFT:  return press?CMDT_1LEFT :CMDT_0LEFT ;
-    case SDLK_RIGHT: return press?CMDT_1RIGHT:CMDT_0RIGHT;
-    case SDLK_UP:    return press?CMDT_1UP   :CMDT_0UP   ;
-    case SDLK_DOWN:  return press?CMDT_1DOWN :CMDT_0DOWN ;
-    case SDLK_z:     return press?CMDT_1JUMP :CMDT_0JUMP ;
-    case SDLK_x:     return press?CMDT_1FIRE :CMDT_0FIRE ;
+char mod_key2cmd(int device,int sym,int press) {
+  switch(device) {
+    case INP_KEYB: switch(sym) {
+      case SDLK_LEFT:  return press?CMDT_1LEFT :CMDT_0LEFT ;
+      case SDLK_RIGHT: return press?CMDT_1RIGHT:CMDT_0RIGHT;
+      case SDLK_UP:    return press?CMDT_1UP   :CMDT_0UP   ;
+      case SDLK_DOWN:  return press?CMDT_1DOWN :CMDT_0DOWN ;
+      case SDLK_z:     return press?CMDT_1JUMP :CMDT_0JUMP ;
+      case SDLK_x:     return press?CMDT_1FIRE :CMDT_0FIRE ;
+      default:         return 0;
+    }
+    case INP_JBUT: switch(sym) {
+      case 1:          return press?CMDT_1JUMP :CMDT_0JUMP ;
+      case 2:          return press?CMDT_1FIRE :CMDT_0FIRE ;
+      default:         SJC_Write("Button %i is unused!",sym);
+                       return 0;
+    }
+    case INP_JAXP: switch(sym) {
+      case 3:          return press?CMDT_1RIGHT:CMDT_0RIGHT;
+      case 4:          return press?CMDT_1DOWN :CMDT_0DOWN ;
+      default:         SJC_Write("Axis %i (positive) is unused!",sym);
+                       return 0;
+    }
+    case INP_JAXN: switch(sym) {
+      case 3:          return press?CMDT_1LEFT :CMDT_0LEFT ;
+      case 4:          return press?CMDT_1UP   :CMDT_0UP   ;
+      default:         SJC_Write("Axis %i (negative) is unused!",sym);
+                       return 0;
+    }
   }
   return 0;
 }

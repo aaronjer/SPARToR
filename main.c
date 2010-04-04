@@ -60,6 +60,7 @@ Uint32 adv_collide_time = 0;
 Uint32 adv_game_time = 0;
 Uint32 adv_frames = 0;
 
+SDL_Joystick **joysticks;
 
 int main(int argc,char **argv) {
   SDL_Event event;
@@ -75,7 +76,7 @@ int main(int argc,char **argv) {
   mod_setup(0);
   fr[1].cmds[0].flags |= CMDF_NEW; //server is a client
 
-  if( SDL_Init(SDL_INIT_TIMER|SDL_INIT_AUDIO|SDL_INIT_VIDEO)<0 || !SDL_GetVideoInfo() ) {
+  if( SDL_Init(SDL_INIT_TIMER|SDL_INIT_AUDIO|SDL_INIT_VIDEO|SDL_INIT_JOYSTICK)<0 || !SDL_GetVideoInfo() ) {
     fprintf(stderr,"SDL_Init: %s\n",SDL_GetError());
     exit(-1);
   }
@@ -110,6 +111,16 @@ int main(int argc,char **argv) {
   SJC_Write(" --->  Type 'help' for help.  <---");
   SJC_Write("");
   SJC_Write("Desktop resolution detected as %d x %d",desktop_w,desktop_h);
+  int numjoysticks;
+  if( (numjoysticks=SDL_NumJoysticks())>0 ) {
+    joysticks = malloc(sizeof(*joysticks)*numjoysticks);
+    SDL_JoystickEventState(SDL_ENABLE);
+    SJC_Write("%d controller/joystick%s detected:",numjoysticks,(numjoysticks>1?"s":""));
+    for( i=0; i<numjoysticks; i++ ) {
+      joysticks[i] = SDL_JoystickOpen(i);
+      SJC_Write("  #%i: %.20s",i,SDL_JoystickName(i));
+    }
+  }
 
   //main loop
   for(;;) {
@@ -119,11 +130,14 @@ int main(int argc,char **argv) {
     ticks = newticks;
     metafr = ticks/ticksaframe + frameoffset;
     while( SDL_PollEvent(&event) ) switch(event.type) {
-      case SDL_VIDEOEXPOSE:                                                   break;
-      case SDL_VIDEORESIZE: setvideosoon(event.resize.w,event.resize.h,0,10); break;
-      case SDL_KEYDOWN:     input( 1, event.key.keysym );                     break;
-      case SDL_KEYUP:       input( 0, event.key.keysym );                     break;
-      case SDL_QUIT:        cleanup();                                        break;
+      case SDL_VIDEOEXPOSE:                                                     break;
+      case SDL_VIDEORESIZE:   setvideosoon(event.resize.w,event.resize.h,0,10); break;
+      case SDL_KEYDOWN:       kbinput(  1, event.key.keysym );                  break;
+      case SDL_KEYUP:         kbinput(  0, event.key.keysym );                  break;
+      case SDL_JOYBUTTONDOWN: joyinput( 1, event.jbutton );                     break;
+      case SDL_JOYBUTTONUP:   joyinput( 0, event.jbutton );                     break;
+      case SDL_JOYAXISMOTION: axisinput( event.jaxis );                         break;
+      case SDL_QUIT:          cleanup();                                        break;
     }
     idle_time += SDL_GetTicks() - idle_start;
     readinput();

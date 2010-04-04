@@ -27,6 +27,8 @@ static int cbread = 0;
 
 
 void putcmd(char cmd) {
+  if( !cmd )
+    return;
   cmdbuf[cbwrite] = cmd;
   cbwrite = (cbwrite+1)%256;
 }
@@ -41,13 +43,12 @@ char getnextcmd() {
 }
 
 
-void input(int press,SDL_keysym keysym) {
+void kbinput(int press,SDL_keysym keysym) {
   SDLKey sym = keysym.sym;
   SDLMod mod = keysym.mod;
   Uint16 unicode = keysym.unicode;
 
-  if( (sym==SDLK_q  && mod&(KMOD_LCTRL|KMOD_RCTRL)) ||
-      (sym==SDLK_F4 && mod&(KMOD_LALT |KMOD_RALT )) )
+  if( (sym==SDLK_q && mod&KMOD_CTRL) || (sym==SDLK_F4 && mod&KMOD_ALT) )
     command("exit");
   else if(press && sym==SDLK_F11) {
     if( !fullscreen )
@@ -67,11 +68,35 @@ void input(int press,SDL_keysym keysym) {
       SJC_Rub();
     else if(sym==SDLK_ESCAPE && console_open)
       toggleconsole();
-  } else {
-    char cmd = mod_key2cmd(sym,press);
-    if( cmd )
-      putcmd(cmd);
+  } else
+    putcmd( mod_key2cmd(INP_KEYB,sym,press) );
+}
+
+
+void joyinput(int press,SDL_JoyButtonEvent jbutton) {
+  putcmd( mod_key2cmd(INP_JBUT,jbutton.button,press) );
+}
+
+
+void axisinput(SDL_JoyAxisEvent jaxis) {
+  static char **axdats = NULL;
+  static int size = 0;
+  static const char POS_ON  = 1;
+  static const char NEG_ON  = 2;
+  if( size<=jaxis.which ) //haven't seen a joystick this high before?
+  {
+    axdats = realloc(axdats,sizeof(*axdats)*(jaxis.which+1));
+    memset(axdats+size,0,sizeof(*axdats)*(jaxis.which+1-size));
+    size = jaxis.which+1;
   }
+  if( !axdats[jaxis.which] ) //haven't seen this exact joystick before?
+    axdats[jaxis.which] = calloc(256,sizeof(**axdats));
+  char *stat = axdats[jaxis.which]+jaxis.axis;
+
+  if( jaxis.value> 3400 && !(*stat&POS_ON) ) { *stat|= POS_ON; putcmd( mod_key2cmd(INP_JAXP,jaxis.axis,1) ); }
+  if( jaxis.value< 3000 &&  (*stat&POS_ON) ) { *stat&=~POS_ON; putcmd( mod_key2cmd(INP_JAXP,jaxis.axis,0) ); }
+  if( jaxis.value<-3400 && !(*stat&NEG_ON) ) { *stat|= NEG_ON; putcmd( mod_key2cmd(INP_JAXN,jaxis.axis,1) ); }
+  if( jaxis.value>-3000 &&  (*stat&NEG_ON) ) { *stat&=~NEG_ON; putcmd( mod_key2cmd(INP_JAXN,jaxis.axis,0) ); }
 }
 
 
@@ -88,5 +113,4 @@ void readinput() {
     }
   }
 }
-
 
