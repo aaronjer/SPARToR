@@ -19,6 +19,7 @@
 #include "host.h"
 #include "client.h"
 #include "video.h"
+#include "input.h"
 #include "mod.h"
 
 
@@ -70,6 +71,21 @@ void command(const char *s){
         setvideosoon(desktop_w,desktop_h,full,1);
       else
         setvideosoon(0,0,0,1);
+    }else if( strcmp(q,"bind")==0 ){
+      int i;
+      char *cmdname = strtok(NULL," ");
+      if( cmdname==NULL ) {
+        SJC_Write("Please specify command: left, right, up, down, fire, jump");
+        break;
+      }
+      for(i=0; i<numinputnames; i++)
+        if( strcmp(inputnames[i].name,cmdname)==0 ) {
+          input_bindsoon( inputnames[i].presscmd, inputnames[i].releasecmd );
+          SJC_Write("Press a key, button, or stick to use for [%s] ...",cmdname);
+          break;
+        }
+      if( i==numinputnames )
+        SJC_Write("Not a command: %s",cmdname);
     }else if( strcmp(q,"slow")==0 ){
       SJC_Write("Speed is now slow");
       ticksaframe = 300;

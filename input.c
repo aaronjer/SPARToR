@@ -20,25 +20,26 @@
 #include "command.h"
 #include "mod.h"
 
+static int  kwik = 0;
+static char kwik_presscmd;
+static char kwik_releasecmd;
 
-static char cmdbuf[256] = {0};
-static int cbwrite = 0;
-static int cbread = 0;
-
+static char cmdbuf[250] = {0};
+static int  cbwrite = 0;
+static int  cbread = 0;
 
 void putcmd(char cmd) {
-  if( !cmd )
+  if( !cmd || cbread%250==(cbwrite+1)%250 )
     return;
   cmdbuf[cbwrite] = cmd;
-  cbwrite = (cbwrite+1)%256;
+  cbwrite = (cbwrite+1)%250;
 }
-
 
 char getnextcmd() {
   char cmd = cmdbuf[cbread];
   if( cmd==0 ) return 0;
   cmdbuf[cbread] = 0;
-  cbread = (cbread+1)%256;
+  cbread = (cbread+1)%250;
   return cmd;
 }
 
@@ -57,6 +58,8 @@ void kbinput(int press,SDL_keysym keysym) {
       command("window");
   } else if(press && sym==SDLK_BACKQUOTE)
     toggleconsole();
+  else if(press && kwik)
+    kwikbind( INP_KEYB, sym );
   else if(press && console_open) {
     if(unicode>31 && unicode<127)
       SJC_Put((char)unicode);
@@ -74,7 +77,10 @@ void kbinput(int press,SDL_keysym keysym) {
 
 
 void joyinput(int press,SDL_JoyButtonEvent jbutton) {
-  putcmd( mod_key2cmd(INP_JBUT,jbutton.button,press) );
+  if( kwik && press )
+    kwikbind( INP_JBUT, jbutton.button );
+  else
+    putcmd( mod_key2cmd(INP_JBUT,jbutton.button,press) );
 }
 
 
@@ -83,6 +89,7 @@ void axisinput(SDL_JoyAxisEvent jaxis) {
   static int size = 0;
   static const char POS_ON  = 1;
   static const char NEG_ON  = 2;
+
   if( size<=jaxis.which ) //haven't seen a joystick this high before?
   {
     axdats = realloc(axdats,sizeof(*axdats)*(jaxis.which+1));
@@ -92,11 +99,13 @@ void axisinput(SDL_JoyAxisEvent jaxis) {
   if( !axdats[jaxis.which] ) //haven't seen this exact joystick before?
     axdats[jaxis.which] = calloc(256,sizeof(**axdats));
   char *stat = axdats[jaxis.which]+jaxis.axis;
+  int val = jaxis.value;
+  int ax = jaxis.axis;
 
-  if( jaxis.value> 3400 && !(*stat&POS_ON) ) { *stat|= POS_ON; putcmd( mod_key2cmd(INP_JAXP,jaxis.axis,1) ); }
-  if( jaxis.value< 3000 &&  (*stat&POS_ON) ) { *stat&=~POS_ON; putcmd( mod_key2cmd(INP_JAXP,jaxis.axis,0) ); }
-  if( jaxis.value<-3400 && !(*stat&NEG_ON) ) { *stat|= NEG_ON; putcmd( mod_key2cmd(INP_JAXN,jaxis.axis,1) ); }
-  if( jaxis.value>-3000 &&  (*stat&NEG_ON) ) { *stat&=~NEG_ON; putcmd( mod_key2cmd(INP_JAXN,jaxis.axis,0) ); }
+  if( val> 3400 && !(*stat&POS_ON) ) { *stat|= POS_ON; kwik ? kwikbind(INP_JAXP,ax) : putcmd( mod_key2cmd(INP_JAXP,ax,1) ); }
+  if( val< 3000 &&  (*stat&POS_ON) ) { *stat&=~POS_ON;                                putcmd( mod_key2cmd(INP_JAXP,ax,0) ); }
+  if( val<-3400 && !(*stat&NEG_ON) ) { *stat|= NEG_ON; kwik ? kwikbind(INP_JAXN,ax) : putcmd( mod_key2cmd(INP_JAXN,ax,1) ); }
+  if( val>-3000 &&  (*stat&NEG_ON) ) { *stat&=~NEG_ON;                                putcmd( mod_key2cmd(INP_JAXN,ax,0) ); }
 }
 
 
@@ -113,4 +122,26 @@ void readinput() {
     }
   }
 }
+
+
+void input_bindsoon(int presscmd,int releasecmd) {
+  kwik_presscmd = presscmd;
+  kwik_releasecmd = releasecmd;
+  kwik = 1;
+}
+
+void kwikbind(int device,int sym) {
+  mod_keybind( device, sym, 0, kwik_releasecmd );
+  mod_keybind( device, sym, 1, kwik_presscmd );
+  kwik = 0;
+  switch( device ) {
+    case INP_KEYB: SJC_Write("Key #%d selected"                ,sym); break;
+    case INP_JBUT: SJC_Write("Button #%d selected"             ,sym); break;
+    case INP_JAXP: SJC_Write("Axis #%d (+) selected"           ,sym); break;
+    case INP_JAXN: SJC_Write("Axis #%d (-) selected"           ,sym); break;
+    default:       SJC_Write("Unkown device input #%d selected",sym); break;
+  }
+}
+
+
 

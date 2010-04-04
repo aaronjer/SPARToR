@@ -11,9 +11,21 @@
 #define NATIVEH 240
 
 
+typedef struct {
+  char name[16];
+  int  presscmd;
+  int  releasecmd;
+} INPUTNAME_t;
+
+
+extern int numinputnames;
+extern INPUTNAME_t inputnames[];
+
+
 void mod_setup(Uint32 setupfr);
 void mod_setvideo(int w,int h);
 void mod_quit();
+void mod_keybind(int device,int sym,int press,char cmd);
 char mod_key2cmd(int device,int sym,int press);
 int mod_command(char *q);
 void mod_loadsurfs(int quit);

@@ -16,6 +16,8 @@ void kbinput(int press,SDL_keysym keysym);
 void joyinput(int press,SDL_JoyButtonEvent jbutton);
 void axisinput(SDL_JoyAxisEvent jaxis);
 void readinput();
+void input_bindsoon(int presscmd,int releasecmd);
+void kwikbind(int device,int sym);
 
 #endif
 

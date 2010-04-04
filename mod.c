@@ -23,9 +23,25 @@
 #include <math.h>
 
 
+int numinputnames = 6;
+INPUTNAME_t inputnames[6] = {{"left" ,CMDT_1LEFT ,CMDT_0LEFT },
+                             {"right",CMDT_1RIGHT,CMDT_0RIGHT},
+                             {"up"   ,CMDT_1UP   ,CMDT_0UP   },
+                             {"down" ,CMDT_1DOWN ,CMDT_0DOWN },
+                             {"fire" ,CMDT_1FIRE ,CMDT_0FIRE },
+                             {"jump" ,CMDT_1JUMP ,CMDT_0JUMP }};
+
+
 static int    setmodel = -1;
 static int    camx = 0;
 static int    camy = 0;
+
+static int    binds_size = 0;
+static struct {
+  short hash;
+  char  cmd;
+  char  _pad;
+}            *binds;
 
 
 
@@ -35,6 +51,24 @@ GLuint textures[2];
 
 
 void mod_setup(Uint32 setupfr) {
+  //default key bindings
+#define MAYBE_BIND(dev,sym,cmd) {       \
+  mod_keybind(dev,sym,0,CMDT_0 ## cmd); \
+  mod_keybind(dev,sym,1,CMDT_1 ## cmd); }
+
+  MAYBE_BIND(INP_KEYB,SDLK_LEFT ,LEFT );
+  MAYBE_BIND(INP_KEYB,SDLK_RIGHT,RIGHT);
+  MAYBE_BIND(INP_KEYB,SDLK_UP   ,UP   );
+  MAYBE_BIND(INP_KEYB,SDLK_DOWN ,DOWN );
+  MAYBE_BIND(INP_KEYB,SDLK_z    ,JUMP );
+  MAYBE_BIND(INP_KEYB,SDLK_x    ,FIRE );
+/*MAYBE_BIND(INP_JAXN,3         ,LEFT );
+  MAYBE_BIND(INP_JAXP,3         ,RIGHT);
+  MAYBE_BIND(INP_JAXN,4         ,UP   );
+  MAYBE_BIND(INP_JAXP,4         ,DOWN );
+  MAYBE_BIND(INP_JBUT,1         ,JUMP );
+  MAYBE_BIND(INP_JBUT,2         ,FIRE );*/
+
   //make the mother object
   fr[setupfr].objs[0] = (OBJ_t){OBJT_MOTHER,0,0,malloc(sizeof(MOTHER_t))};
   *(MOTHER_t *)fr[setupfr].objs[0].data = (MOTHER_t){0,0};
@@ -49,7 +83,7 @@ void mod_setup(Uint32 setupfr) {
   du->vel = (V){0.0f,0.0f,0.0f};                                                           \
   du->hull[0] = (V){-w*8,-h*8,0.0f};                                                       \
   du->hull[1] = (V){ w*8, h*8,0.0f};                                                       \
-  du->model = 0;                 }
+  du->model = 0;                                                                           }
 
   MAYBE_A_DUMMY( 1,  1, 25,1,5);
   MAYBE_A_DUMMY( 2,  3, 25,1,5);
@@ -94,38 +128,33 @@ void mod_quit() {
   mod_loadsurfs(1);
 }
 
-char mod_key2cmd(int device,int sym,int press) {
-  switch(device) {
-    case INP_KEYB: switch(sym) {
-      case SDLK_LEFT:  return press?CMDT_1LEFT :CMDT_0LEFT ;
-      case SDLK_RIGHT: return press?CMDT_1RIGHT:CMDT_0RIGHT;
-      case SDLK_UP:    return press?CMDT_1UP   :CMDT_0UP   ;
-      case SDLK_DOWN:  return press?CMDT_1DOWN :CMDT_0DOWN ;
-      case SDLK_z:     return press?CMDT_1JUMP :CMDT_0JUMP ;
-      case SDLK_x:     return press?CMDT_1FIRE :CMDT_0FIRE ;
-      default:         return 0;
-    }
-    case INP_JBUT: switch(sym) {
-      case 1:          return press?CMDT_1JUMP :CMDT_0JUMP ;
-      case 2:          return press?CMDT_1FIRE :CMDT_0FIRE ;
-      default:         SJC_Write("Button %i is unused!",sym);
-                       return 0;
-    }
-    case INP_JAXP: switch(sym) {
-      case 3:          return press?CMDT_1RIGHT:CMDT_0RIGHT;
-      case 4:          return press?CMDT_1DOWN :CMDT_0DOWN ;
-      default:         SJC_Write("Axis %i (positive) is unused!",sym);
-                       return 0;
-    }
-    case INP_JAXN: switch(sym) {
-      case 3:          return press?CMDT_1LEFT :CMDT_0LEFT ;
-      case 4:          return press?CMDT_1UP   :CMDT_0UP   ;
-      default:         SJC_Write("Axis %i (negative) is unused!",sym);
-                       return 0;
-    }
+
+void mod_keybind(int device,int sym,int press,char cmd) {
+  int i;
+  short hash = press<<15 | device<<8 | sym;
+
+  for(i=0; i<binds_size; i++)
+    if( binds[i].hash==hash || binds[i].hash==0 )
+      break;
+  if(i==binds_size) {
+    binds = realloc(binds,sizeof(*binds)*(binds_size+32));
+    memset(binds+binds_size,0,sizeof(*binds)*32);
+    binds_size += 32;
   }
+  binds[i].hash = hash;
+  binds[i].cmd = cmd;
+}
+
+char mod_key2cmd(int device,int sym,int press) {
+  int i;
+  short hash = press<<15 | device<<8 | sym;
+
+  for(i=0; i<binds_size; i++)
+    if( binds[i].hash==hash )
+      return binds[i].cmd;
   return 0;
 }
+
 
 int mod_command(char *q) {
   TRY
@@ -479,7 +508,7 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
     case OBJT_BULLET:
       assert("ob->size==sizeof(BULLET_t)",ob->size==sizeof(BULLET_t));
       BULLET_t *bu = ob->data;
-      bu->ttl--;
+      if( bu->ttl ) bu->ttl--;
       for(i=0;i<maxobjs;i++)  //find players to hit
         if(fr[b].objs[i].type==OBJT_PLAYER) {
           PLAYER_t *pl = fr[b].objs[i].data;
@@ -532,7 +561,7 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
           if( fabsf(sl->pos.x - bu->pos.x)>8.0f || //no hit
               fabsf(sl->pos.y - bu->pos.y)>8.0f )
             continue;
-          bu->ttl = 1;
+          bu->ttl = 0;
           sl->vel.x /= 100.0f;
           sl->vel.y = -3.0f;
           sl->dead = 1;
