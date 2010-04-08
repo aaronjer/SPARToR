@@ -37,7 +37,7 @@ void command(const char *s){
       if( val ) SJF.tex = atoi(val);
     }else if( strcmp(q,"alpha")==0 ){
       char *val = strtok(NULL," ");
-      if( val ) usealpha = atoi(val);
+      if( val ) v_usealpha = atoi(val);
     }else if( strcmp(q,"exit")==0 || strcmp(q,"quit")==0 ){
       cleanup();
     }else if( strcmp(q,"listen")==0 ){
@@ -54,9 +54,9 @@ void command(const char *s){
       disconnect();
       SJC_Write("Not implemented."); //TODO
     }else if( strcmp(q,"hulls")==0 ){
-      drawhulls = drawhulls ? 0 : 1;
+      v_drawhulls = v_drawhulls ? 0 : 1;
     }else if( strcmp(q,"stats")==0 ){
-      showstats = showstats ? 0 : 1;
+      v_showstats = v_showstats ? 0 : 1;
     }else if( strcmp(q,"fullscreen")==0 || strncmp(q,"window",6)==0 ){
       char *sw = strtok(NULL," x");
       char *sh = strtok(NULL," ");
@@ -67,10 +67,8 @@ void command(const char *s){
         setvideosoon(w,h,full,1);
       else if( w>=1 && w<=5 )
         setvideosoon(NATIVEW*w,NATIVEH*w,full,1);
-      else if( full )
-        setvideosoon(desktop_w,desktop_h,full,1);
       else
-        setvideosoon(0,0,0,1);
+        setvideosoon(0,0,full,1);
     }else if( strcmp(q,"bind")==0 ){
       int i;
       char *cmdname = strtok(NULL," ");

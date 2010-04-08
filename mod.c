@@ -118,6 +118,8 @@ void mod_setup(Uint32 setupfr) {
   MAYBE_A_DUMMY(28, 45,-25,1,1);
   MAYBE_A_DUMMY(29, 45,-20,1,1);
   MAYBE_A_DUMMY(30, 45,-15,1,1);
+
+  fr[setupfr+1].cmds[0].flags |= CMDF_NEW; //server is a client
 }
 
 void mod_setvideo(int w,int h) {
@@ -169,8 +171,6 @@ int mod_command(char *q) {
 }
 
 void mod_loadsurfs(int quit) {
-  drawhulls = 0;
-
   SDL_Surface *surf;
 
   // free existing textures
@@ -374,7 +374,7 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
       if( objid==(hotfr+100)%2000 ) //tee-hee
         du->vel.x += (float)(b%4)-1.5;
 
-      du->vel.y += 0.8f;        //gravity
+      du->vel.y += 0.01f;        //gravity
       break;
     case OBJT_PLAYER:
       assert("ob->size==sizeof(PLAYER_t)",ob->size==sizeof(PLAYER_t));

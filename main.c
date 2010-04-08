@@ -60,11 +60,11 @@ Uint32 adv_collide_time = 0;
 Uint32 adv_game_time = 0;
 Uint32 adv_frames = 0;
 
-SDL_Joystick **joysticks;
+static const Uint32 sdlflags = SDL_INIT_TIMER|SDL_INIT_AUDIO|SDL_INIT_VIDEO|SDL_INIT_JOYSTICK;
+
 
 int main(int argc,char **argv) {
   SDL_Event event;
-  const SDL_VideoInfo *vidinfo;
   int i;
   Uint32 idle_start = 0;
 
@@ -74,53 +74,26 @@ int main(int argc,char **argv) {
     fr[i].objs = calloc(sizeof(OBJ_t),maxobjs);
   }
   mod_setup(0);
-  fr[1].cmds[0].flags |= CMDF_NEW; //server is a client
 
-  if( SDL_Init(SDL_INIT_TIMER|SDL_INIT_AUDIO|SDL_INIT_VIDEO|SDL_INIT_JOYSTICK)<0 || !SDL_GetVideoInfo() ) {
-    fprintf(stderr,"SDL_Init: %s\n",SDL_GetError());
-    exit(-1);
-  }
-  SDL_GL_SetAttribute(SDL_GL_RED_SIZE,   8);
-  SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
-  SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE,  8);
-  SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
-  SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER,1);
+  if( SDL_Init(sdlflags)<0 || !SDL_GetVideoInfo() ) { fprintf(stderr,"SDL_Init: %s\n",SDL_GetError());     exit(-1); }
+  if( SDLNet_Init()<0 )                             { fprintf(stderr,"SDLNet_Init: %s\n",SDL_GetError());  exit(-2); }
+  if( IMG_Init(IMG_INIT_PNG)!=IMG_INIT_PNG )        { fprintf(stderr,"IMG_Init: %s\n",SDL_GetError());     exit(-3); }
 
-  if( SDLNet_Init()<0 ) {
-    fprintf(stderr,"SDLNet_Init: %s\n",SDL_GetError());
-    exit(-2);
-  }
-  if( IMG_Init(IMG_INIT_PNG)!=IMG_INIT_PNG ) {
-    fprintf(stderr,"IMG_Init: %s\n",SDL_GetError());
-    exit(-3);
-  }
-  pkt = SDLNet_AllocPacket(PACKET_SIZE);
-  toggleconsole();
   SDL_WM_SetCaption("SPARToR " VERSION,NULL);
   SDL_Surface *iconsurf = IMG_Load("icon.png");
   SDL_WM_SetIcon(iconsurf,NULL);
   SDL_FreeSurface(iconsurf);
-  vidinfo = SDL_GetVideoInfo();
-  desktop_w = vidinfo->current_w;
-  desktop_h = vidinfo->current_h;
-  setvideo(NATIVEW*2,NATIVEH*2,0,0);
+  pkt = SDLNet_AllocPacket(PACKET_SIZE);
 
   SJC_Write("SPARToR v%s  Copyright (C) 2010 Jer Wilson",VERSION);
   SJC_Write("Please visit github.com/superjer for updates and source code.");
   SJC_Write("");
   SJC_Write(" --->  Type 'help' for help.  <---");
   SJC_Write("");
-  SJC_Write("Desktop resolution detected as %d x %d",desktop_w,desktop_h);
-  int numjoysticks;
-  if( (numjoysticks=SDL_NumJoysticks())>0 ) {
-    joysticks = malloc(sizeof(*joysticks)*numjoysticks);
-    SDL_JoystickEventState(SDL_ENABLE);
-    SJC_Write("%d controller/joystick%s detected:",numjoysticks,(numjoysticks>1?"s":""));
-    for( i=0; i<numjoysticks; i++ ) {
-      joysticks[i] = SDL_JoystickOpen(i);
-      SJC_Write("  #%i: %.20s",i,SDL_JoystickName(i));
-    }
-  }
+
+  toggleconsole();
+  videoinit();
+  inputinit();
 
   //main loop
   for(;;) {

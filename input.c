@@ -28,6 +28,23 @@ static char cmdbuf[250] = {0};
 static int  cbwrite = 0;
 static int  cbread = 0;
 
+static SDL_Joystick **joysticks;
+
+
+void inputinit() {
+  int i, numjoysticks;
+  if( (numjoysticks=SDL_NumJoysticks())>0 ) {
+    joysticks = malloc(sizeof(*joysticks)*numjoysticks);
+    SDL_JoystickEventState(SDL_ENABLE);
+    SJC_Write("%d controller/joystick%s detected:",numjoysticks,(numjoysticks>1?"s":""));
+    for( i=0; i<numjoysticks; i++ ) {
+      joysticks[i] = SDL_JoystickOpen(i);
+      SJC_Write("  #%i: %.20s",i,SDL_JoystickName(i));
+    }
+  }
+}
+
+
 void putcmd(char cmd) {
   if( !cmd || cbread%250==(cbwrite+1)%250 )
     return;
@@ -52,7 +69,7 @@ void kbinput(int press,SDL_keysym keysym) {
   if( (sym==SDLK_q && mod&(KMOD_CTRL|KMOD_META)) || (sym==SDLK_F4 && mod&KMOD_ALT) )
     command("exit");
   else if( press && (sym==SDLK_F11 || (sym==SDLK_f && mod&&KMOD_META)) ) {
-    if( !fullscreen )
+    if( !v_fullscreen )
       command("fullscreen");
     else
       command("window");

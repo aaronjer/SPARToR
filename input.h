@@ -12,6 +12,7 @@
 #define INP_JAXN 4 //joystick axis, negative
 
 
+void inputinit();
 void kbinput(int press,SDL_keysym keysym);
 void joyinput(int press,SDL_JoyButtonEvent jbutton);
 void axisinput(SDL_JoyAxisEvent jaxis);

@@ -20,17 +20,17 @@
 #include "font.h"
 #include "mod.h"
 
-int drawhulls = 0;
-int showstats = 1;
-int usealpha = 1;
-int fullscreen = 0;
-int screen_w = NATIVEW;
-int screen_h = NATIVEH;
-int prev_w = NATIVEW;
-int prev_h = NATIVEH;
-int desktop_w = 1024;
-int desktop_h = 768;
+int v_drawhulls = 0;
+int v_showstats = 1;
+int v_usealpha = 1;
+int v_fullscreen = 0;
 
+static int screen_w = NATIVEW;
+static int screen_h = NATIVEH;
+static int prev_w = NATIVEW;
+static int prev_h = NATIVEH;
+static int desktop_w = 1024;
+static int desktop_h = 768;
 static int pad_left;
 static int pad_top;
 static int soon = 0;
@@ -38,6 +38,22 @@ static int soon_w = 0;
 static int soon_h = 0;
 static int soon_full = 0;
 
+
+void videoinit() {
+  const SDL_VideoInfo *vidinfo;
+
+  SDL_GL_SetAttribute(SDL_GL_RED_SIZE,   8);
+  SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
+  SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE,  8);
+  SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
+  SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER,1);
+
+  vidinfo = SDL_GetVideoInfo();
+  *((int*)&desktop_w) = vidinfo->current_w;
+  *((int*)&desktop_h) = vidinfo->current_h;
+  setvideo(NATIVEW*2,NATIVEH*2,0,0);
+  SJC_Write("Desktop resolution detected as %d x %d",desktop_w,desktop_h);
+}
 
 
 void render() {
@@ -83,7 +99,7 @@ void render() {
 
   glColor4f(1.0f,1.0f,1.0f,1.0f);
   glEnable(GL_TEXTURE_2D);
-  if( usealpha )
+  if( v_usealpha )
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   else
     glBlendFunc(GL_ONE, GL_ZERO);
@@ -109,7 +125,7 @@ void render() {
     if( o->flags&OBJF_VIS )
       mod_draw(screen,i,o); // have the mod draw the actual thing
 
-    if( pos && hull && drawhulls ) {
+    if( pos && hull && v_drawhulls ) {
       SDL_Rect rect;
       rect = (SDL_Rect){pos->x+hull[0].x, pos->y+hull[0].y, hull[1].x-hull[0].x, hull[1].y-hull[0].y};
       color = SDL_MapRGB(screen->format, 0x90+0x22*((i/1)%3), 0x90+0x22*((i/3)%3), 0x90+0x22*((i/9)%3));
@@ -119,7 +135,7 @@ void render() {
       rect.h *= scale;
       SJDL_DrawSquare(screen,&rect,color);
     }
-    if( pos && drawhulls ) {
+    if( pos && v_drawhulls ) {
       sprintf(buf,"%d",i);
       SJF_DrawText(pos->x*scale, pos->y*scale, buf);
     }
@@ -177,7 +193,7 @@ void render() {
   render_time += tmp - render_start;
   total_start = tmp;
   Uint32 unaccounted_time = total_time - (idle_time + render_time + adv_move_time + adv_collide_time + adv_game_time);
-  if( showstats ) {
+  if( v_showstats ) {
     Uint32 denom = vidfrmod+1;
     sprintf(buf,"idle_time %4d"       ,       idle_time/denom);
     SJF_DrawText(w-20-SJF_TextExtents(buf)-pad_left,10-pad_top,buf);
@@ -218,15 +234,15 @@ void setvideo(int w,int h,int go_full,int quiet) {
     w = prev_w;
     h = prev_h;
   }
-  if( go_full && !fullscreen ) { // record previous res when changing to fullscreen
+  if( go_full && !v_fullscreen ) { // record previous res when changing to fullscreen
     prev_w = screen_w;
     prev_h = screen_h;
   }
-  fullscreen = go_full;
+  v_fullscreen = go_full;
   flags |= (go_full ? SDL_FULLSCREEN : SDL_RESIZABLE);
   screen = SDL_SetVideoMode(w,h,SDL_GetVideoInfo()->vfmt->BitsPerPixel,SDL_OPENGL|flags);
   if( !screen ){
-    fullscreen = 0;
+    v_fullscreen = 0;
     screen = SDL_SetVideoMode(NATIVEW,NATIVEH,SDL_GetVideoInfo()->vfmt->BitsPerPixel,SDL_OPENGL|SDL_RESIZABLE);
     SJC_Write("Error changing video mode. Using safe defaults.");
     if( !screen ) {
@@ -247,8 +263,18 @@ void setvideo(int w,int h,int go_full,int quiet) {
 }
 
 void setvideosoon(int w,int h,int go_full,int delay) {
-  soon_w = w;
-  soon_h = h;
+  if( !w || !h ) {
+    if( go_full ) {
+      soon_w = desktop_w;
+      soon_h = desktop_h;
+    } else {
+      soon_w = NATIVEW*2;
+      soon_w = NATIVEH*2;
+    }
+  } else {
+    soon_w = w;
+    soon_h = h;
+  }
   soon_full = go_full;
   soon = delay;
 }
