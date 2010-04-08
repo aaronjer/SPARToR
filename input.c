@@ -68,7 +68,7 @@ void kbinput(int press,SDL_keysym keysym) {
 
   if( (sym==SDLK_q && mod&(KMOD_CTRL|KMOD_META)) || (sym==SDLK_F4 && mod&KMOD_ALT) )
     command("exit");
-  else if( press && (sym==SDLK_F11 || (sym==SDLK_f && mod&&KMOD_META)) ) {
+  else if( press && (sym==SDLK_F11 || (sym==SDLK_f && mod&KMOD_META)) ) {
     if( !v_fullscreen )
       command("fullscreen");
     else
