@@ -14,6 +14,9 @@ typedef struct{
 } CLIENT_t;
 
 
+extern UDPsocket  hostsock;
+
+
 void host_start(int port);
 void host_stop();
 void host();

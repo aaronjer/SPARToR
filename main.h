@@ -9,7 +9,6 @@
 #define VERSION "0.1m"
 
 #define TICKSAFRAME 30
-#define PACKET_SIZE 5000
 
 //macros
 #define MIN(a,b) ((a)<(b)?(a):(b))
@@ -66,6 +65,7 @@ typedef struct{
 extern Uint32 ticksaframe;
 extern size_t maxframes;
 extern size_t maxobjs;
+extern int    maxclients;
 
 extern FRAME_t *fr;
 extern Uint32 frameoffset; //offset to sync client with server
@@ -80,7 +80,6 @@ extern Uint32 scale;
 extern Uint32 ticks;
 extern int me;
 extern int console_open;
-extern UDPpacket *pkt;
 
 extern Uint32 total_time;
 extern Uint32 idle_time;

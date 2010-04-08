@@ -17,10 +17,15 @@
 #include "console.h"
 #include "command.h"
 #include "host.h"
+#include "client.h"
 #include "net.h"
 
 
+UDPsocket hostsock = NULL;
+
+
 static CLIENT_t *clients;
+static UDPpacket *pkt;
 
 
 void host_start(int port) {
@@ -33,11 +38,15 @@ void host_start(int port) {
   clients[me].connected = 1;
   clients[me].addr = (IPaddress){0,0};
   SJC_Write("Host started on port %u.",port);
+  pkt = SDLNet_AllocPacket(PACKET_SIZE);
 }
 
 
 void host_stop() {
   free(clients);
+  SDLNet_FreePacket(pkt);
+  SDLNet_UDP_Close(hostsock);
+  hostsock = NULL;
 }
 
 

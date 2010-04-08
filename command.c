@@ -49,9 +49,15 @@ void command(const char *s){
       char *clientport = strtok(NULL," ");
       client_start(hostname,(port?atoi(port):0),(clientport?atoi(clientport):0));
     }else if( strcmp(q,"disconnect")==0 ){
-      disconnect();
+      if( hostsock ){
+        host_stop();
+        SJC_Write("Host stopped.");
+      }else if( clientsock ){
+        client_stop();
+        SJC_Write("Disconnected from host.");
+      }else
+        SJC_Write("Nothing to disconnect from.");
     }else if( strcmp(q,"reconnect")==0 ){
-      disconnect();
       SJC_Write("Not implemented."); //TODO
     }else if( strcmp(q,"hulls")==0 ){
       v_drawhulls = v_drawhulls ? 0 : 1;

@@ -36,6 +36,7 @@ void IMG_Quit() {}
 Uint32 ticksaframe = TICKSAFRAME;
 size_t maxframes = 360;
 size_t maxobjs = 100;
+int maxclients = 32;
 
 FRAME_t *fr;
 Uint32 frameoffset;
@@ -50,7 +51,6 @@ Uint32 scale = 2;
 Uint32 ticks,newticks;
 int me;
 int console_open;
-UDPpacket *pkt;
 
 Uint32 total_time = 0;
 Uint32 idle_time = 0;
@@ -83,7 +83,6 @@ int main(int argc,char **argv) {
   SDL_Surface *iconsurf = IMG_Load("icon.png");
   SDL_WM_SetIcon(iconsurf,NULL);
   SDL_FreeSurface(iconsurf);
-  pkt = SDLNet_AllocPacket(PACKET_SIZE);
 
   SJC_Write("SPARToR v%s  Copyright (C) 2010 Jer Wilson",VERSION);
   SJC_Write("Please visit github.com/superjer for updates and source code.");
@@ -247,7 +246,6 @@ void advance() {
 
 void cleanup() {
   int i;
-  SDLNet_FreePacket(pkt);
   IMG_Quit();
   SDLNet_Quit();
   SDL_Quit();

@@ -16,16 +16,23 @@
 #include "console.h"
 #include "command.h"
 #include "client.h"
+#include "host.h"
 #include "net.h"
+
+
+UDPsocket clientsock = NULL;
 
 
 static Uint32 pktnum;
 static Uint32 sentfr = 0;
 static int negotiated;
+static UDPpacket *pkt;
 
 
 void client_start(const char *hostname,int port,int clientport) {
   int i;
+  IPaddress ipaddr;
+
   pktnum = 1;
   if( !hostname || !*hostname ) {  SJC_Write("Usage: connect <host> [<port>] [<localport>]");          return; }
   if( hostsock ) {                 SJC_Write("Already running as a host. Type 'disconnect' to stop."); return; }
@@ -43,15 +50,22 @@ void client_start(const char *hostname,int port,int clientport) {
   if( !clientsock ) { SJC_Write("Error: Could not open client any client socket!"); return; }
   SJC_Write("Connecting from port %d...",clientport);
   negotiated = 0;
+  pkt = SDLNet_AllocPacket(PACKET_SIZE);
   pkt->address = ipaddr;
   sprintf((char *)pkt->data,"%s/%s",PROTONAME,VERSION);
   pkt->len = strlen((char *)pkt->data);
   if( !SDLNet_UDP_Send(clientsock,-1,pkt) ) {
     SJC_Write("Error: Could not send connect packet!");
     SJC_Write(SDL_GetError());
-    SDLNet_UDP_Close(clientsock);
-    clientsock = NULL;
+    client_stop();
   }
+}
+
+
+void client_stop() {
+  SDLNet_FreePacket(pkt);
+  SDLNet_UDP_Close(clientsock);
+  clientsock = NULL;
 }
 
 

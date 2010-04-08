@@ -19,29 +19,6 @@
 #include "net.h"
 
 
-UDPsocket hostsock = NULL;
-UDPsocket clientsock = NULL;
-IPaddress ipaddr;
-int maxclients = 32;
-
-
-void disconnect(){
-  if( hostsock ){
-    //TODO: close lots of stuff
-    SDLNet_UDP_Close(hostsock);
-    hostsock = NULL;
-    SJC_Write("Host stopped.");
-  }else if( clientsock ){
-    //TODO: maybe missing something
-    SDLNet_UDP_Close(clientsock);
-    clientsock = NULL;
-    SJC_Write("Disconnected from host.");
-  }else{
-    SJC_Write("Nothing to disconnect from.");
-  }
-}
-
-
 Uint8 *packframe(Uint32 packfr,size_t *n) {
   FRAME_t *pfr = fr + packfr % maxframes;
   int i;

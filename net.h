@@ -6,15 +6,9 @@
 #define PROTONAME "SPARToR Protocol"
 #define HOSTPORT 31103
 #define CLIENTPORT 31109
-
-extern UDPsocket  hostsock;
-extern UDPsocket  clientsock;
-extern IPaddress  ipaddr;
-extern int        maxclients;
-extern UDPpacket *pkt;
+#define PACKET_SIZE 5000
 
 
-void   disconnect();
 Uint8 *packframe(      Uint32 packfr,size_t *n);
 Uint8 *packframecmds(  Uint32 packfr,size_t *n);
 int    unpackframe(    Uint32 packfr,Uint8  *data, size_t  len);
