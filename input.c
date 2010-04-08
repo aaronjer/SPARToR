@@ -49,9 +49,9 @@ void kbinput(int press,SDL_keysym keysym) {
   SDLMod mod = keysym.mod;
   Uint16 unicode = keysym.unicode;
 
-  if( (sym==SDLK_q && mod&KMOD_CTRL) || (sym==SDLK_F4 && mod&KMOD_ALT) )
+  if( (sym==SDLK_q && mod&(KMOD_CTRL|KMOD_META)) || (sym==SDLK_F4 && mod&KMOD_ALT) )
     command("exit");
-  else if(press && sym==SDLK_F11) {
+  else if( press && (sym==SDLK_F11 || (sym==SDLK_f && mod&&KMOD_META)) ) {
     if( !fullscreen )
       command("fullscreen");
     else
