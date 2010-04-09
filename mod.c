@@ -230,7 +230,7 @@ void mod_draw(SDL_Surface *screen,int objid,OBJ_t *o) {
       int gunshift;
       if( pl->goingu ) gunshift = 96;
       if( pl->goingd ) gunshift = 48;
-      if( !(pl->goingu^pl->goingd) ) gunshift = 0;
+      if( pl->goingu==pl->goingd ) gunshift = 0;
       drect = (SDL_Rect){(pl->pos.x-10),(pl->pos.y-15),0,0};
       int z = drect.y + pl->hull[1].y;
       if( pl->facingr ) {
@@ -251,8 +251,8 @@ void mod_draw(SDL_Surface *screen,int objid,OBJ_t *o) {
           SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){24+gunshift,150,24,21}, &drect, scale, z);
       }
       if( pl->stabbing ) { //up/down stabbing
-        drect = (SDL_Rect){pl->pos.x-2,pl->pos.y-(pl->goingu?30:0),0,0};
-        SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){148+(pl->goingu?5:0),150,5,27}, &drect, scale, z);
+        drect = (SDL_Rect){pl->pos.x-2,pl->pos.y-(pl->stabbing<0?30:0),0,0};
+        SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){148+(pl->stabbing<0?5:0),150,5,27}, &drect, scale, z);
       }
       break;
     }
@@ -325,8 +325,8 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
           pl = fr[b].objs[slot1].data = malloc(sizeof(PLAYER_t));
           pl->pos  = (V){(i+1)*64,-50.0f,0.0f};
           pl->vel  = (V){0.0f,0.0f,0.0f};
-          pl->hull[0] = (V){-8.0f,-15.0f,0.0f};
-          pl->hull[1] = (V){ 8.0f, 15.0f,0.0f};
+          pl->hull[0] = (V){-6.0f,-15.0f,0.0f};
+          pl->hull[1] = (V){ 6.0f, 15.0f,0.0f};
           pl->pvel = (V){0.0f,0.0f,0.0f};
           pl->model = i%5;
           pl->ghost = slot0;
@@ -409,9 +409,30 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
         }
       }
 
-      //not firing and freefalling and pressing up/down => stabbing
-      newme->stabbing = (!newme->firing && newme->vel.y!=0.0f &&
-                         (newme->goingu || newme->goingd)) ? 1 : 0;
+      if( newme->firing || (newme->stabbing<0 && !newme->goingu)
+                        || (newme->stabbing>0 && !newme->goingd) ) //firing or stopping pressing up/down
+        newme->stabbing = 0;
+      else if( !newme->stabbing && newme->vel.y!=0.0 ) {       //freefalling, not stabbing
+        if( newme->goingu && !oldme->goingu )                  //just pressed up
+          newme->stabbing = -4;
+        if( newme->goingd && !oldme->goingd )                  //just pressed down
+          newme->stabbing = 4;
+      }
+      if( newme->stabbing && newme->vel.y==0.0 ) {             //tink tink tink!
+        newme->stabbing += (newme->stabbing>0 ? -1 : 1);
+        if( newme->stabbing>0 )
+          newme->vel.y -= 0.8f*oldme->vel.y;
+      }
+      if( newme->stabbing && newme->goingu ) {                 //expand hull for stabbing
+        newme->hull[0] = (V){-6.0f,-30.0f,0.0f};
+        newme->hull[1] = (V){ 6.0f, 15.0f,0.0f};
+      } else if( newme->stabbing && newme->goingd ) {
+        newme->hull[0] = (V){-6.0f,-15.0f,0.0f};
+        newme->hull[1] = (V){ 6.0f, 25.0f,0.0f};
+      } else {
+        newme->hull[0] = (V){-6.0f,-15.0f,0.0f};
+        newme->hull[1] = (V){ 6.0f, 15.0f,0.0f};
+      }
 
       newme->gunback = 0; //reset gun position
       if(newme->goingr||newme->goingl)
@@ -535,9 +556,7 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
       else for(i=0;i<maxobjs;i++)  //find players, bullets to hit
         if(fr[b].objs[i].type==OBJT_PLAYER) {
           PLAYER_t *pl = fr[b].objs[i].data;
-          if( !pl->stabbing )
-            continue;
-          if( pl->goingu &&
+          if( pl->stabbing<0 &&
               fabsf(sl->pos.x -  pl->pos.x       )<8.0f && //up stab contact
               fabsf(sl->pos.y - (pl->pos.y-20.0f))<12.0f   )
           {
@@ -546,7 +565,7 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
             sl->vel.y = -5.0f;
             sl->dead = 1;
             ob->flags &= ~OBJF_PLAT;
-          } else if( pl->goingd &&
+          } else if( pl->stabbing>0 &&
               fabsf(sl->pos.x -  pl->pos.x       )<8.0f && //down stab contact
               fabsf(sl->pos.y - (pl->pos.y+20.0f))<12.0f   )
           {
