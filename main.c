@@ -26,7 +26,7 @@
 #include "video.h"
 #include <math.h>
 
-#ifndef IMG_Init //support pre SDL_image 1.2.8
+#if (SDL_IMAGE_MAJOR_VERSION*1000000 + SDL_IMAGE_MINOR_VERSION*1000 + SDL_IMAGE_PATCHLEVEL)<1002008 //support SDL_image pre 1.2.8
 #define IMG_INIT_PNG 1
 int IMG_Init(int flags) {return flags;}
 void IMG_Quit() {}
