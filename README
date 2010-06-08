@@ -18,11 +18,16 @@ How to build:
    edit the relevant Makefile to match your paths.
 
 
-   Build on Linux:
-   ---------------
+   Build for Linux:
+   ----------------
    1. Make sure you have the above libraries installed
    2. Run `make`
       - this will create the executable `spartor_linux`
+
+
+   Build for Win32 on Windows:
+   ---------------------------
+      Good luck!
 
 
    Build for Win32 on Linux:
@@ -30,18 +35,16 @@ How to build:
    1. Install MinGW cross-compiler
       - there is a nice script called mingw-builder for this
    2. Install the SDL win32 dev libs into your cross-compiler
-      - i.e. into ~/mingw32/lib, ~/mingw32/include
+      - e.g. into ~/mingw32/lib, ~/mingw32/include
    3. Run `make -f Makewin32`
       - this will create the executable `spartor_win32.exe`
 
 
-   Build on Mac:
-   -------------
-   1. Install 'frameworks' for the above libraries
-   2. For some reason on Mac, the SDL net and image headers
-      are NOT in SDL/...
-      - so mkdir SDL and copy them there I guess
-   3. Run `make -f Makemac`
-      - this will create the executable `spartor_mac`
-
+   Build for Mac:
+   --------------
+      The required SDL dev packages for Mac are included with
+      this source so you don't need to get them yourself.
+   1. Run `make -f Makemac`
+      - this will create the executable `spartor_mac` and
+        place it in ./spartor_mac.app/Contents/MacOS
 
