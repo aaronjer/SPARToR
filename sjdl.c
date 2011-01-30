@@ -52,10 +52,10 @@ int SJGL_BlitScaled(GLuint tex, SDL_Rect *s, SDL_Rect *d, int scale, int z) {
   d->h = s->h*scale;
 
   glBegin(GL_QUADS);
-  glTexCoord3i(s->x     ,s->y     ,z); glVertex3f(d->x     ,d->y     ,z);
-  glTexCoord3i(s->x+s->w,s->y     ,z); glVertex3f(d->x+d->w,d->y     ,z);
-  glTexCoord3i(s->x+s->w,s->y+s->h,z); glVertex3f(d->x+d->w,d->y+d->h,z);
-  glTexCoord3i(s->x     ,s->y+s->h,z); glVertex3f(d->x     ,d->y+d->h,z);
+  glTexCoord3i(s->x     ,s->y     ,z); glVertex3i(d->x     ,d->y     ,z);
+  glTexCoord3i(s->x+s->w,s->y     ,z); glVertex3i(d->x+d->w,d->y     ,z);
+  glTexCoord3i(s->x+s->w,s->y+s->h,z); glVertex3i(d->x+d->w,d->y+d->h,z);
+  glTexCoord3i(s->x     ,s->y+s->h,z); glVertex3i(d->x     ,d->y+d->h,z);
   glEnd();
 
   return 0;
@@ -165,10 +165,10 @@ void SJDL_GetPixel(SDL_Surface *surf, int x, int y, Uint8 *R, Uint8 *G, Uint8 *B
 void SJDL_DrawSquare(SDL_Surface *surf, SDL_Rect *rect, unsigned int color) {
   SDL_Rect edge;
   glBegin(GL_LINE_LOOP);
-  glVertex2f(rect->x        ,rect->y        );
-  glVertex2f(rect->x+rect->w,rect->y        );
-  glVertex2f(rect->x+rect->w,rect->y+rect->h);
-  glVertex2f(rect->x        ,rect->y+rect->h);
+  glVertex2i(rect->x        ,rect->y        );
+  glVertex2i(rect->x+rect->w,rect->y        );
+  glVertex2i(rect->x+rect->w,rect->y+rect->h);
+  glVertex2i(rect->x        ,rect->y+rect->h);
   glEnd();
   edge = *rect;
   edge.w = 1;

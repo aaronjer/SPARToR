@@ -179,10 +179,10 @@ void SJF_DrawChar(int x, int y, char ch)
   glBindTexture(GL_TEXTURE_2D,0); //FIXME: hack 4 win
   glBindTexture(GL_TEXTURE_2D,SJF.tex);
   glBegin(GL_QUADS);
-  glTexCoord2i(s.x    ,s.y    ); glVertex2f(d.x    ,d.y    );
-  glTexCoord2i(s.x+s.w,s.y    ); glVertex2f(d.x+d.w,d.y    );
-  glTexCoord2i(s.x+s.w,s.y+s.h); glVertex2f(d.x+d.w,d.y+d.h);
-  glTexCoord2i(s.x    ,s.y+s.h); glVertex2f(d.x    ,d.y+d.h);
+  glTexCoord2i(s.x    ,s.y    ); glVertex2i(d.x    ,d.y    );
+  glTexCoord2i(s.x+s.w,s.y    ); glVertex2i(d.x+d.w,d.y    );
+  glTexCoord2i(s.x+s.w,s.y+s.h); glVertex2i(d.x+d.w,d.y+d.h);
+  glTexCoord2i(s.x    ,s.y+s.h); glVertex2i(d.x    ,d.y+d.h);
   glEnd();
 }
 
@@ -202,10 +202,10 @@ void SJF_DrawText(int x, int y, const char *str)
     s.y = (*str/16)*SJF.h;
     s.w = SJF.space[(Uint8)*str];
     d.w = s.w;
-    glTexCoord2i(s.x    ,s.y    ); glVertex2f(d.x    ,d.y    );
-    glTexCoord2i(s.x+s.w,s.y    ); glVertex2f(d.x+d.w,d.y    );
-    glTexCoord2i(s.x+s.w,s.y+s.h); glVertex2f(d.x+d.w,d.y+d.h);
-    glTexCoord2i(s.x    ,s.y+s.h); glVertex2f(d.x    ,d.y+d.h);
+    glTexCoord2i(s.x    ,s.y    ); glVertex2i(d.x    ,d.y    );
+    glTexCoord2i(s.x+s.w,s.y    ); glVertex2i(d.x+d.w,d.y    );
+    glTexCoord2i(s.x+s.w,s.y+s.h); glVertex2i(d.x+d.w,d.y+d.h);
+    glTexCoord2i(s.x    ,s.y+s.h); glVertex2i(d.x    ,d.y+d.h);
     d.x += s.w-1;
     str++;
   }

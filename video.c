@@ -143,17 +143,17 @@ void render() {
 
   //paint over border areas just a lil bit
   {
-    float outerl =  -pad_left;   float innerl = 0;
-    float outert =  -pad_top;    float innert = 0;
-    float outerr = w-pad_left;   float innerr = NATIVEW*scale;
-    float outerb = h-pad_top;    float innerb = NATIVEH*scale;
+    int outerl =  -pad_left;   int innerl = 0;
+    int outert =  -pad_top;    int innert = 0;
+    int outerr = w-pad_left;   int innerr = NATIVEW*scale;
+    int outerb = h-pad_top;    int innerb = NATIVEH*scale;
     glColor4f(0.0,0.0,0.0,0.1);
     glDisable(GL_TEXTURE_2D);
     glBegin(GL_QUADS);
-    glVertex2f(outerl,outert); glVertex2f(outerr,outert); glVertex2f(outerr,innert); glVertex2f(outerl,innert); //top
-    glVertex2f(outerl,innerb); glVertex2f(outerr,innerb); glVertex2f(outerr,outerb); glVertex2f(outerl,outerb); //bottom
-    glVertex2f(outerl,innert); glVertex2f(innerl,innert); glVertex2f(innerl,innerb); glVertex2f(outerl,innerb); //left
-    glVertex2f(innerr,innert); glVertex2f(outerr,innert); glVertex2f(outerr,innerb); glVertex2f(innerr,innerb); //right
+    glVertex2i(outerl,outert); glVertex2i(outerr,outert); glVertex2i(outerr,innert); glVertex2i(outerl,innert); //top
+    glVertex2i(outerl,innerb); glVertex2i(outerr,innerb); glVertex2i(outerr,outerb); glVertex2i(outerl,outerb); //bottom
+    glVertex2i(outerl,innert); glVertex2i(innerl,innert); glVertex2i(innerl,innerb); glVertex2i(outerl,innerb); //left
+    glVertex2i(innerr,innert); glVertex2i(outerr,innert); glVertex2i(outerr,innerb); glVertex2i(innerr,innerb); //right
     glEnd();
     glEnable(GL_TEXTURE_2D);
     glColor4f(1.0f,1.0f,1.0f,1.0f);
@@ -167,8 +167,8 @@ void render() {
     glColor4f(0.15,0.15,0.15,0.85);
     glDisable(GL_TEXTURE_2D);
     glBegin(GL_QUADS);
-    glVertex2f( -pad_left,    -pad_top); glVertex2f(w-pad_left,    -pad_top);
-    glVertex2f(w-pad_left,conh-pad_top); glVertex2f( -pad_left,conh-pad_top);
+    glVertex2i( -pad_left,    -pad_top); glVertex2i(w-pad_left,    -pad_top);
+    glVertex2i(w-pad_left,conh-pad_top); glVertex2i( -pad_left,conh-pad_top);
     glEnd();
     glEnable(GL_TEXTURE_2D);
     glColor4f(1.0f,1.0f,1.0f,1.0f);
