@@ -359,11 +359,11 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
       }
       break;
     case OBJT_GHOST:
-      assert("ob->size==sizeof(GHOST_t)",ob->size==sizeof(GHOST_t));
+      assert(ob->size==sizeof(GHOST_t));
       gh = ob->data;
       break;
     case OBJT_DUMMY:
-      assert("ob->size==sizeof(DUMMY_t)",ob->size==sizeof(DUMMY_t));
+      assert(ob->size==sizeof(DUMMY_t));
       DUMMY_t *du = ob->data;
 
       // friction
@@ -377,7 +377,7 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
       du->vel.y += 0.01f;        //gravity
       break;
     case OBJT_PLAYER:
-      assert("ob->size==sizeof(PLAYER_t)",ob->size==sizeof(PLAYER_t));
+      assert(ob->size==sizeof(PLAYER_t));
       PLAYER_t *oldme = oa->data;
       PLAYER_t *newme = ob->data;
       gh = fr[b].objs[newme->ghost].data;
@@ -527,7 +527,7 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
       newme->vel.y += 0.7f;        //gravity
       break;
     case OBJT_BULLET:
-      assert("ob->size==sizeof(BULLET_t)",ob->size==sizeof(BULLET_t));
+      assert(ob->size==sizeof(BULLET_t));
       BULLET_t *bu = ob->data;
       if( bu->ttl ) bu->ttl--;
       for(i=0;i<maxobjs;i++)  //find players to hit
@@ -548,7 +548,7 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
       }
       break;
     case OBJT_SLUG:
-      assert("ob->size==sizeof(SLUG_t)",ob->size==sizeof(SLUG_t));
+      assert(ob->size==sizeof(SLUG_t));
       SLUG_t *sl = ob->data;
       sl->vel.y += 0.6f;      //gravity
       if( sl->dead )          //decay

@@ -6,7 +6,7 @@
 #include "SDL_net.h"
 #include "SDL_image.h"
 
-#define VERSION "0.1m"
+#define VERSION "0.1n?"
 
 #define TICKSAFRAME 30
 
@@ -17,6 +17,8 @@
 #define TRY do{
 #define HARDER }while(0);
 #define HAS(v,flags) (((v)&(flags)) == (flags))
+
+#define assert(expr) { if(!(expr)) SJC_Write( "%s(%d) Assert failed! %s", __FILE__, __LINE__, #expr ); }
 
 //obj flags
 #define OBJF_POS  0x00000001 //has position
@@ -95,7 +97,6 @@ void advance();
 int findfreeslot(int frame1);
 void clearframebuffer();
 void cleanup();
-void assert(const char *msg,int val);
 void *flex(OBJ_t *o,Uint32 part);
 
 //frame setters
