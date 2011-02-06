@@ -1,7 +1,7 @@
 /**
  **  SPARToR 
  **  Network Game Engine
- **  Copyright (C) 2010  Jer Wilson
+ **  Copyright (C) 2010-2011  Jer Wilson
  **
  **  See COPYING for details.
  **
@@ -18,18 +18,19 @@
 #include "net.h"
 #include "video.h"
 #include "input.h"
+#include "patt.h"
 #include "mod.h"
 #include "mod_private.h"
 #include <math.h>
 
 
-int numinputnames = 6;
-INPUTNAME_t inputnames[6] = {{"left" ,CMDT_1LEFT ,CMDT_0LEFT },
-                             {"right",CMDT_1RIGHT,CMDT_0RIGHT},
-                             {"up"   ,CMDT_1UP   ,CMDT_0UP   },
-                             {"down" ,CMDT_1DOWN ,CMDT_0DOWN },
-                             {"fire" ,CMDT_1FIRE ,CMDT_0FIRE },
-                             {"jump" ,CMDT_1JUMP ,CMDT_0JUMP }};
+INPUTNAME_t inputnames[] = {{"left" ,CMDT_1LEFT ,CMDT_0LEFT },
+                            {"right",CMDT_1RIGHT,CMDT_0RIGHT},
+                            {"up"   ,CMDT_1UP   ,CMDT_0UP   },
+                            {"down" ,CMDT_1DOWN ,CMDT_0DOWN },
+                            {"fire" ,CMDT_1FIRE ,CMDT_0FIRE },
+                            {"jump" ,CMDT_1JUMP ,CMDT_0JUMP }};
+int numinputnames = (sizeof inputnames) / (sizeof *inputnames);
 
 
 static int    setmodel = -1;
@@ -45,17 +46,19 @@ static struct {
 
 
 
-#define TEX_PLAYER 0
-#define TEX_WORLD  1
-GLuint textures[2];
+enum { TEX_PLAYER = 0,
+       TEX_WORLD,
+       TEX_AMIGO,
+       TEX_COUNT_ };
+GLuint textures[TEX_COUNT_];
 
 
 void mod_setup(Uint32 setupfr) {
-  //default key bindings
-#define MAYBE_BIND(dev,sym,cmd) {       \
-  mod_keybind(dev,sym,0,CMDT_0 ## cmd); \
-  mod_keybind(dev,sym,1,CMDT_1 ## cmd); }
 
+  //default key bindings
+  #define MAYBE_BIND(dev,sym,cmd)         \
+    mod_keybind(dev,sym,0,CMDT_0 ## cmd); \
+    mod_keybind(dev,sym,1,CMDT_1 ## cmd);
   MAYBE_BIND(INP_KEYB,SDLK_LEFT ,LEFT );
   MAYBE_BIND(INP_KEYB,SDLK_RIGHT,RIGHT);
   MAYBE_BIND(INP_KEYB,SDLK_UP   ,UP   );
@@ -68,23 +71,24 @@ void mod_setup(Uint32 setupfr) {
   MAYBE_BIND(INP_JAXP,1         ,DOWN ); MAYBE_BIND(INP_JAXP,4         ,DOWN );
   MAYBE_BIND(INP_JBUT,1         ,JUMP );
   MAYBE_BIND(INP_JBUT,2         ,FIRE );
+  #undef MAYBE_BIND
 
   //make the mother object
   fr[setupfr].objs[0] = (OBJ_t){OBJT_MOTHER,0,0,malloc(sizeof(MOTHER_t))};
   *(MOTHER_t *)fr[setupfr].objs[0].data = (MOTHER_t){0,0};
 
   //make some dummys
-#define MAYBE_A_DUMMY(i,x,y,w,h) {                                                         \
-  fr[setupfr].objs[i+20].type = OBJT_DUMMY;                                                \
-  fr[setupfr].objs[i+20].flags = OBJF_POS|OBJF_VEL|OBJF_HULL|OBJF_VIS|OBJF_PLAT|OBJF_CLIP; \
-  fr[setupfr].objs[i+20].size = sizeof(DUMMY_t);                                           \
-  DUMMY_t *du = fr[setupfr].objs[i+20].data = malloc(sizeof(DUMMY_t));                     \
-  du->pos = (V){x*8,y*8,0.0f};                                                             \
-  du->vel = (V){0.0f,0.0f,0.0f};                                                           \
-  du->hull[0] = (V){-w*8,-h*8,0.0f};                                                       \
-  du->hull[1] = (V){ w*8, h*8,0.0f};                                                       \
-  du->model = 0;                                                                           }
-
+  #define MAYBE_A_DUMMY(i,x,y,w,h) {                                                         \
+    DUMMY_t *du;                                                                             \
+    fr[setupfr].objs[i+20].type = OBJT_DUMMY;                                                \
+    fr[setupfr].objs[i+20].flags = OBJF_POS|OBJF_VEL|OBJF_HULL|OBJF_VIS|OBJF_PLAT|OBJF_CLIP; \
+    fr[setupfr].objs[i+20].size = sizeof *du;                                                \
+    du = fr[setupfr].objs[i+20].data = malloc(sizeof *du);                                   \
+    du->pos = (V){x*8,y*8,0.0f};                                                             \
+    du->vel = (V){0.0f,0.0f,0.0f};                                                           \
+    du->hull[0] = (V){-w*8,-h*8,0.0f};                                                       \
+    du->hull[1] = (V){ w*8, h*8,0.0f};                                                       \
+    du->model = 0;                                                                           }
   MAYBE_A_DUMMY( 1,  1, 25,1,5);
   MAYBE_A_DUMMY( 2,  3, 25,1,5);
   MAYBE_A_DUMMY( 3,  5, 25,1,5);
@@ -118,6 +122,7 @@ void mod_setup(Uint32 setupfr) {
   MAYBE_A_DUMMY(28, 45,-25,1,1);
   MAYBE_A_DUMMY(29, 45,-20,1,1);
   MAYBE_A_DUMMY(30, 45,-15,1,1);
+  #undef MAYBE_A_DUMMY
 
   fr[setupfr+1].cmds[0].flags |= CMDF_NEW; //server is a client
 }
@@ -174,26 +179,24 @@ void mod_loadsurfs(int quit) {
   SDL_Surface *surf;
 
   // free existing textures
-  glDeleteTextures(2,textures);
+  glDeleteTextures(3,textures);
 
   if( quit ) return;
 
   glPixelStorei(GL_UNPACK_ALIGNMENT,4);
-  glGenTextures(2,textures);
+  glGenTextures(3,textures);
 
-  glBindTexture(GL_TEXTURE_2D,textures[TEX_PLAYER]);
-  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
-  surf = IMG_Load("images/player.png");
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, surf->w, surf->h, 0, SJDL_GLFormatOf(surf), GL_UNSIGNED_BYTE, surf->pixels);
-  SDL_FreeSurface(surf);
-
-  glBindTexture(GL_TEXTURE_2D,textures[TEX_WORLD]);
-  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
-  surf = IMG_Load("images/world.png" );
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, surf->w, surf->h, 0, SJDL_GLFormatOf(surf), GL_UNSIGNED_BYTE, surf->pixels);
-  SDL_FreeSurface(surf);
+  #define LOADTEX(tex, file) {                                                                                           \
+    glBindTexture(GL_TEXTURE_2D,textures[tex]);                                                                          \
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);                                                     \
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);                                                     \
+    surf = IMG_Load(file);                                                                                               \
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, surf->w, surf->h, 0, SJDL_GLFormatOf(surf), GL_UNSIGNED_BYTE, surf->pixels); \
+    SDL_FreeSurface(surf);                                                                                               }
+  LOADTEX( TEX_PLAYER, "images/player.png" );
+  LOADTEX( TEX_WORLD,  "images/world.png"  );
+  LOADTEX( TEX_AMIGO,  "images/amigo.png"  );
+  #undef LOADTEX
 }
 
 void mod_predraw(SDL_Surface *screen,Uint32 vidfr) {
@@ -288,48 +291,73 @@ void mod_draw(SDL_Surface *screen,int objid,OBJ_t *o) {
       }
       break;
     }
+    case OBJT_AMIGO: {
+      AMIGO_t *am = o->data;
+      int w = 50;
+      int h = 50;
+      int x = 0,y = 0;
+      int z = am->pos.y-32 + am->hull[1].y;
+      switch( am->state ) {
+        case AMIGO_HELLO:
+          x = (am->statetime/30) * 50;
+          y = 150;
+          break;
+        case AMIGO_COOLDOWN:
+          break;
+        case AMIGO_JUMP:
+          x = 0;
+          y = 50;
+          break;
+        case AMIGO_SLASH:
+          break;
+        case AMIGO_FLYKICK:
+          break;
+        case AMIGO_DASH:
+          break;
+      }
+      SJGL_BlitScaled(textures[TEX_AMIGO], &(SDL_Rect){x,y,w,h},
+                                           &(SDL_Rect){am->pos.x-35,am->pos.y-32,0,0}, scale, z);
+      break;
+    }
   }
 }
 
 void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
-  int i;
-  int slot0,slot1;
-  GHOST_t *gh;
-  PLAYER_t *pl;
+  #define MKOBJ( ptr, t, f )                            \
+    t ## _t *ptr;                                       \
+    slot0 = findfreeslot(b);                            \
+    fr[b].objs[slot0].type = OBJT_ ## t;                \
+    fr[b].objs[slot0].flags = f;                        \
+    fr[b].objs[slot0].size = sizeof *ptr;               \
+    ptr = fr[b].objs[slot0].data = malloc(sizeof *ptr);
+  int i, j;
+  int slot0;
   switch( ob->type ) {
     case OBJT_MOTHER:
       //the mother object is sort of the root of the object tree... only not... and there's no object tree
       for(i=0;i<maxclients;i++) {
         if( fr[b].cmds[i].flags & CMDF_NEW ) {
-          int j;
           for(j=0;j<maxobjs;j++)
-            if( fr[b].objs[j].type==OBJT_GHOST ) {
-              gh = fr[b].objs[j].data;
-              if(gh->client==i)
-                SJC_Write("%d: Client %i already has a ghost at obj#%d!",hotfr,objid,i,j);
-            }
-          slot0 = findfreeslot(b);
-          slot1 = findfreeslot(b);
-          SJC_Write("%d: New client %d detected, created ghost is obj#%d, player is obj#%d",
-                    hotfr,i,slot0,slot1);
-          fr[b].objs[slot0].type = OBJT_GHOST;
-          fr[b].objs[slot0].flags = OBJF_POS;
-          fr[b].objs[slot0].size = sizeof(GHOST_t);
-          gh = fr[b].objs[slot0].data = malloc(sizeof(GHOST_t));
+            if( fr[b].objs[j].type==OBJT_GHOST && ((GHOST_t *)fr[b].objs[j].data)->client==i )
+              SJC_Write( "%d: Client %i already has a ghost at obj#%d!", hotfr, i, j );
+
+          MKOBJ( gh, GHOST, OBJF_POS );
+          int ghostslot = slot0;
+          MKOBJ( pl, PLAYER, OBJF_POS|OBJF_VEL|OBJF_HULL|OBJF_PVEL|OBJF_VIS|OBJF_PLAT|OBJF_CLIP );
+
+          SJC_Write( "%d: New client %i created ghost is obj#%d player is obj#%d", hotfr, i, ghostslot, slot0 );
+
           gh->pos = (V){0.0f,0.0f,0.0f};
           gh->client = i;
-          gh->avatar = slot1;
-          fr[b].objs[slot1].type = OBJT_PLAYER;
-          fr[b].objs[slot1].flags = OBJF_POS|OBJF_VEL|OBJF_HULL|OBJF_PVEL|OBJF_VIS|OBJF_PLAT|OBJF_CLIP;
-          fr[b].objs[slot1].size = sizeof(PLAYER_t);
-          pl = fr[b].objs[slot1].data = malloc(sizeof(PLAYER_t));
+          gh->avatar = slot0;
+
           pl->pos  = (V){(i+1)*64,-50.0f,0.0f};
           pl->vel  = (V){0.0f,0.0f,0.0f};
           pl->hull[0] = (V){-6.0f,-15.0f,0.0f};
           pl->hull[1] = (V){ 6.0f, 15.0f,0.0f};
           pl->pvel = (V){0.0f,0.0f,0.0f};
           pl->model = i%5;
-          pl->ghost = slot0;
+          pl->ghost = ghostslot;
           pl->goingl = 0;
           pl->goingr = 0;
           pl->goingu = 0;
@@ -344,12 +372,7 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
         }
       }
       if(hotfr%77==0) {
-        SLUG_t *sl;
-        slot0 = findfreeslot(b);
-        fr[b].objs[slot0].type = OBJT_SLUG;
-        fr[b].objs[slot0].flags = OBJF_POS|OBJF_VEL|OBJF_HULL|OBJF_VIS|OBJF_PLAT|OBJF_CLIP;
-        fr[b].objs[slot0].size = sizeof(SLUG_t);
-        sl = fr[b].objs[slot0].data = malloc(sizeof(SLUG_t));
+        MKOBJ( sl, SLUG, OBJF_POS|OBJF_VEL|OBJF_HULL|OBJF_VIS|OBJF_PLAT|OBJF_CLIP );
         sl->pos  = (V){(hotfr%2)*368.0f+8.0f,0.0f,0.0f};
         sl->vel  = (V){(hotfr%2)?-0.5f:0.5f,0.0f,0.0f};
         sl->hull[0] = (V){-8.0f,-4.0f,0.0f};
@@ -357,10 +380,19 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
         sl->model = 0;
         sl->dead = 0;
       }
+      if(hotfr==200) {
+        MKOBJ( am, AMIGO, OBJF_POS|OBJF_VEL|OBJF_HULL|OBJF_VIS|OBJF_PLAT|OBJF_CLIP );
+        am->pos  = (V){300,0,0};
+        am->vel  = (V){0,0,0};
+        am->hull[0] = (V){-13,-18,0};
+        am->hull[1] = (V){ 13, 18,0};
+        am->model = 0;
+        am->state = AMIGO_HELLO;
+        am->statetime = 0;
+      }
       break;
     case OBJT_GHOST:
       assert(ob->size==sizeof(GHOST_t));
-      gh = ob->data;
       break;
     case OBJT_DUMMY:
       assert(ob->size==sizeof(DUMMY_t));
@@ -380,7 +412,7 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
       assert(ob->size==sizeof(PLAYER_t));
       PLAYER_t *oldme = oa->data;
       PLAYER_t *newme = ob->data;
-      gh = fr[b].objs[newme->ghost].data;
+      GHOST_t *gh = fr[b].objs[newme->ghost].data;
       switch( fr[b].cmds[gh->client].cmd ) {
         case CMDT_1LEFT:  newme->goingl  = 1; newme->facingr = 0;  break;
         case CMDT_0LEFT:  newme->goingl  = 0;                      break;
@@ -471,7 +503,7 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
       if( !newme->jumping )              //low-jump, cancel jump velocity early
         newme->pvel.y   = 0.0f;
       if( (newme->vel.y==0.0f || oldme->vel.y==0.0f) && newme->jumping ) //FIXME 0 velocity means grounded? not really
-        newme->pvel.y  = -11.1f;         //initiate jump!
+        newme->pvel.y  = -9.1f;         //initiate jump!
 
       // -- FIRE --
       if( newme->cooldown>0 )
@@ -591,6 +623,49 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
       if(sl->vel.x==0 || sl->dead>100)
         ob->flags |= OBJF_DEL;
       break;
+    case OBJT_AMIGO:
+      assert(ob->size==sizeof(AMIGO_t));
+      AMIGO_t *am = ob->data;
+      spatt(hotfr);
+      switch( am->state ) {
+        case AMIGO_HELLO:
+          if( am->statetime>120 ) {
+            am->state = AMIGO_COOLDOWN;
+            am->statetime = 0;
+          }
+          break;
+        case AMIGO_COOLDOWN:
+          if( am->vel.y==0 ) {
+            am->vel.x = 0.0f;
+            if( am->statetime>30 ) {
+              am->statetime = 0;
+              switch( patt()%5 ) {
+                case 0: am->state = AMIGO_JUMP; am->vel.y -= 10.0f;                    break;
+                case 1: am->state = AMIGO_JUMP; am->vel.y -= 10.0f; am->vel.x =  4.0f; break;
+                case 2: am->state = AMIGO_JUMP; am->vel.y -= 10.0f; am->vel.x = -4.0f; break;
+                case 3: am->state = AMIGO_JUMP; am->vel.y -=  8.0f; am->vel.x =  4.0f; break;
+                case 4: am->state = AMIGO_JUMP; am->vel.y -=  8.0f; am->vel.x = -4.0f; break;
+              }
+            }
+          }
+          break;
+        case AMIGO_JUMP:
+          if( am->statetime>20 ) {
+            am->state = AMIGO_COOLDOWN;
+            am->statetime = 0;
+          }
+          break;
+        case AMIGO_SLASH:
+          break;
+        case AMIGO_FLYKICK:
+          break;
+        case AMIGO_DASH:
+          break;
+      }
+      am->statetime++;
+      am->vel.y += 0.6f; //gravity
+      break;
   } //end switch ob->type
+  #undef MKOBJ
 }
 

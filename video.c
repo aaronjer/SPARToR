@@ -1,7 +1,7 @@
 /**
  **  SPARToR 
  **  Network Game Engine
- **  Copyright (C) 2010  Jer Wilson
+ **  Copyright (C) 2010-2011  Jer Wilson
  **
  **  See COPYING for details.
  **
@@ -20,22 +20,22 @@
 #include "font.h"
 #include "mod.h"
 
-int v_drawhulls = 0;
-int v_showstats = 1;
-int v_usealpha = 1;
+int v_drawhulls  = 0;
+int v_showstats  = 1;
+int v_usealpha   = 1;
 int v_fullscreen = 0;
 
-static int screen_w = NATIVEW;
-static int screen_h = NATIVEH;
-static int prev_w = NATIVEW;
-static int prev_h = NATIVEH;
+static int screen_w  = NATIVEW;
+static int screen_h  = NATIVEH;
+static int prev_w    = NATIVEW;
+static int prev_h    = NATIVEH;
 static int desktop_w = 1024;
 static int desktop_h = 768;
 static int pad_left;
 static int pad_top;
-static int soon = 0;
-static int soon_w = 0;
-static int soon_h = 0;
+static int soon      = 0;
+static int soon_w    = 0;
+static int soon_h    = 0;
 static int soon_full = 0;
 
 
@@ -67,8 +67,6 @@ void render() {
   Uint32 render_start = SDL_GetTicks();
   static Uint32 total_start = 0;
   Uint32 tmp;
-
-  Uint32 color;
 
   if( metafr==0 || vidfr<=drawnfr ) //==0 prevent never-draw bug
     return;
@@ -115,46 +113,54 @@ void render() {
 
   mod_predraw(screen,vidfr);
 
-
   //display objects
   for(i=0;i<maxobjs;i++) {
     OBJ_t *o = fr[vidfrmod].objs+i;
-    V *pos  = flex(o,OBJF_POS);
-    V *hull = flex(o,OBJF_HULL);
-
     if( o->flags&OBJF_VIS )
       mod_draw(screen,i,o); // have the mod draw the actual thing
+  }
 
-    if( pos && hull && v_drawhulls ) {
-      SDL_Rect rect;
-      rect = (SDL_Rect){pos->x+hull[0].x, pos->y+hull[0].y, hull[1].x-hull[0].x, hull[1].y-hull[0].y};
-      color = SDL_MapRGB(screen->format, 0x90+0x22*((i/1)%3), 0x90+0x22*((i/3)%3), 0x90+0x22*((i/9)%3));
-      rect.x *= scale;
-      rect.y *= scale;
-      rect.w *= scale;
-      rect.h *= scale;
-      SJDL_DrawSquare(screen,&rect,color);
-    }
-    if( pos && v_drawhulls ) {
-      sprintf(buf,"%d",i);
-      SJF_DrawText(pos->x*scale, pos->y*scale, buf);
+  glDisable(GL_DEPTH_TEST);
+  
+  //display hulls
+  if( v_drawhulls ) {
+    for(i=0;i<maxobjs;i++) {
+      OBJ_t *o = fr[vidfrmod].objs+i;
+      V *pos  = flex(o,OBJF_POS);
+      V *hull = flex(o,OBJF_HULL);
+
+      if( pos ) {
+        if( hull ) {
+          glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+          SDL_Rect rect = (SDL_Rect){pos->x+hull[0].x, pos->y+hull[0].y, hull[1].x-hull[0].x, hull[1].y-hull[0].y};
+          //FIXME: set GL color instead: color = SDL_MapRGB(screen->format, 0x90+0x22*((i/1)%3), 0x90+0x22*((i/3)%3), 0x90+0x22*((i/9)%3));
+          SJGL_BlitScaled(0, &rect, &rect, scale, 0);
+          glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+        }
+        sprintf(buf,"%d",i);
+        SJF_DrawText(pos->x*scale, pos->y*scale, buf);
+      }
     }
   }
 
-  //paint over border areas just a lil bit
+  //subtractively paint over border areas just a lil bit
   {
     int outerl =  -pad_left;   int innerl = 0;
     int outert =  -pad_top;    int innert = 0;
     int outerr = w-pad_left;   int innerr = NATIVEW*scale;
     int outerb = h-pad_top;    int innerb = NATIVEH*scale;
-    glColor4f(0.0,0.0,0.0,0.1);
+    glColor4f(0.02,0.02,0.02,0.02);
     glDisable(GL_TEXTURE_2D);
+    glPushAttrib(GL_COLOR_BUFFER_BIT);
+    glBlendEquation(GL_FUNC_REVERSE_SUBTRACT);
+    glBlendFunc(GL_ONE,GL_ONE);
     glBegin(GL_QUADS);
     glVertex2i(outerl,outert); glVertex2i(outerr,outert); glVertex2i(outerr,innert); glVertex2i(outerl,innert); //top
     glVertex2i(outerl,innerb); glVertex2i(outerr,innerb); glVertex2i(outerr,outerb); glVertex2i(outerl,outerb); //bottom
     glVertex2i(outerl,innert); glVertex2i(innerl,innert); glVertex2i(innerl,innerb); glVertex2i(outerl,innerb); //left
     glVertex2i(innerr,innert); glVertex2i(outerr,innert); glVertex2i(outerr,innerb); glVertex2i(innerr,innerb); //right
     glEnd();
+    glPopAttrib();
     glEnable(GL_TEXTURE_2D);
     glColor4f(1.0f,1.0f,1.0f,1.0f);
   }
@@ -163,7 +169,6 @@ void render() {
   if(console_open) {
     int conh = h/2 - 40;
     if(conh<40) conh = 40;
-    glDepthFunc(GL_ALWAYS);
     glColor4f(0.15,0.15,0.15,0.85);
     glDisable(GL_TEXTURE_2D);
     glBegin(GL_QUADS);
@@ -269,7 +274,7 @@ void setvideosoon(int w,int h,int go_full,int delay) {
       soon_h = desktop_h;
     } else {
       soon_w = NATIVEW*2;
-      soon_w = NATIVEH*2;
+      soon_h = NATIVEH*2;
     }
   } else {
     soon_w = w;

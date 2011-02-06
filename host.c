@@ -1,7 +1,7 @@
 /**
  **  SPARToR 
  **  Network Game Engine
- **  Copyright (C) 2010  Jer Wilson
+ **  Copyright (C) 2010-2011  Jer Wilson
  **
  **  See COPYING for details.
  **
@@ -82,6 +82,7 @@ void host() {
       case 'c': //cmd update
         n = 1;
         pktnum = unpackbytes(pkt->data,pkt->len,&n,4); //FIXME: do something with this!
+SJC_Write("Miracle! Packet number %d received from client %d",pktnum,i);
         packfr = unpackbytes(pkt->data,pkt->len,&n,4);
         if( packfr<metafr-30 ) {
           SJC_Write("Ignoring too old cmd from client %d",i);
@@ -101,6 +102,9 @@ void host() {
         pcmd->mousex  = unpackbytes(pkt->data,pkt->len,&n,1);
         pcmd->mousey  = unpackbytes(pkt->data,pkt->len,&n,1);
         break;
+      default:
+        SJC_Write("Client %d sent mysterious, incomprehensible packet",i);
+        break;
     }
   }
 
@@ -112,7 +116,7 @@ void host() {
     if( fr[i%maxframes].dirty ) {
       data = packframecmds(i,&n);
       if( pkt->len+4+n >= 500 /*pkt->maxlen*/ || pkt->data[1]>100 ) { //FIXME: use a smaller pkt->maxlen
-        SJC_Write("%u: Packed too many cmds! Will get the rest next frame...",hotfr);
+        //SJC_Write("%u: Packed too many cmds! Will get the rest next frame...",hotfr);
         free(data);
         break;
       }

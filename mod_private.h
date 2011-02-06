@@ -6,26 +6,28 @@
 
 
 //obj types
-#define OBJT_MOTHER   1
-#define OBJT_GHOST    2
-#define OBJT_DUMMY    3
-#define OBJT_PLAYER   4
-#define OBJT_BULLET   5
-#define OBJT_SLUG     6
+enum { OBJT_MOTHER = 1,
+       OBJT_GHOST,
+       OBJT_DUMMY,
+       OBJT_PLAYER,
+       OBJT_BULLET,
+       OBJT_SLUG,
+       OBJT_AMIGO,
+       OBJT_AMIGOSWORD };
 
 //cmd types
-#define CMDT_1LEFT    ((char)1)
-#define CMDT_0LEFT    ((char)2)
-#define CMDT_1RIGHT   ((char)3)
-#define CMDT_0RIGHT   ((char)4)
-#define CMDT_1UP      ((char)5)
-#define CMDT_0UP      ((char)6)
-#define CMDT_1DOWN    ((char)7)
-#define CMDT_0DOWN    ((char)8)
-#define CMDT_1JUMP    ((char)9)
-#define CMDT_0JUMP    ((char)10)
-#define CMDT_1FIRE    ((char)11)
-#define CMDT_0FIRE    ((char)12)
+enum { CMDT_1LEFT = 1,
+       CMDT_0LEFT,
+       CMDT_1RIGHT,
+       CMDT_0RIGHT,
+       CMDT_1UP,
+       CMDT_0UP,
+       CMDT_1DOWN,
+       CMDT_0DOWN,
+       CMDT_1JUMP,
+       CMDT_0JUMP,
+       CMDT_1FIRE,
+       CMDT_0FIRE };
 
 
 typedef struct{
@@ -82,4 +84,26 @@ typedef struct{
   V hull[2];
   int model;
 } DUMMY_t;
+
+enum { AMIGO_HELLO,
+       AMIGO_COOLDOWN,
+       AMIGO_JUMP,
+       AMIGO_SLASH,
+       AMIGO_FLYKICK,
+       AMIGO_DASH };
+typedef struct{
+  V pos;
+  V vel;
+  V hull[2];
+  int model;
+  char state;
+  int statetime;
+} AMIGO_t;
+
+typedef struct{
+  V pos;
+  V vel;
+  V hull[2];
+  int model;
+} AMIGOSWORD_t;
 

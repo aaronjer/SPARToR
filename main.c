@@ -1,7 +1,7 @@
 /**
  **  SPARToR 
  **  Network Game Engine
- **  Copyright (C) 2010  Jer Wilson
+ **  Copyright (C) 2010-2011  Jer Wilson
  **
  **  See COPYING for details.
  **
@@ -84,7 +84,7 @@ int main(int argc,char **argv) {
   SDL_WM_SetIcon(iconsurf,NULL);
   SDL_FreeSurface(iconsurf);
 
-  SJC_Write("SPARToR v%s  Copyright (C) 2010 Jer Wilson",VERSION);
+  SJC_Write("SPARToR v%s  Copyright (C) 2010-2011 Jer Wilson",VERSION);
   SJC_Write("Please visit github.com/superjer for updates and source code.");
   SJC_Write("");
   SJC_Write(" --->  Type 'help' for help.  <---");
