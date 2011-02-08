@@ -152,7 +152,7 @@ void render() {
     glColor4f(0.02,0.02,0.02,0.02);
     glDisable(GL_TEXTURE_2D);
     glPushAttrib(GL_COLOR_BUFFER_BIT);
-    glBlendEquation(GL_FUNC_REVERSE_SUBTRACT);
+    glBlendEquationEXT(GL_FUNC_REVERSE_SUBTRACT_EXT);
     glBlendFunc(GL_ONE,GL_ONE);
     glBegin(GL_QUADS);
     glVertex2i(outerl,outert); glVertex2i(outerr,outert); glVertex2i(outerr,innert); glVertex2i(outerl,innert); //top
