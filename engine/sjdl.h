@@ -10,7 +10,7 @@
 #define SPARTOR_SJDL_H_
 
 #include <GL/glew.h>
-#include <GL/gl.h>
+//#include <GL/gl.h>
 #include "SDL.h"
 
 SDL_Surface *SJDL_CopyScaled(SDL_Surface *src, Uint32 flags, int scale);

@@ -38,9 +38,13 @@ How to build:
 
    Build for Mac:
    --------------
-      The required SDL dev packages for Mac are included with
-      this source so you don't need to get them yourself.
-   1. Run `make -f Makemac`
+   1. Install MacPorts
+      - http://www.macports.org/
+   2. Run `sudo port selfupdate`
+   3. Run `sudo port install glew`
+   4. The required SDL dev packages for Mac are included with
+      this source so you shouldn't need to get them yourself.
+   5. Run `make -f Makefile.mac`
       - this will create the executable `spartor_mac` and
         place it in ./spartor_mac.app/Contents/MacOS
 
