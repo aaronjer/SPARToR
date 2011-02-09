@@ -11,8 +11,9 @@
  **/
 
 
+#include <GL/glew.h>
+#include <GL/gl.h>
 #include "SDL.h"
-#include "SDL_opengl.h"
 #include "main.h"
 #include "console.h"
 #include "net.h"

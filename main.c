@@ -11,10 +11,11 @@
  **/
 
 
+#include <GL/glew.h>
+#include <GL/gl.h>
 #include "SDL.h"
 #include "SDL_net.h"
 #include "SDL_image.h"
-#include "SDL_opengl.h"
 #include "main.h"
 #include "font.h"
 #include "console.h"

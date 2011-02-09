@@ -6,7 +6,7 @@ EXE_NAME = spartor_linux
 OBJS = main.o font.o console.o command.o net.o host.o client.o input.o video.o mod.o sjdl.o
 CC = gcc
 FLAGS = -g -Wall
-LIBS = -lm -lSDL -lSDL_net -lSDL_image -lGL -lGLU
+LIBS = -lm -lSDL -lSDL_net -lSDL_image -lGL -lGLU -lGLEW
 
 
 $(EXE_NAME): $(OBJS)

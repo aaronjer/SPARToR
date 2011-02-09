@@ -11,8 +11,9 @@
  **/
 
 
+#include <GL/glew.h>
+#include <GL/gl.h>
 #include "SDL.h"
-#include "SDL_opengl.h"
 #include "sjdl.h"
 
 //create a new surface by copying and scaling another

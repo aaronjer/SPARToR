@@ -9,8 +9,9 @@
 #ifndef SPARTOR_SJDL_H_
 #define SPARTOR_SJDL_H_
 
+#include <GL/glew.h>
+#include <GL/gl.h>
 #include "SDL.h"
-#include "SDL_opengl.h"
 
 SDL_Surface *SJDL_CopyScaled(SDL_Surface *src, Uint32 flags, int scale);
 int SJGL_BlitScaled(GLuint tex, SDL_Rect *s, SDL_Rect *d, int scale, int depth);

@@ -10,8 +10,9 @@
  **  http://github.com/superjer/SPARToR
  **/
 
+#include <GL/glew.h>
+#include <GL/gl.h>
 #include "SDL.h"
-#include "SDL_opengl.h"
 #include "font.h"
 
 SJF_t SJF = {0,8,12,128,

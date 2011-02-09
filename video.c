@@ -11,9 +11,10 @@
  **/
 
 
+#include <GL/glew.h>
+#include <GL/gl.h>
 #include "SDL.h"
 #include "SDL_net.h"
-#include "SDL_opengl.h"
 #include "video.h"
 #include "main.h"
 #include "console.h"
@@ -52,6 +53,10 @@ void videoinit() {
   *((int*)&desktop_w) = vidinfo->current_w;
   *((int*)&desktop_h) = vidinfo->current_h;
   setvideo(NATIVEW*2,NATIVEH*2,0,0);
+
+  GLenum glewerr = glewInit();
+  if( glewerr!=GLEW_OK )                            { fprintf(stderr,"glewInit: %s\n",glewGetErrorString(glewerr)); exit(-4); }
+
   SJC_Write("Desktop resolution detected as %d x %d",desktop_w,desktop_h);
 }
 
@@ -152,7 +157,8 @@ void render() {
     glColor4f(0.02,0.02,0.02,0.02);
     glDisable(GL_TEXTURE_2D);
     glPushAttrib(GL_COLOR_BUFFER_BIT);
-    //glBlendEquationEXT(GL_FUNC_REVERSE_SUBTRACT_EXT);
+    if( GLEW_EXT_blend_equation_separate )
+      glBlendEquation(GL_FUNC_REVERSE_SUBTRACT);
     glBlendFunc(GL_ONE,GL_ONE);
     glBegin(GL_QUADS);
     glVertex2i(outerl,outert); glVertex2i(outerr,outert); glVertex2i(outerr,innert); glVertex2i(outerl,innert); //top

@@ -8,8 +8,9 @@
 #ifndef SPARTOR_SJFONT_H_
 #define SPARTOR_SJFONT_H_
 
+#include <GL/glew.h>
+#include <GL/gl.h>
 #include "SDL.h"
-#include "SDL_opengl.h"
 #include "sjdl.h"
 
 typedef struct
