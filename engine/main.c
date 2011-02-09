@@ -10,6 +10,7 @@
  **  http://github.com/superjer/SPARToR
  **/
 
+#define GLEW_STATIC
 
 #include <GL/glew.h>
 #include <GL/gl.h>
@@ -81,7 +82,7 @@ int main(int argc,char **argv) {
   if( IMG_Init(IMG_INIT_PNG)!=IMG_INIT_PNG )        { fprintf(stderr,"IMG_Init: %s\n",SDL_GetError());     exit(-3); }
 
   SDL_WM_SetCaption("SPARToR " VERSION,NULL);
-  SDL_Surface *iconsurf = IMG_Load("icon.png");
+  SDL_Surface *iconsurf = IMG_Load("images/icon.png");
   SDL_WM_SetIcon(iconsurf,NULL);
   SDL_FreeSurface(iconsurf);
 

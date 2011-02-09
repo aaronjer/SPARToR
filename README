@@ -9,6 +9,7 @@ REQUIRED LIBRARIES:
    libSDL1.2-dev
    libSDL-net1.2-dev
    libSDL-image1.2-dev
+   glew
 
 
 How to build:
@@ -25,18 +26,13 @@ How to build:
       - this will create the executable `spartor_linux`
 
 
-   Build for Win32 on Windows:
-   ---------------------------
-      Good luck!
-
-
-   Build for Win32 on Linux:
-   -------------------------
-   1. Install MinGW cross-compiler
-      - there is a nice script called mingw-builder for this
-   2. Install the SDL win32 dev libs into your cross-compiler
-      - e.g. into ~/mingw32/lib, ~/mingw32/include
-   3. Run `make -f Makewin32`
+   Build for Win32:
+   ----------------
+   1. Install msysGit
+      - http://code.google.com/p/msysgit/
+   2. Compile and install libSDL, libSDL-net and libSDL-image
+      - http://www.libsdl.org/
+   3. Run `make -f Makefile.win32`
       - this will create the executable `spartor_win32.exe`
 
 

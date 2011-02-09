@@ -1,12 +1,10 @@
-#Required packages:
-#  libsdl1.2-dev
-#  libsdl-net1.2-dev
-#  libsdl-image1.2-dev
+
 EXE_NAME = spartor_linux
-OBJS = main.o font.o console.o command.o net.o host.o client.o input.o video.o mod.o sjdl.o
+OBJS = engine/main.o engine/font.o engine/console.o engine/command.o engine/net.o engine/host.o engine/client.o engine/input.o engine/video.o engine/sjdl.o engine/mod.o
 CC = gcc
-FLAGS = -g -Wall
+FLAGS = -g -Wall -DGLEW_STATIC
 LIBS = -lm -lSDL -lSDL_net -lSDL_image -lGL -lGLU -lGLEW
+INC = -I ./engine -I ./$(MODNAME)
 
 
 $(EXE_NAME): $(OBJS)

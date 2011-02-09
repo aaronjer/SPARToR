@@ -1,0 +1,26 @@
+
+MODNAME = mcdiddy
+EXE_NAME = spartor_win32.exe
+OBJS = engine/main.o engine/font.o engine/console.o engine/command.o engine/net.o engine/host.o engine/client.o engine/input.o engine/video.o engine/sjdl.o $(MODNAME)/mod.o
+OBJSRES = $(MODNAME)/icon.o
+CC = gcc
+WINDRES = windres
+FLAGS = -g -Wall -mwindows -DGLEW_STATIC
+LIBS = -L /local/lib -L ./glew-1.5.8/lib -lmingw32 -lSDLmain -lSDL -lSDL_net -lSDL_image -lglew32s -lopengl32 -lglu32 -lm
+INC = -I ./engine -I ./$(MODNAME) -I /usr/local/include/SDL -I ./glew-1.5.8/include
+
+
+$(EXE_NAME): $(OBJS) $(OBJSRES)
+	$(CC) -o $@ $(OBJS) $(OBJSRES) $(FLAGS) $(INC) $(LIBS) $(XLIBS)
+	-rm $(OBJS) $(OBJSRES)
+
+$(OBJS):
+	$(CC) -o $@ -c $(FLAGS) $(INC) $*.c
+
+.rc.o:
+	$(WINDRES) $^ -o $@
+%.o : %.rc
+	$(WINDRES) $^ -o $@
+
+clean:
+	-rm $(OBJS) $(OBJSRES)
