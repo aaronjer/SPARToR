@@ -11,7 +11,6 @@
  **/
 
 #include <GL/glew.h>
-//#include <GL/gl.h>
 #include "SDL.h"
 #include "SDL_net.h"
 #include "video.h"
@@ -54,9 +53,10 @@ void videoinit() {
   setvideo(NATIVEW*2,NATIVEH*2,0,0);
 
   GLenum glewerr = glewInit();
-  if( glewerr!=GLEW_OK )                            { fprintf(stderr,"glewInit: %s\n",glewGetErrorString(glewerr)); exit(-4); }
+  if( glewerr!=GLEW_OK ) { fprintf(stderr,"glewInit: %s\n",glewGetErrorString(glewerr)); exit(-4); }
 
   SJC_Write("Desktop resolution detected as %d x %d",desktop_w,desktop_h);
+  SJC_Write("OpenGL version %s",glGetString(GL_VERSION));
 }
 
 

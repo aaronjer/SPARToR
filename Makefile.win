@@ -1,7 +1,17 @@
 
 MODNAME = mcdiddy
 EXE_NAME = spartor_win32.exe
-OBJS = engine/main.o engine/font.o engine/console.o engine/command.o engine/net.o engine/host.o engine/client.o engine/input.o engine/video.o engine/sjdl.o $(MODNAME)/mod.o
+OBJS = engine/main.o \
+       engine/font.o \
+       engine/console.o \
+       engine/command.o \
+       engine/net.o \
+       engine/host.o \
+       engine/client.o \
+       engine/input.o \
+       engine/video.o \
+       engine/sjdl.o \
+       $(MODNAME)/mod.o
 OBJSRES = $(MODNAME)/icon.o
 CC = gcc
 WINDRES = windres

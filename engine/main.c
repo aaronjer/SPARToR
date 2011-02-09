@@ -11,7 +11,6 @@
  **/
 
 #include <GL/glew.h>
-//#include <GL/gl.h>
 #include "SDL.h"
 #include "SDL_net.h"
 #include "SDL_image.h"

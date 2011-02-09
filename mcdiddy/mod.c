@@ -12,7 +12,6 @@
 
 
 #include <GL/glew.h>
-//#include <GL/gl.h>
 #include "SDL.h"
 #include "main.h"
 #include "console.h"
