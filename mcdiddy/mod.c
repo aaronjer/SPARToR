@@ -510,11 +510,7 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
       if( newme->cooldown>0 )
         newme->cooldown--;
       if( newme->firing && newme->cooldown==0 && newme->projectiles<5 ) { // create bullet
-        slot0 = findfreeslot(b);
-        fr[b].objs[slot0].type = OBJT_BULLET;
-        fr[b].objs[slot0].flags = OBJF_POS|OBJF_VEL|OBJF_VIS|OBJF_CLIP;
-        fr[b].objs[slot0].size = sizeof(BULLET_t);
-        BULLET_t *bu = fr[b].objs[slot0].data = malloc(sizeof(BULLET_t));
+        MKOBJ( bu, BULLET, OBJF_POS|OBJF_VEL|OBJF_VIS|OBJF_CLIP );
         if( newme->facingr ) {
           bu->pos = (V){newme->pos.x+19.0f,newme->pos.y-3.0f,0.0f};
           bu->vel = (V){ 8.0f,0.0f,0.0f};
