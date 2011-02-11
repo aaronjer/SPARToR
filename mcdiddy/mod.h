@@ -10,6 +10,8 @@
 #define NATIVEW 384
 #define NATIVEH 240
 
+#define MODNAME "mcdiddy"
+
 
 typedef struct {
   char name[16];

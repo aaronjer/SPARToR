@@ -9,7 +9,7 @@ REQUIRED LIBRARIES:
    libSDL1.2-dev
    libSDL-net1.2-dev
    libSDL-image1.2-dev
-   glew
+   glew1.5-dev
 
 
 How to build:
@@ -22,7 +22,7 @@ How to build:
    Build for Linux:
    ----------------
    1. Make sure you have the above libraries installed
-   2. Run `make`
+   2. Run `make -f Makefile.linux`
       - this will create the executable `spartor_linux`
 
 
@@ -32,7 +32,7 @@ How to build:
       - http://code.google.com/p/msysgit/
    2. Compile and install libSDL, libSDL-net and libSDL-image
       - http://www.libsdl.org/
-   3. Run `make -f Makefile.win32`
+   3. Run `make -f Makefile.win`
       - this will create the executable `spartor_win32.exe`
 
 
@@ -46,5 +46,5 @@ How to build:
       this source so you shouldn't need to get them yourself.
    5. Run `make -f Makefile.mac`
       - this will create the executable `spartor_mac` and
-        place it in ./spartor_mac.app/Contents/MacOS
+        place it in `spartor_mac.app/Contents/MacOS`
 

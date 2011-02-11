@@ -1,6 +1,6 @@
 /**
- **  SPARToR 
- **  Network Game Engine
+ **  McDiddy's Game
+ **  Implementation example for the SPARToR Network Game Engine
  **  Copyright (C) 2010-2011  Jer Wilson
  **
  **  See COPYING for details.
@@ -49,8 +49,8 @@ static struct {
 enum { TEX_PLAYER = 0,
        TEX_WORLD,
        TEX_AMIGO,
-       TEX_COUNT_ };
-GLuint textures[TEX_COUNT_];
+       TEX_COUNT };
+GLuint textures[TEX_COUNT];
 
 
 void mod_setup(Uint32 setupfr) {
@@ -179,23 +179,24 @@ void mod_loadsurfs(int quit) {
   SDL_Surface *surf;
 
   // free existing textures
-  glDeleteTextures(3,textures);
+  glDeleteTextures(TEX_COUNT,textures);
 
   if( quit ) return;
 
   glPixelStorei(GL_UNPACK_ALIGNMENT,4);
-  glGenTextures(3,textures);
+  glGenTextures(TEX_COUNT,textures);
 
-  #define LOADTEX(tex, file) {                                                                                           \
-    glBindTexture(GL_TEXTURE_2D,textures[tex]);                                                                          \
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);                                                     \
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);                                                     \
-    surf = IMG_Load(file);                                                                                               \
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, surf->w, surf->h, 0, SJDL_GLFormatOf(surf), GL_UNSIGNED_BYTE, surf->pixels); \
-    SDL_FreeSurface(surf);                                                                                               }
-  LOADTEX( TEX_PLAYER, "images/player.png" );
-  LOADTEX( TEX_WORLD,  "images/world.png"  );
-  LOADTEX( TEX_AMIGO,  "images/amigo.png"  );
+  #define LOADTEX(tex, file) {                                                                                            \
+    glBindTexture(GL_TEXTURE_2D,textures[tex]);                                                                           \
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);                                                      \
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);                                                      \
+    if( (surf = IMG_Load(file)) ) {                                                                                       \
+     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, surf->w, surf->h, 0, SJDL_GLFormatOf(surf), GL_UNSIGNED_BYTE, surf->pixels); \
+     SDL_FreeSurface(surf);                                                                                               \
+    }                                                                                                                     }
+  LOADTEX( TEX_PLAYER, MODNAME "/images/player.png" );
+  LOADTEX( TEX_WORLD,  MODNAME "/images/world.png"  );
+  LOADTEX( TEX_AMIGO,  MODNAME "/images/amigo.png"  );
   #undef LOADTEX
 }
 
