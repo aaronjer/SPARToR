@@ -32,9 +32,9 @@ void command(const char *s){
   TRY
     if( q==NULL ){
       ;
-    }else if( strcmp(q,"tex")==0 ){
-      char *val = strtok(NULL," ");
-      if( val ) SJF.tex = atoi(val);
+    }else if( strcmp(q,"realtime")==0 ){
+      eng_realtime = eng_realtime ? 0 : 1;
+      SJC_Write("Realtime mode %s",eng_realtime?"on":"off");
     }else if( strcmp(q,"alpha")==0 ){
       char *val = strtok(NULL," ");
       if( val ) v_usealpha = atoi(val);

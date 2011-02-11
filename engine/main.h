@@ -91,6 +91,8 @@ extern Uint32 adv_collide_time;
 extern Uint32 adv_game_time;
 extern Uint32 adv_frames;
 
+extern int eng_realtime;
+
 //prototypes
 void toggleconsole();
 void advance();

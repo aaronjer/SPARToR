@@ -59,6 +59,9 @@ Uint32 adv_collide_time = 0;
 Uint32 adv_game_time = 0;
 Uint32 adv_frames = 0;
 
+//runtime engine options
+int eng_realtime = 0;
+
 static const Uint32 sdlflags = SDL_INIT_TIMER|SDL_INIT_AUDIO|SDL_INIT_VIDEO|SDL_INIT_JOYSTICK;
 
 
@@ -96,7 +99,7 @@ int main(int argc,char **argv) {
   //main loop
   for(;;) {
     newticks = SDL_GetTicks();
-    if( newticks-ticks<5 ) // give system some time to breathe if we're not too busy
+    if( !eng_realtime && newticks-ticks<5 ) // give system some time to breathe if we're not too busy
       SDL_Delay(1);
     ticks = newticks;
     metafr = ticks/ticksaframe + frameoffset;
