@@ -227,8 +227,7 @@ void mod_predraw(SDL_Surface *screen,Uint32 vidfr) {
 void mod_draw(SDL_Surface *screen,int objid,OBJ_t *o) {
   SDL_Rect drect;
 
-  switch(o->type)
-  {
+  switch(o->type) {
     case OBJT_PLAYER: {
       PLAYER_t *pl = o->data;
       int gunshift;
@@ -323,10 +322,12 @@ void mod_draw(SDL_Surface *screen,int objid,OBJ_t *o) {
           else                        { x = 150; tip = (XSPR){230,230,10,10, 32,-10}; }
           break;
         case AMIGO_FLYKICK:
+          x = ((am->hatcounter%100)/50 ? 100 : 50);
+          y = 50;
           break;
         case AMIGO_DASH:
           tip = (XSPR){210,250,40, 6,-40, 40};
-          x = 100;
+          x = 150;
           y = 50;
           break;
       }
@@ -335,6 +336,11 @@ void mod_draw(SDL_Surface *screen,int objid,OBJ_t *o) {
       SJGL_BlitScaled(textures[TEX_AMIGO], &(SDL_Rect){ tip.x, tip.y, tip.w, tip.h },
                                            &(SDL_Rect){ am->pos.x-35+tip.dx, am->pos.y-32+tip.dy, 0, 0 }, scale, z);
       break;
+    }
+    case OBJT_AMIGOSWORD: {
+      AMIGOSWORD_t *sw = o->data;
+      SJGL_BlitScaled(textures[TEX_AMIGO], &(SDL_Rect){ 200, 50+50*(hotfr%3), 56, 50 },
+                                           &(SDL_Rect){ sw->pos.x-25, sw->pos.y-28, 0, 0 }, scale, sw->pos.y );
     }
   }
 }
@@ -399,7 +405,7 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
       }
       if(hotfr==200) {
         MKOBJ( am, AMIGO, OBJF_POS|OBJF_VEL|OBJF_HULL|OBJF_VIS|OBJF_PLAT|OBJF_CLIP );
-        am->pos  = (V){300,0,0};
+        am->pos  = (V){250,0,0};
         am->vel  = (V){0,0,0};
         am->hull[0] = (V){-13,-18,0};
         am->hull[1] = (V){ 13, 18,0};
@@ -448,8 +454,7 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
       if( !oldme ) //FIXME why's this null?
         break;
 
-      if( ((GHOST_t *)fr[b].objs[newme->ghost].data)->client==me ) //local client match
-      {
+      if( ((GHOST_t *)fr[b].objs[newme->ghost].data)->client==me ) { //local client match
         camx = newme->pos.x - NATIVEW/2;
         camy = newme->pos.y - NATIVEH/2;
         if( setmodel>-1 ) { //FIXME -- just for fun, will not sync!
@@ -656,15 +661,15 @@ if( am->pos.x > NATIVEW-20.0f ) am->pos.x -= NATIVEW-41.0f;
             am->vel.x = 0.0f;
             if( am->statetime>30 ) {
               am->statetime = 0;
-              switch( patt()%8 ) {
-                case 0: am->state = AMIGO_JUMP; am->vel.y -= 10.0f;                    break;
-                case 1: am->state = AMIGO_JUMP; am->vel.y -= 10.0f; am->vel.x =  4.0f; break;
-                case 2: am->state = AMIGO_JUMP; am->vel.y -= 10.0f; am->vel.x = -4.0f; break;
-                case 3: am->state = AMIGO_JUMP; am->vel.y -=  8.0f; am->vel.x =  4.0f; break;
-                case 4: am->state = AMIGO_JUMP; am->vel.y -=  8.0f; am->vel.x = -4.0f; break;
-                case 5: am->state = AMIGO_SLASH;                    am->vel.x = -0.1f; break;
-                case 6: am->state = AMIGO_FLYKICK;                                     break;
-                case 7: am->state = AMIGO_DASH;                     am->vel.x =-10.0f; break;
+                switch( patt()%10 ) {
+                case 0: am->state = AMIGO_JUMP;    am->vel.y -= 10.0f;                                        break;
+                case 1: am->state = AMIGO_JUMP;    am->vel.y -= 10.0f; am->vel.x =  4.0f;                     break;
+                case 2: am->state = AMIGO_JUMP;    am->vel.y -= 10.0f; am->vel.x = -4.0f;                     break;
+                case 3: am->state = AMIGO_JUMP;    am->vel.y -=  8.0f; am->vel.x =  4.0f;                     break;
+                case 4: am->state = AMIGO_JUMP;    am->vel.y -=  8.0f; am->vel.x = -4.0f;                     break;
+                case 5: am->state = AMIGO_SLASH;                       am->vel.x = -0.1f;                     break;
+                case 6: am->state = AMIGO_DASH;                        am->vel.x =-10.0f;                     break;
+                default:am->state = AMIGO_FLYKICK; am->vel.y  = -3.0f; am->vel.x = -7.5f; am->hatcounter = 0; break;
               }
             }
           }
@@ -685,9 +690,30 @@ if( am->pos.x > NATIVEW-20.0f ) am->pos.x -= NATIVEW-41.0f;
           }
           break;
         case AMIGO_FLYKICK:
-          if( am->statetime>1 ) {
-            am->state = AMIGO_COOLDOWN;
-            am->statetime = 0;
+          amigo_gravity = 0.0f;
+          am->hatcounter += fabs(am->vel.x)*10;
+          am->vel.x += am->vel.x < -2.0f ? 0.1f : 0.05;
+          if( am->vel.x > 0.0f )
+            am->vel.x = 0.0f;
+          if( am->statetime==1 ) {
+            MKOBJ( sw, AMIGOSWORD, OBJF_POS|OBJF_VEL|OBJF_VIS );
+            sw->pos = am->pos;
+            sw->vel = (V){1.5f,-2.5f,0.0f};
+            sw->hull[0] = (V){0};
+            sw->hull[1] = (V){0};
+            sw->model = 0;
+            sw->owner = objid;
+            sw->spincounter = 0;
+            am->sword = slot0;
+            am->vel.y = 0.0f;
+          }
+          if( am->statetime>90 ) {
+            AMIGOSWORD_t *sw = fr[b].objs[am->sword].data;
+            if( fabs(sw->pos.x - am->pos.x) < 40.0f && fabs(sw->pos.y - am->pos.y) < 20.0f ) {
+              am->state = AMIGO_COOLDOWN;
+              am->statetime = 0;
+              fr[b].objs[am->sword].flags |= OBJF_DEL;
+            }
           }
           break;
         case AMIGO_DASH:
@@ -700,6 +726,18 @@ if( am->pos.x > NATIVEW-20.0f ) am->pos.x -= NATIVEW-41.0f;
       am->statetime++;
       am->vel.y += amigo_gravity; //gravity
       break;
+    case OBJT_AMIGOSWORD:
+      assert(ob->size==sizeof(AMIGOSWORD_t));
+      AMIGOSWORD_t *sw = ob->data;
+      sw->spincounter++;
+      if( sw->spincounter > 45 ) {
+        AMIGO_t *am = fr[b].objs[sw->owner].data;
+        sw->vel.x = am->pos.x+30.0f - sw->pos.x;
+        sw->vel.y = am->pos.y       - sw->pos.y;
+        float normalize = 4.0f / sqrt(sw->vel.x * sw->vel.x + sw->vel.y * sw->vel.y);
+        sw->vel.x *= normalize;
+        sw->vel.y *= normalize;
+      }
   } //end switch ob->type
   #undef MKOBJ
 }

@@ -98,6 +98,8 @@ typedef struct{
   int model;
   char state;
   int statetime;
+  int hatcounter;
+  int sword;
 } AMIGO_t;
 
 typedef struct{
@@ -105,5 +107,7 @@ typedef struct{
   V vel;
   V hull[2];
   int model;
+  int owner;
+  int spincounter;
 } AMIGOSWORD_t;
 

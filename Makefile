@@ -16,7 +16,8 @@ OBJS = engine/main.o \
        engine/input.o \
        engine/video.o \
        engine/sjdl.o \
-       $(MODNAME)/mod.o
+       $(MODNAME)/mod.o \
+       mt19937ar/mt19937ar.o
 
 # Only useful on certain platforms
 OBJSRES =
@@ -28,7 +29,7 @@ ifeq ($(UNAME),Linux)
 	EXE_NAME = spartor_linux
 	FLAGS = `sdl-config --cflags` -g -Wall -DGLEW_STATIC
 	LIBS = -lm -lSDL -lSDL_net -lSDL_image -lGL -lGLU -lGLEW
-	INC = -I ./engine -I ./$(MODNAME)
+	INC = -Iengine -I$(MODNAME) -Imt19937ar
 endif
 ifeq ($(UNAME),Darwin)
 	EXE_NAME = spartor_mac
@@ -42,7 +43,7 @@ ifeq ($(UNAME),Darwin)
 	       -framework SDL_image \
 	       -framework Cocoa \
 	       -Fspartor_mac.app/Contents/Frameworks
-	INC = -Iengine -I$(MODNAME) \
+	INC = -Iengine -I$(MODNAME) -Imt19937ar \
 	      -I/opt/local/var/macports/software/glew/1.5.8_0/opt/local/include \
 	      -Ispartor_mac.app \
 	      -Ispartor_mac.app/Contents/Frameworks/SDL.framework/Headers \
@@ -56,7 +57,7 @@ ifneq (,$(findstring MINGW,$(UNAME)))
 	WINDRES = windres
 	FLAGS = -g -Wall -mwindows -DGLEW_STATIC
 	LIBS = -L /local/lib -L ./glew-1.5.8/lib -lmingw32 -lSDLmain -lSDL -lSDL_net -lSDL_image -lglew32s -lopengl32 -lglu32 -lm
-	INC = -I ./engine -I ./$(MODNAME) -I /usr/local/include/SDL -I ./glew-1.5.8/include
+	INC = -Iengine -I$(MODNAME) -Imt19937ar -I/usr/local/include/SDL -Iglew-1.5.8/include
 endif
 
 
