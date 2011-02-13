@@ -293,6 +293,8 @@ void mod_draw(SDL_Surface *screen,int objid,OBJ_t *o) {
       break;
     }
     case OBJT_AMIGO: {
+      typedef struct { int x, y, w, h, dx, dy; } XSPR;
+      XSPR tip = {0}; // extra sprite for tip of sword
       AMIGO_t *am = o->data;
       int w = 50;
       int h = 50;
@@ -300,24 +302,38 @@ void mod_draw(SDL_Surface *screen,int objid,OBJ_t *o) {
       int z = am->pos.y-32 + am->hull[1].y;
       switch( am->state ) {
         case AMIGO_HELLO:
-          x = (am->statetime/30) * 50;
+          x = (am->statetime/30) * 50; //                       x   y  w  h  dx  dy
+          if(      am->statetime<30 ) { x =   0; tip = (XSPR){0}; }
+          else if( am->statetime<60 ) { x =  50; tip = (XSPR){0}; }
+          else if( am->statetime<90 ) { x = 100; tip = (XSPR){0}; }
+          else                        { x = 150; tip = (XSPR){220,230,10,10,  8,-10}; }
           y = 150;
           break;
         case AMIGO_COOLDOWN:
+          tip = (XSPR){210,230,10,10, 20,-10};
           break;
         case AMIGO_JUMP:
+          tip = (XSPR){240,230,10,10, 33,-10};
           x = 0;
           y = 50;
           break;
-        case AMIGO_SLASH:
+        case AMIGO_SLASH: //                                    x   y  w  h  dx  dy
+          if(      am->statetime<20 ) { x =  50; tip = (XSPR){220,240,30,10,-30, 42}; }
+          else if( am->statetime<25 ) { x = 100; tip = (XSPR){220,230,10,10,  6,-10}; }
+          else                        { x = 150; tip = (XSPR){230,230,10,10, 32,-10}; }
           break;
         case AMIGO_FLYKICK:
           break;
         case AMIGO_DASH:
+          tip = (XSPR){210,250,40, 6,-40, 40};
+          x = 100;
+          y = 50;
           break;
       }
-      SJGL_BlitScaled(textures[TEX_AMIGO], &(SDL_Rect){x,y,w,h},
-                                           &(SDL_Rect){am->pos.x-35,am->pos.y-32,0,0}, scale, z);
+      SJGL_BlitScaled(textures[TEX_AMIGO], &(SDL_Rect){     x,     y,     w,     h },
+                                           &(SDL_Rect){ am->pos.x-35,        am->pos.y-32,        0, 0 }, scale, z);
+      SJGL_BlitScaled(textures[TEX_AMIGO], &(SDL_Rect){ tip.x, tip.y, tip.w, tip.h },
+                                           &(SDL_Rect){ am->pos.x-35+tip.dx, am->pos.y-32+tip.dy, 0, 0 }, scale, z);
       break;
     }
   }
@@ -623,6 +639,10 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
     case OBJT_AMIGO:
       assert(ob->size==sizeof(AMIGO_t));
       AMIGO_t *am = ob->data;
+      float amigo_gravity = 0.6f;
+//TEMP! Wrap amigo since he can mostly only go left
+if( am->pos.x <         20.0f ) am->pos.x += NATIVEW-41.0f;
+if( am->pos.x > NATIVEW-20.0f ) am->pos.x -= NATIVEW-41.0f;
       spatt(hotfr);
       switch( am->state ) {
         case AMIGO_HELLO:
@@ -636,12 +656,15 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
             am->vel.x = 0.0f;
             if( am->statetime>30 ) {
               am->statetime = 0;
-              switch( patt()%5 ) {
+              switch( patt()%8 ) {
                 case 0: am->state = AMIGO_JUMP; am->vel.y -= 10.0f;                    break;
                 case 1: am->state = AMIGO_JUMP; am->vel.y -= 10.0f; am->vel.x =  4.0f; break;
                 case 2: am->state = AMIGO_JUMP; am->vel.y -= 10.0f; am->vel.x = -4.0f; break;
                 case 3: am->state = AMIGO_JUMP; am->vel.y -=  8.0f; am->vel.x =  4.0f; break;
                 case 4: am->state = AMIGO_JUMP; am->vel.y -=  8.0f; am->vel.x = -4.0f; break;
+                case 5: am->state = AMIGO_SLASH;                    am->vel.x = -0.1f; break;
+                case 6: am->state = AMIGO_FLYKICK;                                     break;
+                case 7: am->state = AMIGO_DASH;                     am->vel.x =-10.0f; break;
               }
             }
           }
@@ -653,14 +676,29 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
           }
           break;
         case AMIGO_SLASH:
+          am->vel.x += 0.05f;
+          if( am->vel.x > 0.0f )
+            am->vel.x = 0.0f;
+          if( am->statetime>30 ) {
+            am->state = AMIGO_COOLDOWN;
+            am->statetime = 0;
+          }
           break;
         case AMIGO_FLYKICK:
+          if( am->statetime>1 ) {
+            am->state = AMIGO_COOLDOWN;
+            am->statetime = 0;
+          }
           break;
         case AMIGO_DASH:
+          if( am->statetime>50 ) {
+            am->state = AMIGO_COOLDOWN;
+            am->statetime = 0;
+          }
           break;
       }
       am->statetime++;
-      am->vel.y += 0.6f; //gravity
+      am->vel.y += amigo_gravity; //gravity
       break;
   } //end switch ob->type
   #undef MKOBJ

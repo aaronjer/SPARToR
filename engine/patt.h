@@ -1,17 +1,17 @@
 #ifndef PATT_H_
 #define PATT_H_
 
-static unsigned long long a;
+static uint32_t a = 0x8675309;
 
-inline void spatt(unsigned long long seed)
+inline uint32_t patt()
 {
-  a = seed;
+  a = ((uint64_t)a * 0x10A860C1) % 0xFFFFFFFF;
+  return a;
 }
 
-inline unsigned int patt()
+inline void spatt(uint32_t seed)
 {
-  a = a * 7212336353ULL + 8963315421273233617ULL;
-  return (unsigned int)a;
+  a = seed % 0xFFFFFFFF;
 }
 
 #endif
