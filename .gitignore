@@ -1,7 +1,6 @@
 *.[oa]
 *.swp
 *.sh
-Makefile
 tags
 spartor_linux
 spartor_win32.exe
