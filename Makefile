@@ -63,6 +63,7 @@ endif
 
 $(EXE_NAME): $(OBJS) $(OBJSRES)
 	$(CC) -o $@ $(OBJS) $(OBJSRES) $(FLAGS) $(INC) $(LIBS) $(XLIBS)
+	$(POSTCC)
 	-rm $(OBJS) $(OBJSRES)
 
 $(OBJS):
