@@ -298,7 +298,7 @@ void mod_draw(SDL_Surface *screen,int objid,OBJ_t *o) {
       int w = 50;
       int h = 50;
       int x = 0,y = 0;
-      int z = am->pos.y-32 + am->hull[1].y;
+      int z = am->pos.y + am->hull[1].y;
       switch( am->state ) {
         case AMIGO_HELLO:
           x = (am->statetime/30) * 50; //                       x   y  w  h  dx  dy
@@ -324,6 +324,7 @@ void mod_draw(SDL_Surface *screen,int objid,OBJ_t *o) {
         case AMIGO_FLYKICK:
           x = ((am->hatcounter%100)/50 ? 100 : 50);
           y = 50;
+          z += 32;
           break;
         case AMIGO_DASH:
           tip = (XSPR){210,250,40, 6,-40, 40};
@@ -332,9 +333,9 @@ void mod_draw(SDL_Surface *screen,int objid,OBJ_t *o) {
           break;
       }
       SJGL_BlitScaled(textures[TEX_AMIGO], &(SDL_Rect){     x,     y,     w,     h },
-                                           &(SDL_Rect){ am->pos.x-35,        am->pos.y-32,        0, 0 }, scale, z);
+                                           &(SDL_Rect){ am->pos.x-34,        am->pos.y-32,        0, 0 }, scale, z);
       SJGL_BlitScaled(textures[TEX_AMIGO], &(SDL_Rect){ tip.x, tip.y, tip.w, tip.h },
-                                           &(SDL_Rect){ am->pos.x-35+tip.dx, am->pos.y-32+tip.dy, 0, 0 }, scale, z);
+                                           &(SDL_Rect){ am->pos.x-34+tip.dx, am->pos.y-32+tip.dy, 0, 0 }, scale, z);
       break;
     }
     case OBJT_AMIGOSWORD: {
@@ -407,8 +408,8 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
         MKOBJ( am, AMIGO, OBJF_POS|OBJF_VEL|OBJF_HULL|OBJF_VIS|OBJF_PLAT|OBJF_CLIP );
         am->pos  = (V){250,0,0};
         am->vel  = (V){0,0,0};
-        am->hull[0] = (V){-13,-18,0};
-        am->hull[1] = (V){ 13, 18,0};
+        am->hull[0] = (V){-8,-18,0};
+        am->hull[1] = (V){ 8, 18,0};
         am->model = 0;
         am->state = AMIGO_HELLO;
         am->statetime = 0;
@@ -661,15 +662,15 @@ if( am->pos.x > NATIVEW-20.0f ) am->pos.x -= NATIVEW-41.0f;
             am->vel.x = 0.0f;
             if( am->statetime>30 ) {
               am->statetime = 0;
-                switch( patt()%10 ) {
+                switch( patt()%8 ) {
                 case 0: am->state = AMIGO_JUMP;    am->vel.y -= 10.0f;                                        break;
                 case 1: am->state = AMIGO_JUMP;    am->vel.y -= 10.0f; am->vel.x =  4.0f;                     break;
                 case 2: am->state = AMIGO_JUMP;    am->vel.y -= 10.0f; am->vel.x = -4.0f;                     break;
                 case 3: am->state = AMIGO_JUMP;    am->vel.y -=  8.0f; am->vel.x =  4.0f;                     break;
                 case 4: am->state = AMIGO_JUMP;    am->vel.y -=  8.0f; am->vel.x = -4.0f;                     break;
                 case 5: am->state = AMIGO_SLASH;                       am->vel.x = -0.1f;                     break;
-                case 6: am->state = AMIGO_DASH;                        am->vel.x =-10.0f;                     break;
-                default:am->state = AMIGO_FLYKICK; am->vel.y  = -3.0f; am->vel.x = -7.5f; am->hatcounter = 0; break;
+                case 6: am->state = AMIGO_DASH;                        am->vel.x = -7.6f;                     break;
+                case 7: am->state = AMIGO_FLYKICK; am->vel.y  = -3.0f; am->vel.x = -7.5f; am->hatcounter = 0; break;
               }
             }
           }
@@ -717,6 +718,9 @@ if( am->pos.x > NATIVEW-20.0f ) am->pos.x -= NATIVEW-41.0f;
           }
           break;
         case AMIGO_DASH:
+          am->vel.x += 0.01f;
+          if( am->vel.y==0.0f && fabs(am->vel.x)>2.0f && !(patt()%60) )
+            am->pos.y -= (patt()%2+2)*1.3f; // turbulence on the ground
           if( am->statetime>50 ) {
             am->state = AMIGO_COOLDOWN;
             am->statetime = 0;
