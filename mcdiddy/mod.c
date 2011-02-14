@@ -24,6 +24,11 @@
 #include <math.h>
 
 
+#define GETOBJ( ptr, t, n )   t ## _t *sw = fr[b].objs[(n)].data;           \
+                              assert( fr[b].objs[(n)].type == OBJT_ ## t );
+#define FOBJ( n )             fr[b].objs[(n)]
+
+
 INPUTNAME_t inputnames[] = {{"left" ,CMDT_1LEFT ,CMDT_0LEFT },
                             {"right",CMDT_1RIGHT,CMDT_0RIGHT},
                             {"up"   ,CMDT_1UP   ,CMDT_0UP   },
@@ -44,6 +49,10 @@ static struct {
   char  _pad;
 }            *binds;
 
+
+//FIXME REMOVE! force amigo to flykick
+static int flykick = 0;
+//
 
 
 enum { TEX_PLAYER = 0,
@@ -171,6 +180,9 @@ int mod_command(char *q) {
       setmodel = atoi(strtok(NULL," ")); // FIXME: lame hack
       return 0;
     }
+//FIXME REMOVE: force amigo to flykick
+else if( strcmp(q,"flykick")==0 ){ flykick = 1; return 0; }
+//
   HARDER
   return 1;
 }
@@ -322,6 +334,12 @@ void mod_draw(SDL_Surface *screen,int objid,OBJ_t *o) {
           else                        { x = 150; tip = (XSPR){230,230,10,10, 32,-10}; }
           break;
         case AMIGO_FLYKICK:
+          if( am->statetime > 30 && am->sword_dist.x < 80.0f && am->sword_dist.y < 60.0f )
+            // in this state tip is amigo's left arm
+            //             x   y  w  h  dx  dy
+            tip = (XSPR){170,220,20,20, 35, 20};
+          else
+            tip = (XSPR){190,220,20,20, 25, 24};
           x = ((am->hatcounter%100)/50 ? 100 : 50);
           y = 50;
           z += 32;
@@ -646,9 +664,10 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
       assert(ob->size==sizeof(AMIGO_t));
       AMIGO_t *am = ob->data;
       float amigo_gravity = 0.6f;
-//TEMP! Wrap amigo since he can mostly only go left
+//FIXME REMOVE! Wrap amigo since he can mostly only go left
 if( am->pos.x <         20.0f ) am->pos.x += NATIVEW-41.0f;
 if( am->pos.x > NATIVEW-20.0f ) am->pos.x -= NATIVEW-41.0f;
+//
       spatt(hotfr);
       switch( am->state ) {
         case AMIGO_HELLO:
@@ -660,9 +679,12 @@ if( am->pos.x > NATIVEW-20.0f ) am->pos.x -= NATIVEW-41.0f;
         case AMIGO_COOLDOWN:
           if( am->vel.y==0 ) {
             am->vel.x = 0.0f;
-            if( am->statetime>30 ) {
+            if( am->statetime>30 ) { // decide which attack to do!
               am->statetime = 0;
                 switch( patt()%8 ) {
+//FIXME REMOVE! force amigo to flykick
+} unsigned pattval = patt()%8; if( flykick ) { flykick = 0; pattval = 7; } switch( pattval ) {
+//
                 case 0: am->state = AMIGO_JUMP;    am->vel.y -= 10.0f;                                        break;
                 case 1: am->state = AMIGO_JUMP;    am->vel.y -= 10.0f; am->vel.x =  4.0f;                     break;
                 case 2: am->state = AMIGO_JUMP;    am->vel.y -= 10.0f; am->vel.x = -4.0f;                     break;
@@ -690,7 +712,7 @@ if( am->pos.x > NATIVEW-20.0f ) am->pos.x -= NATIVEW-41.0f;
             am->statetime = 0;
           }
           break;
-        case AMIGO_FLYKICK:
+        case AMIGO_FLYKICK: {
           amigo_gravity = 0.0f;
           am->hatcounter += fabs(am->vel.x)*10;
           am->vel.x += am->vel.x < -2.0f ? 0.1f : 0.05;
@@ -708,19 +730,21 @@ if( am->pos.x > NATIVEW-20.0f ) am->pos.x -= NATIVEW-41.0f;
             am->sword = slot0;
             am->vel.y = 0.0f;
           }
+          GETOBJ( sw, AMIGOSWORD, am->sword );
+          am->sword_dist = (V){ fabs(sw->pos.x - am->pos.x), fabs(sw->pos.y - am->pos.y), 0 };
           if( am->statetime>90 ) {
-            AMIGOSWORD_t *sw = fr[b].objs[am->sword].data;
-            if( fabs(sw->pos.x - am->pos.x) < 40.0f && fabs(sw->pos.y - am->pos.y) < 20.0f ) {
+            if( am->sword_dist.x < 41.0f && am->sword_dist.y < 11.0f ) {
               am->state = AMIGO_COOLDOWN;
               am->statetime = 0;
               fr[b].objs[am->sword].flags |= OBJF_DEL;
             }
           }
           break;
+        }
         case AMIGO_DASH:
           am->vel.x += 0.01f;
           if( am->vel.y==0.0f && fabs(am->vel.x)>2.0f && !(patt()%60) )
-            am->pos.y -= (patt()%2+2)*1.3f; // turbulence on the ground
+            am->pos.y -= (patt()%2+2)*2.3f; // turbulence on the ground
           if( am->statetime>50 ) {
             am->state = AMIGO_COOLDOWN;
             am->statetime = 0;
@@ -736,13 +760,20 @@ if( am->pos.x > NATIVEW-20.0f ) am->pos.x -= NATIVEW-41.0f;
       sw->spincounter++;
       if( sw->spincounter > 45 ) {
         AMIGO_t *am = fr[b].objs[sw->owner].data;
-        sw->vel.x = am->pos.x+30.0f - sw->pos.x;
+        sw->vel.x = am->pos.x+40.0f - sw->pos.x;
         sw->vel.y = am->pos.y       - sw->pos.y;
-        float normalize = 4.0f / sqrt(sw->vel.x * sw->vel.x + sw->vel.y * sw->vel.y);
-        sw->vel.x *= normalize;
-        sw->vel.y *= normalize;
+        float normalize = sqrt(sw->vel.x * sw->vel.x + sw->vel.y * sw->vel.y);
+        if( normalize > 4.0f ) {
+          normalize = 4.0f / normalize;
+          sw->vel.x *= normalize;
+          sw->vel.y *= normalize;
+        }
       }
   } //end switch ob->type
   #undef MKOBJ
 }
+
+
+#undef GETOBJ
+#undef FOBJ
 

@@ -100,6 +100,7 @@ typedef struct{
   int statetime;
   int hatcounter;
   int sword;
+  V sword_dist;
 } AMIGO_t;
 
 typedef struct{
