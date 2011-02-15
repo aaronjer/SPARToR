@@ -14,6 +14,10 @@ REQUIRED LIBRARIES:
 
 How to build:
 -------------
+   For step by step instructions, see:
+   <http://superjer.com/forum/how_to_compile_spartor.php>
+
+
    The following explains briefly how to build for Linux,
    Win32 or Mac with GNU GCC and GNU Make. You may need to
    edit the relevant Makefile to match your paths.
