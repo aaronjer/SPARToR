@@ -60,6 +60,7 @@ typedef struct{
   char grounded;
   char facingr;
   char stabbing;
+  char hovertime;
 } PLAYER_t;
 
 typedef struct{

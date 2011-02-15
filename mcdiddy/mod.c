@@ -411,6 +411,7 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
           pl->grounded = 0;
           pl->facingr = 1;
           pl->stabbing = 0;
+          pl->hovertime = 0;
         }
       }
       if(hotfr%77==0) {
@@ -491,13 +492,15 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
         if( newme->goingd && !oldme->goingd )                  //just pressed down
           newme->stabbing = 4;
       }
+      if( newme->stabbing==-1 || newme->stabbing==1 )          //last frame of stabbing is over
+        newme->stabbing = 0;
       if( newme->stabbing && newme->vel.y==0.0 ) {             //tink tink tink!
-        newme->stabbing += (newme->stabbing>0 ? -1 : 1);
         if( newme->stabbing>0 )
           newme->vel.y -= 0.8f*oldme->vel.y;
+        newme->stabbing += (newme->stabbing>0 ? -1 : 1);
       }
-      if( newme->stabbing && newme->goingu ) {                 //expand hull for stabbing
-        newme->hull[0] = (V){-6.0f,-30.0f,0.0f};
+      if(        newme->stabbing && newme->goingu ) {          //expand hull for stabbing
+        newme->hull[0] = (V){-6.0f,-29.0f,0.0f};
         newme->hull[1] = (V){ 6.0f, 15.0f,0.0f};
       } else if( newme->stabbing && newme->goingd ) {
         newme->hull[0] = (V){-6.0f,-15.0f,0.0f};
@@ -593,7 +596,12 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
           }
         }
 
-      newme->vel.y += 0.7f;        //gravity
+      if( newme->hovertime ) { //gravity?
+        newme->hovertime--;
+        newme->vel.y += 0.3f;
+      } else
+        newme->vel.y += newme->hovertime ? 0.3f : 0.7f;
+
       break;
     case OBJT_BULLET:
       assert(ob->size==sizeof(BULLET_t));
@@ -628,17 +636,18 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
         if(fr[b].objs[i].type==OBJT_PLAYER) {
           PLAYER_t *pl = fr[b].objs[i].data;
           int up_stabbed = pl->stabbing<0
-                        && fabsf(sl->pos.x -  pl->pos.x       )<8.0f
-                        && fabsf(sl->pos.y - (pl->pos.y-20.0f))<12.0f ;
+                        && fabsf(sl->pos.x - pl->pos.x                )<=12.0f
+                        && fabsf(sl->pos.y - pl->pos.y - pl->hull[0].y)<=8.0f ;
           int dn_stabbed = pl->stabbing>0
-                        && fabsf(sl->pos.x -  pl->pos.x       )<8.0f
-                        && fabsf(sl->pos.y - (pl->pos.y+20.0f))<12.0f ;
+                        && fabsf(sl->pos.x - pl->pos.x                )<=12.0f
+                        && fabsf(sl->pos.y - pl->pos.y - pl->hull[1].y)<=4.0f ;
           if( up_stabbed ) {
             pl->vel.y = sl->vel.y;
             sl->vel.y = -5.0f;
             kill = 1;
           } else if( dn_stabbed ) {
-            pl->vel.y = sl->vel.y - 4.5f;
+            pl->vel.y = -4.5f;
+            pl->hovertime = 7;
             sl->vel.y = 0.0f;
             kill = 1;
           }
@@ -653,7 +662,7 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
       }
 
       if( kill ) {
-        sl->vel.x = 0;
+        sl->vel.x /= 100; //preserve direction while dead
         sl->dead = 1;
         ob->flags &= ~OBJF_PLAT;
       }
@@ -719,6 +728,7 @@ if( am->pos.x > NATIVEW+20.0f ) am->pos.x -= NATIVEW+39.0f;
           break;
         case AMIGO_FLYKICK: {
           amigo_gravity = 0.0f;
+          am->vel.y = 0.0f;
           am->hatcounter += fabsf(am->vel.x)*10;
           am->vel.x += am->vel.x < -2.0f ? 0.1f : 0.05;
           if( am->vel.x > 0.0f )
@@ -733,7 +743,6 @@ if( am->pos.x > NATIVEW+20.0f ) am->pos.x -= NATIVEW+39.0f;
             sw->owner = objid;
             sw->spincounter = 0;
             am->sword = slot0;
-            am->vel.y = 0.0f;
           }
           GETOBJ( sw, AMIGOSWORD, am->sword );
           am->sword_dist = (V){ fabsf(sw->pos.x - am->pos.x), fabsf(sw->pos.y - am->pos.y), 0 };
