@@ -169,7 +169,7 @@ void advance() {
         V *hull = (ob->flags & OBJF_HULL) ? flex(ob,OBJF_HULL) : NULL;
         pos->x += vel->x + (pvel?pvel->x:0.0f);  //apply velocity
         pos->y += vel->y + (pvel?pvel->y:0.0f);
-        if( ob->flags & OBJF_CLIP )
+        if( ob->flags & OBJF_BNDX )
         {
           if( pos->x + (hull?hull[0].x:0.0f) < 0.0f ) {    //screen edges
             pos->x = 0.0f   - (hull?hull[0].x:0.0f);
@@ -179,6 +179,9 @@ void advance() {
             pos->x = NATIVEW - (hull?hull[1].x:0.0f);
             vel->x = 0.0f;
           }
+        }
+        if( ob->flags & OBJF_BNDY )
+        {
           if( pos->y + (hull?hull[1].y:0.0f) > NATIVEH ) {  //floor
             pos->y = NATIVEH - (hull?hull[1].y:0.0f);
             vel->y = 0.0f;
@@ -220,12 +223,12 @@ void advance() {
           if(        oldyoupos->y+oldyouhull[0].y >= oldmepos->y+oldmehull[1].y     //I was above BEFORE
                   && (newyou->flags&OBJF_PLAT) && (newme->flags&OBJF_CLIP)      ) {
             newmepos->y = newyoupos->y + newyouhull[0].y - newmehull[1].y;
-            newmevel->y = 0.0f;
+            newmevel->y = newyouvel->y;
             recheck[r%2][i] = 1; //I've moved, so recheck me
           } else if( oldyoupos->y+oldyouhull[1].y <= oldmepos->y+oldmehull[0].y     //You were above BEFORE
                   && (newme->flags&OBJF_PLAT) && (newyou->flags&OBJF_CLIP)      ) {
             newyoupos->y = newmepos->y + newmehull[0].y - newyouhull[1].y;
-            newyouvel->y = 0.0f;
+            newyouvel->y = newmevel->y;
             recheck[r%2][j] = 1; //you've moved, so recheck you
           }
         }

@@ -87,17 +87,17 @@ void mod_setup(Uint32 setupfr) {
   *(MOTHER_t *)fr[setupfr].objs[0].data = (MOTHER_t){0,0};
 
   //make some dummys
-  #define MAYBE_A_DUMMY(i,x,y,w,h) {                                                         \
-    DUMMY_t *du;                                                                             \
-    fr[setupfr].objs[i+20].type = OBJT_DUMMY;                                                \
-    fr[setupfr].objs[i+20].flags = OBJF_POS|OBJF_VEL|OBJF_HULL|OBJF_VIS|OBJF_PLAT|OBJF_CLIP; \
-    fr[setupfr].objs[i+20].size = sizeof *du;                                                \
-    du = fr[setupfr].objs[i+20].data = malloc(sizeof *du);                                   \
-    du->pos = (V){x*8,y*8,0.0f};                                                             \
-    du->vel = (V){0.0f,0.0f,0.0f};                                                           \
-    du->hull[0] = (V){-w*8,-h*8,0.0f};                                                       \
-    du->hull[1] = (V){ w*8, h*8,0.0f};                                                       \
-    du->model = 0;                                                                           }
+  #define MAYBE_A_DUMMY(i,x,y,w,h) {                                                                             \
+    DUMMY_t *du;                                                                                                 \
+    fr[setupfr].objs[i+20].type = OBJT_DUMMY;                                                                    \
+    fr[setupfr].objs[i+20].flags = OBJF_POS|OBJF_VEL|OBJF_HULL|OBJF_VIS|OBJF_PLAT|OBJF_CLIP|OBJF_BNDX|OBJF_BNDY; \
+    fr[setupfr].objs[i+20].size = sizeof *du;                                                                    \
+    du = fr[setupfr].objs[i+20].data = malloc(sizeof *du);                                                       \
+    du->pos = (V){x*8,y*8,0.0f};                                                                                 \
+    du->vel = (V){0.0f,0.0f,0.0f};                                                                               \
+    du->hull[0] = (V){-w*8,-h*8,0.0f};                                                                           \
+    du->hull[1] = (V){ w*8, h*8,0.0f};                                                                           \
+    du->model = 0;                                                                                               }
   MAYBE_A_DUMMY( 1,  1, 25,1,5);
   MAYBE_A_DUMMY( 2,  3, 25,1,5);
   MAYBE_A_DUMMY( 3,  5, 25,1,5);
@@ -216,7 +216,7 @@ void mod_predraw(SDL_Surface *screen,Uint32 vidfr) {
   //draw background
   int i=0,j;
   while(i<23) {
-    int step = (i<6||i==10||i==15) ? 1 : 4; 
+    int step = (i<6||i==10||i==15) ? 1 : 4;
     for(j=0;j<15;j++)
       SJGL_BlitScaled(textures[TEX_WORLD], &(SDL_Rect){80,16,step*16,16}, &(SDL_Rect){i*16,j*16,0,0}, scale, 0);
     i += step;
@@ -385,7 +385,7 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
 
           MKOBJ( gh, GHOST, OBJF_POS );
           int ghostslot = slot0;
-          MKOBJ( pl, PLAYER, OBJF_POS|OBJF_VEL|OBJF_HULL|OBJF_PVEL|OBJF_VIS|OBJF_PLAT|OBJF_CLIP );
+          MKOBJ( pl, PLAYER, OBJF_POS|OBJF_VEL|OBJF_HULL|OBJF_PVEL|OBJF_VIS|OBJF_PLAT|OBJF_CLIP|OBJF_BNDX|OBJF_BNDY );
 
           SJC_Write( "%d: New client %i created ghost is obj#%d player is obj#%d", hotfr, i, ghostslot, slot0 );
 
@@ -414,7 +414,7 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
         }
       }
       if(hotfr%77==0) {
-        MKOBJ( sl, SLUG, OBJF_POS|OBJF_VEL|OBJF_HULL|OBJF_VIS|OBJF_PLAT|OBJF_CLIP );
+        MKOBJ( sl, SLUG, OBJF_POS|OBJF_VEL|OBJF_HULL|OBJF_VIS|OBJF_PLAT|OBJF_CLIP|OBJF_BNDY );
         sl->pos  = (V){(hotfr%2)*368.0f+8.0f,0.0f,0.0f};
         sl->vel  = (V){(hotfr%2)?-0.5f:0.5f,0.0f,0.0f};
         sl->hull[0] = (V){-8.0f,-4.0f,0.0f};
@@ -423,7 +423,7 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
         sl->dead = 0;
       }
       if(hotfr==200) {
-        MKOBJ( am, AMIGO, OBJF_POS|OBJF_VEL|OBJF_HULL|OBJF_VIS|OBJF_PLAT|OBJF_CLIP );
+        MKOBJ( am, AMIGO, OBJF_POS|OBJF_VEL|OBJF_HULL|OBJF_VIS|OBJF_PLAT|OBJF_CLIP|OBJF_BNDY );
         am->pos  = (V){250,0,0};
         am->vel  = (V){0,0,0};
         am->hull[0] = (V){-8,-18,0};
@@ -448,7 +448,7 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
       if( objid==(hotfr+100)%2000 ) //tee-hee
         du->vel.x += (float)(b%4)-1.5;
 
-      du->vel.y += 0.01f;        //gravity
+      du->vel.y += 0.7f;        //gravity
       break;
     case OBJT_PLAYER:
       assert(ob->size==sizeof(PLAYER_t));
@@ -550,7 +550,7 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
       if( newme->cooldown>0 )
         newme->cooldown--;
       if( newme->firing && newme->cooldown==0 && newme->projectiles<5 ) { // create bullet
-        MKOBJ( bu, BULLET, OBJF_POS|OBJF_VEL|OBJF_VIS|OBJF_CLIP );
+        MKOBJ( bu, BULLET, OBJF_POS|OBJF_VEL|OBJF_VIS );
         if( newme->facingr ) {
           bu->pos = (V){newme->pos.x+19.0f,newme->pos.y-3.0f,0.0f};
           bu->vel = (V){ 8.0f,0.0f,0.0f};
@@ -580,7 +580,7 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
           PLAYER_t *newyou = fr[b].objs[i].data;
           if( !oldyou                                  ||
               fabsf(newme->pos.x - newyou->pos.x)>5.0f || //we're not on top of each other
-              fabsf(newme->pos.y - newyou->pos.y)>2.0f || 
+              fabsf(newme->pos.y - newyou->pos.y)>2.0f ||
               newme->goingr ||  newme->goingl         || //or we're moving
               newyou->goingr || newyou->goingl            )
             continue;
@@ -610,7 +610,7 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
           pl->vel.x += (bu->vel.x>0.0f?5.0f:-5.0f);
           bu->ttl = 0; //delete bullet
         }
-      if(bu->pos.x<=0.0f || bu->pos.x>=NATIVEW || bu->ttl==0) {
+      if(bu->pos.x<=-10.0f || bu->pos.x>=NATIVEW+10.0f || bu->ttl==0) {
         if( fr[b].objs[bu->owner].type==OBJT_PLAYER )
           ((PLAYER_t *)fr[b].objs[bu->owner].data)->projectiles--;
         ob->flags |= OBJF_DEL;
@@ -619,54 +619,59 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
     case OBJT_SLUG:
       assert(ob->size==sizeof(SLUG_t));
       SLUG_t *sl = ob->data;
+      int kill = 0;
       sl->vel.y += 0.6f;      //gravity
+
       if( sl->dead )          //decay
         sl->dead++;
-      else for(i=0;i<maxobjs;i++)  //find players, bullets to hit
+      else for(i=0;i<maxobjs;i++) { //find players, bullets to hit
         if(fr[b].objs[i].type==OBJT_PLAYER) {
           PLAYER_t *pl = fr[b].objs[i].data;
-          if( pl->stabbing<0 &&
-              fabsf(sl->pos.x -  pl->pos.x       )<8.0f && //up stab contact
-              fabsf(sl->pos.y - (pl->pos.y-20.0f))<12.0f   )
-          {
+          int up_stabbed = pl->stabbing<0
+                        && fabsf(sl->pos.x -  pl->pos.x       )<8.0f
+                        && fabsf(sl->pos.y - (pl->pos.y-20.0f))<12.0f ;
+          int dn_stabbed = pl->stabbing>0
+                        && fabsf(sl->pos.x -  pl->pos.x       )<8.0f
+                        && fabsf(sl->pos.y - (pl->pos.y+20.0f))<12.0f ;
+          if( up_stabbed ) {
             pl->vel.y = sl->vel.y;
-            sl->vel.x /= 100.0f;
             sl->vel.y = -5.0f;
-            sl->dead = 1;
-            ob->flags &= ~OBJF_PLAT;
-          } else if( pl->stabbing>0 &&
-              fabsf(sl->pos.x -  pl->pos.x       )<8.0f && //down stab contact
-              fabsf(sl->pos.y - (pl->pos.y+20.0f))<12.0f   )
-          {
+            kill = 1;
+          } else if( dn_stabbed ) {
             pl->vel.y = sl->vel.y - 4.5f;
-            sl->vel.x /= 100.0f;
             sl->vel.y = 0.0f;
-            sl->dead = 1;
-            ob->flags &= ~OBJF_PLAT;
+            kill = 1;
           }
         } else if(fr[b].objs[i].type==OBJT_BULLET) {
           BULLET_t *bu = fr[b].objs[i].data;
-          if( fabsf(sl->pos.x - bu->pos.x)>8.0f || //no hit
-              fabsf(sl->pos.y - bu->pos.y)>8.0f )
-            continue;
+          if( fabsf(sl->pos.x - bu->pos.x)>8.0f || fabsf(sl->pos.y - bu->pos.y)>8.0f )
+            continue; // no hit
           bu->ttl = 0;
-          sl->vel.x /= 100.0f;
           sl->vel.y = -3.0f;
-          sl->dead = 1;
-          ob->flags &= ~OBJF_PLAT;
+          kill = 1;
         }
+      }
+
+      if( kill ) {
+        sl->vel.x = 0;
+        sl->dead = 1;
+        ob->flags &= ~OBJF_PLAT;
+      }
+
       if( sl->dead==5 )
-        ob->flags &= ~OBJF_CLIP;
-      if(sl->vel.x==0 || sl->dead>100)
+        ob->flags &= ~(OBJF_CLIP|OBJF_BNDY);
+
+      if( sl->pos.x<-10.0f || sl->pos.x>NATIVEW+10.0f || sl->pos.y>NATIVEH+10.0f || sl->dead>100 )
         ob->flags |= OBJF_DEL;
+
       break;
     case OBJT_AMIGO:
       assert(ob->size==sizeof(AMIGO_t));
       AMIGO_t *am = ob->data;
       float amigo_gravity = 0.6f;
 //FIXME REMOVE! Wrap amigo since he can mostly only go left
-if( am->pos.x <         20.0f ) am->pos.x += NATIVEW-41.0f;
-if( am->pos.x > NATIVEW-20.0f ) am->pos.x -= NATIVEW-41.0f;
+if( am->pos.x <        -20.0f ) am->pos.x += NATIVEW+39.0f;
+if( am->pos.x > NATIVEW+20.0f ) am->pos.x -= NATIVEW+39.0f;
 //
       spatt(hotfr);
       switch( am->state ) {
@@ -714,7 +719,7 @@ if( am->pos.x > NATIVEW-20.0f ) am->pos.x -= NATIVEW-41.0f;
           break;
         case AMIGO_FLYKICK: {
           amigo_gravity = 0.0f;
-          am->hatcounter += fabs(am->vel.x)*10;
+          am->hatcounter += fabsf(am->vel.x)*10;
           am->vel.x += am->vel.x < -2.0f ? 0.1f : 0.05;
           if( am->vel.x > 0.0f )
             am->vel.x = 0.0f;
@@ -731,7 +736,7 @@ if( am->pos.x > NATIVEW-20.0f ) am->pos.x -= NATIVEW-41.0f;
             am->vel.y = 0.0f;
           }
           GETOBJ( sw, AMIGOSWORD, am->sword );
-          am->sword_dist = (V){ fabs(sw->pos.x - am->pos.x), fabs(sw->pos.y - am->pos.y), 0 };
+          am->sword_dist = (V){ fabsf(sw->pos.x - am->pos.x), fabsf(sw->pos.y - am->pos.y), 0 };
           if( am->statetime>90 ) {
             if( am->sword_dist.x < 41.0f && am->sword_dist.y < 11.0f ) {
               am->state = AMIGO_COOLDOWN;
@@ -743,7 +748,7 @@ if( am->pos.x > NATIVEW-20.0f ) am->pos.x -= NATIVEW-41.0f;
         }
         case AMIGO_DASH:
           am->vel.x += 0.01f;
-          if( am->vel.y==0.0f && fabs(am->vel.x)>2.0f && !(patt()%60) )
+          if( am->vel.y==0.0f && fabsf(am->vel.x)>2.0f && !(patt()%60) )
             am->pos.y -= (patt()%2+2)*2.3f; // turbulence on the ground
           if( am->statetime>50 ) {
             am->state = AMIGO_COOLDOWN;

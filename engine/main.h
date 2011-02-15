@@ -21,18 +21,20 @@
 #define assert(expr) { if(!(expr)) SJC_Write( "%s(%d) Assert failed! %s", __FILE__, __LINE__, #expr ); }
 
 //obj flags
-#define OBJF_POS  0x00000001 //has position
-#define OBJF_VEL  0x00000002 //has velocity
-#define OBJF_VIS  0x00000004 //is visible
-#define OBJF_HULL 0x00000008 //has a hull
-#define OBJF_CLIP 0x00000010 //clips against solids
-#define OBJF_PLAT 0x00000020 //acts as a platform
-#define OBJF_PVEL 0x00000040 //has player-controlled velocity
-#define OBJF_DEL  0x00000080 //object is marked for deletion
+#define OBJF_POS  (1<<0) //has position
+#define OBJF_VEL  (1<<1) //has velocity
+#define OBJF_VIS  (1<<2) //is visible
+#define OBJF_HULL (1<<3) //has a hull
+#define OBJF_CLIP (1<<4) //clips against solids
+#define OBJF_PLAT (1<<5) //acts as a platform
+#define OBJF_PVEL (1<<6) //has player-controlled velocity
+#define OBJF_DEL  (1<<7) //object is marked for deletion
+#define OBJF_BNDX (1<<8) //clips against screen edge X-wise
+#define OBJF_BNDY (1<<9) //clips against screen edge Y-wise (lower only)
 
 //cmd flags
-#define CMDF_NEW  0x00000001
-#define CMDF_QUIT 0x00000002
+#define CMDF_NEW  (1<<0)
+#define CMDF_QUIT (1<<0)
 
 
 typedef struct{

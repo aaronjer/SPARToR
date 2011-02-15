@@ -23,6 +23,7 @@ int v_drawhulls  = 0;
 int v_showstats  = 1;
 int v_usealpha   = 1;
 int v_fullscreen = 0;
+int v_oob        = 0; // show objects out-of-bounds fading away
 
 static int screen_w  = NATIVEW;
 static int screen_h  = NATIVEH;
@@ -147,18 +148,22 @@ void render() {
     }
   }
 
-  //subtractively paint over border areas just a lil bit
+  //paint black over the border areas, subtractively with v_oob
   {
     int outerl =  -pad_left;   int innerl = 0;
     int outert =  -pad_top;    int innert = 0;
     int outerr = w-pad_left;   int innerr = NATIVEW*scale;
     int outerb = h-pad_top;    int innerb = NATIVEH*scale;
-    glColor4f(0.02,0.02,0.02,0.02);
     glDisable(GL_TEXTURE_2D);
     glPushAttrib(GL_COLOR_BUFFER_BIT);
-    if( GLEW_EXT_blend_equation_separate )
-      glBlendEquation(GL_FUNC_REVERSE_SUBTRACT);
-    glBlendFunc(GL_ONE,GL_ONE);
+    if( v_oob ) {
+      glColor4f(0.02,0.02,0.02,0.02);
+      glBlendFunc(GL_ONE,GL_ONE);
+      if( GLEW_EXT_blend_equation_separate )
+        glBlendEquation(GL_FUNC_REVERSE_SUBTRACT);
+    }
+    else
+      glColor4f(0,0,0,1.0f);
     glBegin(GL_QUADS);
     glVertex2i(outerl,outert); glVertex2i(outerr,outert); glVertex2i(outerr,innert); glVertex2i(outerl,innert); //top
     glVertex2i(outerl,innerb); glVertex2i(outerr,innerb); glVertex2i(outerr,outerb); glVertex2i(outerl,outerb); //bottom

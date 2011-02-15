@@ -7,6 +7,7 @@ extern int v_drawhulls;
 extern int v_showstats;
 extern int v_usealpha;
 extern int v_fullscreen;
+extern int v_oob;
 
 
 void videoinit();
