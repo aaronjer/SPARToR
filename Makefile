@@ -16,8 +16,10 @@ OBJS = engine/main.o \
        engine/input.o \
        engine/video.o \
        engine/sjdl.o \
-       $(MODNAME)/mod.o \
+       engine/patt.o \
        mt19937ar/mt19937ar.o
+
+include $(MODNAME)/Makefile-include
 
 # Only useful on certain platforms
 OBJSRES =

@@ -1,11 +1,19 @@
 
-#ifndef SPARTOR_MOD_H_
-#define SPARTOR_MOD_H_
+#ifndef MCDIDDY_MOD_H_
+#define MCDIDDY_MOD_H_
 
+#include <GL/glew.h>
 #include "SDL.h"
 #include "SDL_net.h"
 #include "main.h"
-
+#include "console.h"
+#include "net.h"
+#include "video.h"
+#include "input.h"
+#include "patt.h"
+#include "mod_private.h"
+#include "obj_.h"
+#include <math.h>
 
 #define NATIVEW 384
 #define NATIVEH 240
@@ -18,6 +26,13 @@ typedef struct {
   int  presscmd;
   int  releasecmd;
 } INPUTNAME_t;
+
+
+enum { TEX_PLAYER = 0,
+       TEX_WORLD,
+       TEX_AMIGO,
+       TEX_COUNT };
+extern GLuint textures[TEX_COUNT];
 
 
 extern int numinputnames;

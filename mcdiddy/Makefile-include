@@ -1,0 +1,2 @@
+OBJS += $(MODNAME)/mod.o
+OBJS += $(MODNAME)/obj_amigo.o

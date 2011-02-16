@@ -1,33 +1,25 @@
 /**
- **  McDiddy's Game
- **  Implementation example for the SPARToR Network Game Engine
- **  Copyright (C) 2010-2011  Jer Wilson
+ **  mcdiddy's game
+ **  implementation example for the spartor network game engine
+ **  copyright (c) 2010-2011  jer wilson
  **
- **  See COPYING for details.
+ **  see copying for details.
  **
  **  http://www.superjer.com/
  **  http://www.spartor.com/
- **  http://github.com/superjer/SPARToR
+ **  http://github.com/superjer/spartor
  **/
 
 
-#include <GL/glew.h>
-#include "SDL.h"
-#include "main.h"
-#include "console.h"
-#include "net.h"
-#include "video.h"
-#include "input.h"
-#include "patt.h"
 #include "mod.h"
-#include "mod_private.h"
-#include <math.h>
 
 
 #define GETOBJ( ptr, t, n )   t ## _t *sw = fr[b].objs[(n)].data;           \
                               assert( fr[b].objs[(n)].type == OBJT_ ## t );
 #define FOBJ( n )             fr[b].objs[(n)]
 
+
+GLuint textures[TEX_COUNT];
 
 INPUTNAME_t inputnames[] = {{"left" ,CMDT_1LEFT ,CMDT_0LEFT },
                             {"right",CMDT_1RIGHT,CMDT_0RIGHT},
@@ -51,15 +43,8 @@ static struct {
 
 
 //FIXME REMOVE! force amigo to flykick
-static int flykick = 0;
+extern int flykick;
 //
-
-
-enum { TEX_PLAYER = 0,
-       TEX_WORLD,
-       TEX_AMIGO,
-       TEX_COUNT };
-GLuint textures[TEX_COUNT];
 
 
 void mod_setup(Uint32 setupfr) {
@@ -304,59 +289,7 @@ void mod_draw(SDL_Surface *screen,int objid,OBJ_t *o) {
       }
       break;
     }
-    case OBJT_AMIGO: {
-      typedef struct { int x, y, w, h, dx, dy; } XSPR;
-      XSPR tip = {0}; // extra sprite for tip of sword
-      AMIGO_t *am = o->data;
-      int w = 50;
-      int h = 50;
-      int x = 0,y = 0;
-      int z = am->pos.y + am->hull[1].y;
-      switch( am->state ) {
-        case AMIGO_HELLO:
-          x = (am->statetime/30) * 50; //                       x   y  w  h  dx  dy
-          if(      am->statetime<30 ) { x =   0; tip = (XSPR){0}; }
-          else if( am->statetime<60 ) { x =  50; tip = (XSPR){0}; }
-          else if( am->statetime<90 ) { x = 100; tip = (XSPR){0}; }
-          else                        { x = 150; tip = (XSPR){220,230,10,10,  8,-10}; }
-          y = 150;
-          break;
-        case AMIGO_COOLDOWN:
-          tip = (XSPR){210,230,10,10, 20,-10};
-          break;
-        case AMIGO_JUMP:
-          tip = (XSPR){240,230,10,10, 33,-10};
-          x = 0;
-          y = 50;
-          break;
-        case AMIGO_SLASH: //                                    x   y  w  h  dx  dy
-          if(      am->statetime<20 ) { x =  50; tip = (XSPR){220,240,30,10,-30, 42}; }
-          else if( am->statetime<25 ) { x = 100; tip = (XSPR){220,230,10,10,  6,-10}; }
-          else                        { x = 150; tip = (XSPR){230,230,10,10, 32,-10}; }
-          break;
-        case AMIGO_FLYKICK:
-          if( am->statetime > 30 && am->sword_dist.x < 80.0f && am->sword_dist.y < 60.0f )
-            // in this state tip is amigo's left arm
-            //             x   y  w  h  dx  dy
-            tip = (XSPR){170,220,20,20, 35, 20};
-          else
-            tip = (XSPR){190,220,20,20, 25, 24};
-          x = ((am->hatcounter%100)/50 ? 100 : 50);
-          y = 50;
-          z += 32;
-          break;
-        case AMIGO_DASH:
-          tip = (XSPR){210,250,40, 6,-40, 40};
-          x = 150;
-          y = 50;
-          break;
-      }
-      SJGL_BlitScaled(textures[TEX_AMIGO], &(SDL_Rect){     x,     y,     w,     h },
-                                           &(SDL_Rect){ am->pos.x-34,        am->pos.y-32,        0, 0 }, scale, z);
-      SJGL_BlitScaled(textures[TEX_AMIGO], &(SDL_Rect){ tip.x, tip.y, tip.w, tip.h },
-                                           &(SDL_Rect){ am->pos.x-34+tip.dx, am->pos.y-32+tip.dy, 0, 0 }, scale, z);
-      break;
-    }
+    case OBJT_AMIGO: obj_amigo_draw( objid, o ); break;
     case OBJT_AMIGOSWORD: {
       AMIGOSWORD_t *sw = o->data;
       SJGL_BlitScaled(textures[TEX_AMIGO], &(SDL_Rect){ 200, 50+50*(hotfr%3), 56, 50 },

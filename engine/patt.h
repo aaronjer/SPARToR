@@ -1,16 +1,10 @@
-#ifndef PATT_H_
-#define PATT_H_
+#ifndef SPARTOR_PATT_H_
+#define SPARTOR_PATT_H_
 
 #include "mt19937ar.h"
+#include "main.h"
 
-inline uint32_t patt()
-{
-  return genrand_int32();
-}
-
-inline void spatt(uint32_t seed)
-{
-  init_genrand(seed);
-}
+uint32_t patt();
+void spatt(uint32_t seed);
 
 #endif
