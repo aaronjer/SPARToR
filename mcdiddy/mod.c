@@ -248,22 +248,23 @@ void mod_draw(SDL_Surface *screen,int objid,OBJ_t *o) {
       if( pl->goingu==pl->goingd ) gunshift = 0;
       drect = (SDL_Rect){(pl->pos.x-10),(pl->pos.y-15),0,0};
       int z = drect.y + pl->hull[1].y;
+      int duck = pl->goingd>0 ? 40 : 0;
       if( pl->facingr ) {
         if( pl->model==4 ) //girl hair
           SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){ 80,120,20,15},
-                                                &(SDL_Rect){drect.x-4,drect.y+pl->gundown/7,0,0}, scale, z);
-        SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){ 0, 0+pl->model*30,20,30}, &drect, scale, z);
+                                                &(SDL_Rect){drect.x-4,drect.y+(pl->goingd?4:0)+pl->gundown/7,0,0}, scale, z);
+        SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){ 0+duck, 0+pl->model*30,20,30}, &drect, scale, z);
         drect = (SDL_Rect){(pl->pos.x- 5-pl->gunback),(pl->pos.y-10+pl->gundown/5),0,0};
         if( !pl->stabbing ) //gun
-          SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){ 0+gunshift,150,24,21}, &drect, scale, z);
+          SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){ 0+gunshift,150,24,27}, &drect, scale, z);
       } else {
         if( pl->model==4 ) //girl hair
           SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){100,120,20,15},
-                                                &(SDL_Rect){drect.x+4,drect.y+pl->gundown/7,0,0}, scale, z);
-        SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){20, 0+pl->model*30,20,30}, &drect, scale, z);
+                                                &(SDL_Rect){drect.x+4,drect.y+(pl->goingd?4:0)+pl->gundown/7,0,0}, scale, z);
+        SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){20+duck, 0+pl->model*30,20,30}, &drect, scale, z);
         drect = (SDL_Rect){(pl->pos.x-19+pl->gunback),(pl->pos.y-10+pl->gundown/5),0,0};
         if( !pl->stabbing ) //gun
-          SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){24+gunshift,150,24,21}, &drect, scale, z);
+          SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){24+gunshift,150,24,27}, &drect, scale, z);
       }
       if( pl->stabbing ) { //up/down stabbing
         drect = (SDL_Rect){pl->pos.x-2,pl->pos.y-(pl->stabbing<0?30:0),0,0};
@@ -563,11 +564,12 @@ void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
         }
         if( newme->goingu ) { // aiming
           bu->vel.y += -8.0f;
-          bu->pos.y +=-10.0f;
+          bu->pos.x += -2.0f;
+          bu->pos.y += -7.0f;
         }
         if( newme->goingd ) {
           bu->vel.y +=  8.0f;
-          bu->pos.y += 12.0f;
+          bu->pos.y += 16.0f;
         }
         bu->model = 1;
         bu->owner = objid;
