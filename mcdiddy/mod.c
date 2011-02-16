@@ -1,13 +1,13 @@
 /**
- **  mcdiddy's game
- **  implementation example for the spartor network game engine
- **  copyright (c) 2010-2011  jer wilson
+ **  McDiddy's Game
+ **  Implementation example for the SPARToR Network Game Engine
+ **  Copyright (c) 2010-2011  Jer Wilson
  **
- **  see copying for details.
+ **  See COPYING for details.
  **
  **  http://www.superjer.com/
  **  http://www.spartor.com/
- **  http://github.com/superjer/spartor
+ **  http://github.com/superjer/SPARToR
  **/
 
 
