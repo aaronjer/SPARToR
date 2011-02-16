@@ -42,7 +42,6 @@ extern int    flykick;
 
 
 void mod_setup(Uint32 setupfr) {
-
   //default key bindings
   #define MAYBE_BIND(dev,sym,cmd)         \
     mod_keybind(dev,sym,0,CMDT_0 ## cmd); \
@@ -62,7 +61,7 @@ void mod_setup(Uint32 setupfr) {
   #undef MAYBE_BIND
 
   //make the mother object
-  fr[setupfr].objs[0] = (OBJ_t){OBJT_MOTHER,0,0,malloc(sizeof(MOTHER_t))};
+  fr[setupfr].objs[0] = (OBJ_t){ OBJT_MOTHER, 0, sizeof(MOTHER_t), malloc(sizeof(MOTHER_t)) };
   *(MOTHER_t *)fr[setupfr].objs[0].data = (MOTHER_t){0,0};
 
   //make some dummys
