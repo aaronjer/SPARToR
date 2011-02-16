@@ -14,11 +14,6 @@
 #include "mod.h"
 
 
-#define GETOBJ( ptr, t, n )   t ## _t *sw = fr[b].objs[(n)].data;           \
-                              assert( fr[b].objs[(n)].type == OBJT_ ## t );
-#define FOBJ( n )             fr[b].objs[(n)]
-
-
 GLuint textures[TEX_COUNT];
 
 INPUTNAME_t inputnames[] = {{"left" ,CMDT_1LEFT ,CMDT_0LEFT },
@@ -30,10 +25,6 @@ INPUTNAME_t inputnames[] = {{"left" ,CMDT_1LEFT ,CMDT_0LEFT },
 int numinputnames = (sizeof inputnames) / (sizeof *inputnames);
 
 
-static int    setmodel = -1;
-static int    camx = 0;
-static int    camy = 0;
-
 static int    binds_size = 0;
 static struct {
   short hash;
@@ -42,8 +33,11 @@ static struct {
 }            *binds;
 
 
+//FIXME REMOVE! change local player model
+extern int    setmodel;
+//
 //FIXME REMOVE! force amigo to flykick
-extern int flykick;
+extern int    flykick;
 //
 
 
@@ -121,9 +115,11 @@ void mod_setup(Uint32 setupfr) {
   fr[setupfr+1].cmds[0].flags |= CMDF_NEW; //server is a client
 }
 
+
 void mod_setvideo(int w,int h) {
   mod_loadsurfs(0);
 }
+
 
 void mod_quit() {
   mod_loadsurfs(1);
@@ -145,6 +141,7 @@ void mod_keybind(int device,int sym,int press,char cmd) {
   binds[i].hash = hash;
   binds[i].cmd = cmd;
 }
+
 
 char mod_key2cmd(int device,int sym,int press) {
   int i;
@@ -172,6 +169,7 @@ else if( strcmp(q,"flykick")==0 ){ flykick = 1; return 0; }
   return 1;
 }
 
+
 void mod_loadsurfs(int quit) {
   SDL_Surface *surf;
 
@@ -197,6 +195,7 @@ void mod_loadsurfs(int quit) {
   #undef LOADTEX
 }
 
+
 void mod_predraw(SDL_Surface *screen,Uint32 vidfr) {
   //draw background
   int i=0,j;
@@ -221,508 +220,54 @@ void mod_predraw(SDL_Surface *screen,Uint32 vidfr) {
   SJGL_BlitScaled(  textures[TEX_WORLD], &(SDL_Rect){ 80,32,16,16}, &(SDL_Rect){ 6*16, 7*16,0,0}, scale, 0); //end cap
 }
 
-void mod_draw(SDL_Surface *screen,int objid,OBJ_t *o) {
-  SDL_Rect drect;
 
+void mod_draw(SDL_Surface *screen,int objid,OBJ_t *o) {
   switch(o->type) {
-    case OBJT_PLAYER: {
-      PLAYER_t *pl = o->data;
-      int gunshift;
-      if( pl->goingu ) gunshift = 96;
-      if( pl->goingd ) gunshift = 48;
-      if( pl->goingu==pl->goingd ) gunshift = 0;
-      drect = (SDL_Rect){(pl->pos.x-10),(pl->pos.y-15),0,0};
-      int z = drect.y + pl->hull[1].y;
-      int duck = pl->goingd>0 ? 40 : 0;
-      if( pl->facingr ) {
-        if( pl->model==4 ) //girl hair
-          SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){ 80,120,20,15},
-                                                &(SDL_Rect){drect.x-4,drect.y+(pl->goingd?4:0)+pl->gundown/7,0,0}, scale, z);
-        SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){ 0+duck, 0+pl->model*30,20,30}, &drect, scale, z);
-        drect = (SDL_Rect){(pl->pos.x- 5-pl->gunback),(pl->pos.y-10+pl->gundown/5),0,0};
-        if( !pl->stabbing ) //gun
-          SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){ 0+gunshift,150,24,27}, &drect, scale, z);
-      } else {
-        if( pl->model==4 ) //girl hair
-          SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){100,120,20,15},
-                                                &(SDL_Rect){drect.x+4,drect.y+(pl->goingd?4:0)+pl->gundown/7,0,0}, scale, z);
-        SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){20+duck, 0+pl->model*30,20,30}, &drect, scale, z);
-        drect = (SDL_Rect){(pl->pos.x-19+pl->gunback),(pl->pos.y-10+pl->gundown/5),0,0};
-        if( !pl->stabbing ) //gun
-          SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){24+gunshift,150,24,27}, &drect, scale, z);
-      }
-      if( pl->stabbing ) { //up/down stabbing
-        drect = (SDL_Rect){pl->pos.x-2,pl->pos.y-(pl->stabbing<0?30:0),0,0};
-        SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){148+(pl->stabbing<0?5:0),150,5,27}, &drect, scale, z);
-      }
-      break;
-    }
-    case OBJT_BULLET: {
-      BULLET_t *bu = o->data;
-      SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){144,150,4,4},
-                                            &(SDL_Rect){bu->pos.x-2, bu->pos.y-2, 4, 4}, scale,NATIVEH);
-      break;
-    }
-    case OBJT_SLUG: {
-      SLUG_t *sl = o->data;
-      SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){(sl->vel.x>0?20:0)+(sl->dead?40:0),177,20,16},
-                                            &(SDL_Rect){sl->pos.x-10,sl->pos.y-8,0,0}, scale, sl->pos.y);
-      break;
-    }
-    case OBJT_DUMMY: {
-      DUMMY_t *du = o->data;
-      drect = (SDL_Rect){du->pos.x    +du->hull[0].x, du->pos.y    +du->hull[0].y,
-                         du->hull[1].x-du->hull[0].x, du->hull[1].y-du->hull[0].y};
-      Sint16 offs = drect.w==drect.h ? 48 : 0;
-      if( drect.w > drect.h ) while( drect.w>0 && drect.w<400 ) {
-        SJGL_BlitScaled(textures[TEX_WORLD], &(SDL_Rect){0+offs,16,16,16},
-                                             &(SDL_Rect){drect.x,drect.y,drect.w,drect.h}, scale, 0);
-        drect.x += 16;
-        drect.w -= 16;
-        offs = drect.w==16 ? 32 : 16;
-      } else                  while( drect.h>0 && drect.h<400 ) {
-        SJGL_BlitScaled(textures[TEX_WORLD], &(SDL_Rect){48,0+offs,16,16},
-                                             &(SDL_Rect){drect.x,drect.y,drect.w,drect.h}, scale, 0);
-        drect.y += 16;
-        drect.h -= 16;
-        offs = drect.h==16 ? 32 : 16;
-      }
-      break;
-    }
-    case OBJT_AMIGO: obj_amigo_draw( objid, o ); break;
-    case OBJT_AMIGOSWORD: {
-      AMIGOSWORD_t *sw = o->data;
-      SJGL_BlitScaled(textures[TEX_AMIGO], &(SDL_Rect){ 200, 50+50*(hotfr%3), 56, 50 },
-                                           &(SDL_Rect){ sw->pos.x-25, sw->pos.y-28, 0, 0 }, scale, sw->pos.y );
-    }
+    case OBJT_PLAYER:         obj_player_draw(     objid, o );     break;
+    case OBJT_BULLET:         obj_bullet_draw(     objid, o );     break;
+    case OBJT_SLUG:           obj_slug_draw(       objid, o );     break;
+    case OBJT_DUMMY:          obj_dummy_draw(      objid, o );     break;
+    case OBJT_AMIGO:          obj_amigo_draw(      objid, o );     break;
+    case OBJT_AMIGOSWORD:     obj_amigosword_draw( objid, o );     break;
   }
 }
 
-void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
-  #define MKOBJ( ptr, t, f )                            \
-    t ## _t *ptr;                                       \
-    slot0 = findfreeslot(b);                            \
-    fr[b].objs[slot0].type = OBJT_ ## t;                \
-    fr[b].objs[slot0].flags = f;                        \
-    fr[b].objs[slot0].size = sizeof *ptr;               \
-    ptr = fr[b].objs[slot0].data = malloc(sizeof *ptr);
-  int i, j;
-  int slot0;
+
+void mod_adv(int objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
   switch( ob->type ) {
     case OBJT_MOTHER:
-      //the mother object is sort of the root of the object tree... only not... and there's no object tree
-      for(i=0;i<maxclients;i++) {
-        if( fr[b].cmds[i].flags & CMDF_NEW ) {
-          for(j=0;j<maxobjs;j++)
-            if( fr[b].objs[j].type==OBJT_GHOST && ((GHOST_t *)fr[b].objs[j].data)->client==i )
-              SJC_Write( "%d: Client %i already has a ghost at obj#%d!", hotfr, i, j );
-
-          MKOBJ( gh, GHOST, OBJF_POS );
-          int ghostslot = slot0;
-          MKOBJ( pl, PLAYER, OBJF_POS|OBJF_VEL|OBJF_HULL|OBJF_PVEL|OBJF_VIS|OBJF_PLAT|OBJF_CLIP|OBJF_BNDX|OBJF_BNDY );
-
-          SJC_Write( "%d: New client %i created ghost is obj#%d player is obj#%d", hotfr, i, ghostslot, slot0 );
-
-          gh->pos = (V){0.0f,0.0f,0.0f};
-          gh->client = i;
-          gh->avatar = slot0;
-
-          pl->pos  = (V){(i+1)*64,-50.0f,0.0f};
-          pl->vel  = (V){0.0f,0.0f,0.0f};
-          pl->hull[0] = (V){-6.0f,-15.0f,0.0f};
-          pl->hull[1] = (V){ 6.0f, 15.0f,0.0f};
-          pl->pvel = (V){0.0f,0.0f,0.0f};
-          pl->model = i%5;
-          pl->ghost = ghostslot;
-          pl->goingl = 0;
-          pl->goingr = 0;
-          pl->goingu = 0;
-          pl->goingd = 0;
-          pl->jumping = 0;
-          pl->firing = 0;
-          pl->cooldown = 0;
-          pl->projectiles = 0;
-          pl->grounded = 0;
-          pl->facingr = 1;
-          pl->stabbing = 0;
-          pl->hovertime = 0;
-        }
-      }
-      if(hotfr%77==0) {
-        MKOBJ( sl, SLUG, OBJF_POS|OBJF_VEL|OBJF_HULL|OBJF_VIS|OBJF_PLAT|OBJF_CLIP|OBJF_BNDY );
-        sl->pos  = (V){(hotfr%2)*368.0f+8.0f,0.0f,0.0f};
-        sl->vel  = (V){(hotfr%2)?-0.5f:0.5f,0.0f,0.0f};
-        sl->hull[0] = (V){-8.0f,-4.0f,0.0f};
-        sl->hull[1] = (V){ 8.0f, 8.0f,0.0f};
-        sl->model = 0;
-        sl->dead = 0;
-      }
-      if(hotfr==200) {
-        MKOBJ( am, AMIGO, OBJF_POS|OBJF_VEL|OBJF_HULL|OBJF_VIS|OBJF_PLAT|OBJF_CLIP|OBJF_BNDY );
-        am->pos  = (V){250,0,0};
-        am->vel  = (V){0,0,0};
-        am->hull[0] = (V){-8,-18,0};
-        am->hull[1] = (V){ 8, 18,0};
-        am->model = 0;
-        am->state = AMIGO_HELLO;
-        am->statetime = 0;
-      }
+      assert(ob->size==sizeof(MOTHER_t));
+      assert(objid==0);
+      obj_mother_adv( objid, a, b, oa, ob );
       break;
     case OBJT_GHOST:
       assert(ob->size==sizeof(GHOST_t));
+      obj_ghost_adv( objid, a, b, oa, ob );
       break;
     case OBJT_DUMMY:
       assert(ob->size==sizeof(DUMMY_t));
-      DUMMY_t *du = ob->data;
-
-      // friction
-      if(      du->vel.x> 0.1f ) du->vel.x -= 0.1f;
-      else if( du->vel.x>-0.1f ) du->vel.x  = 0.0f;
-      else                       du->vel.x += 0.1f;
-
-      if( objid==(hotfr+100)%2000 ) //tee-hee
-        du->vel.x += (float)(b%4)-1.5;
-
-      du->vel.y += 0.7f;        //gravity
+      obj_dummy_adv( objid, a, b, oa, ob );
       break;
     case OBJT_PLAYER:
       assert(ob->size==sizeof(PLAYER_t));
-      PLAYER_t *oldme = oa->data;
-      PLAYER_t *newme = ob->data;
-      GHOST_t *gh = fr[b].objs[newme->ghost].data;
-      switch( fr[b].cmds[gh->client].cmd ) {
-        case CMDT_1LEFT:  newme->goingl  = 1; newme->facingr = 0;  break;
-        case CMDT_0LEFT:  newme->goingl  = 0;                      break;
-        case CMDT_1RIGHT: newme->goingr  = 1; newme->facingr = 1;  break;
-        case CMDT_0RIGHT: newme->goingr  = 0;                      break;
-        case CMDT_1UP:    newme->goingu  = 1;                      break;
-        case CMDT_0UP:    newme->goingu  = 0;                      break;
-        case CMDT_1DOWN:  newme->goingd  = 1;                      break;
-        case CMDT_0DOWN:  newme->goingd  = 0;                      break;
-        case CMDT_1JUMP:  newme->jumping = 1;                      break;
-        case CMDT_0JUMP:  newme->jumping = 0;                      break;
-        case CMDT_1FIRE:  newme->firing  = 1;                      break;
-        case CMDT_0FIRE:  newme->firing  = 0; newme->cooldown = 0; break;
-      }
-
-      if( !oldme ) //FIXME why's this null?
-        break;
-
-      if( ((GHOST_t *)fr[b].objs[newme->ghost].data)->client==me ) { //local client match
-        camx = newme->pos.x - NATIVEW/2;
-        camy = newme->pos.y - NATIVEH/2;
-        if( setmodel>-1 ) { //FIXME -- just for fun, will not sync!
-          newme->model = setmodel;
-          setmodel = -1;
-        }
-      }
-
-      if( newme->firing || (newme->stabbing<0 && !newme->goingu)
-                        || (newme->stabbing>0 && !newme->goingd) ) //firing or stopping pressing up/down
-        newme->stabbing = 0;
-      else if( !newme->stabbing && newme->vel.y!=0.0 ) {       //freefalling, not stabbing
-        if( newme->goingu && !oldme->goingu )                  //just pressed up
-          newme->stabbing = -4;
-        if( newme->goingd && !oldme->goingd )                  //just pressed down
-          newme->stabbing = 4;
-      }
-      if( newme->stabbing==-1 || newme->stabbing==1 )          //last frame of stabbing is over
-        newme->stabbing = 0;
-      if( newme->stabbing && newme->vel.y==0.0 ) {             //tink tink tink!
-        if( newme->stabbing>0 )
-          newme->vel.y -= 0.8f*oldme->vel.y;
-        newme->stabbing += (newme->stabbing>0 ? -1 : 1);
-      }
-      if(        newme->stabbing && newme->goingu ) {          //expand hull for stabbing
-        newme->hull[0] = (V){-6.0f,-29.0f,0.0f};
-        newme->hull[1] = (V){ 6.0f, 15.0f,0.0f};
-      } else if( newme->stabbing && newme->goingd ) {
-        newme->hull[0] = (V){-6.0f,-15.0f,0.0f};
-        newme->hull[1] = (V){ 6.0f, 25.0f,0.0f};
-      } else {
-        newme->hull[0] = (V){-6.0f,-15.0f,0.0f};
-        newme->hull[1] = (V){ 6.0f, 15.0f,0.0f};
-      }
-
-      newme->gunback = 0; //reset gun position
-      if(newme->goingr||newme->goingl)
-        newme->gundown = (newme->gundown+1)%10;
-      else
-        newme->gundown = 0;
-
-      // friction
-      if(      newme->vel.x> 0.2f ) newme->vel.x -= 0.2f;
-      else if( newme->vel.x>-0.2f ) newme->vel.x  = 0.0f;
-      else                          newme->vel.x += 0.2f;
-      if(      newme->pvel.x> 0.5f ) newme->pvel.x -= 0.5f;
-      else if( newme->pvel.x>-0.5f ) newme->pvel.x  = 0.0f;
-      else                           newme->pvel.x += 0.5f;
-
-      // -- WALK --
-      if( newme->goingl ) {
-        if(      newme->pvel.x>-2.0f ) newme->pvel.x += -1.0f;
-        else if( newme->pvel.x>-3.0f ) newme->pvel.x  = -3.0f;
-      }
-      if( newme->goingr ) {
-        if(      newme->pvel.x< 2.0f ) newme->pvel.x +=  1.0f;
-        else if( newme->pvel.x< 3.0f ) newme->pvel.x  =  3.0f;
-      }
-
-      // -- JUMP --
-      if( newme->pvel.y <= -2.0f ) {     //jumping in progress
-        newme->pvel.y   +=  2.0f;        //jumpvel fades into real velocity
-        newme->vel.y    += -2.0f;
-      }
-      else if( newme->pvel.y < 0.0f ) {  //jumping ending
-        newme->vel.y    += newme->pvel.y;
-        newme->pvel.y   = 0.0f;
-        newme->jumping  = 0;             //must press jump again now
-      }
-      if( !newme->jumping )              //low-jump, cancel jump velocity early
-        newme->pvel.y   = 0.0f;
-      if( (newme->vel.y==0.0f || oldme->vel.y==0.0f) && newme->jumping ) //FIXME 0 velocity means grounded? not really
-        newme->pvel.y  = -9.1f;         //initiate jump!
-
-      // -- FIRE --
-      if( newme->cooldown>0 )
-        newme->cooldown--;
-      if( newme->firing && newme->cooldown==0 && newme->projectiles<5 ) { // create bullet
-        MKOBJ( bu, BULLET, OBJF_POS|OBJF_VEL|OBJF_VIS );
-        if( newme->facingr ) {
-          bu->pos = (V){newme->pos.x+19.0f,newme->pos.y-3.0f,0.0f};
-          bu->vel = (V){ 8.0f,0.0f,0.0f};
-        } else {
-          bu->pos = (V){newme->pos.x-19.0f,newme->pos.y-3.0f,0.0f};
-          bu->vel = (V){-8.0f,0.0f,0.0f};
-        }
-        if( newme->goingu ) { // aiming
-          bu->vel.y += -8.0f;
-          bu->pos.x += -2.0f;
-          bu->pos.y += -7.0f;
-        }
-        if( newme->goingd ) {
-          bu->vel.y +=  8.0f;
-          bu->pos.y += 16.0f;
-        }
-        bu->model = 1;
-        bu->owner = objid;
-        bu->ttl = 50;
-        newme->cooldown = 5;
-        newme->projectiles++;
-        newme->gunback = 2;
-      }
-
-      for(i=0;i<objid;i++)  //find other players to interact with -- who've already MOVED
-        if(fr[b].objs[i].type==OBJT_PLAYER) {
-          PLAYER_t *oldyou = fr[a].objs[i].data;
-          PLAYER_t *newyou = fr[b].objs[i].data;
-          if( !oldyou                                  ||
-              fabsf(newme->pos.x - newyou->pos.x)>5.0f || //we're not on top of each other
-              fabsf(newme->pos.y - newyou->pos.y)>2.0f ||
-              newme->goingr ||  newme->goingl         || //or we're moving
-              newyou->goingr || newyou->goingl            )
-            continue;
-          if(newme->pos.x < newyou->pos.x) {
-            newme->pvel.x  -= 0.2f;
-            newyou->pvel.x += 0.2f;
-          } else {
-            newme->pvel.x  += 0.2f;
-            newyou->pvel.x -= 0.2f;
-          }
-        }
-
-      if( newme->hovertime ) { //gravity?
-        newme->hovertime--;
-        newme->vel.y += 0.3f;
-      } else
-        newme->vel.y += newme->hovertime ? 0.3f : 0.7f;
-
+      obj_player_adv( objid, a, b, oa, ob );
       break;
     case OBJT_BULLET:
       assert(ob->size==sizeof(BULLET_t));
-      BULLET_t *bu = ob->data;
-      if( bu->ttl ) bu->ttl--;
-      for(i=0;i<maxobjs;i++)  //find players to hit
-        if(fr[b].objs[i].type==OBJT_PLAYER) {
-          PLAYER_t *pl = fr[b].objs[i].data;
-          if( i==bu->owner                       || //player owns bullet
-              fabsf(bu->pos.x - pl->pos.x)>10.0f || //not touching
-              fabsf(bu->pos.y - pl->pos.y)>15.0f    )
-            continue;
-          pl->vel.y += -5.0f;
-          pl->vel.x += (bu->vel.x>0.0f?5.0f:-5.0f);
-          bu->ttl = 0; //delete bullet
-        }
-      if(bu->pos.x<=-10.0f || bu->pos.x>=NATIVEW+10.0f || bu->ttl==0) {
-        if( fr[b].objs[bu->owner].type==OBJT_PLAYER )
-          ((PLAYER_t *)fr[b].objs[bu->owner].data)->projectiles--;
-        ob->flags |= OBJF_DEL;
-      }
+      obj_bullet_adv( objid, a, b, oa, ob );
       break;
     case OBJT_SLUG:
       assert(ob->size==sizeof(SLUG_t));
-      SLUG_t *sl = ob->data;
-      int kill = 0;
-      sl->vel.y += 0.6f;      //gravity
-
-      if( sl->dead )          //decay
-        sl->dead++;
-      else for(i=0;i<maxobjs;i++) { //find players, bullets to hit
-        if(fr[b].objs[i].type==OBJT_PLAYER) {
-          PLAYER_t *pl = fr[b].objs[i].data;
-          int up_stabbed = pl->stabbing<0
-                        && fabsf(sl->pos.x - pl->pos.x                )<=12.0f
-                        && fabsf(sl->pos.y - pl->pos.y - pl->hull[0].y)<=8.0f ;
-          int dn_stabbed = pl->stabbing>0
-                        && fabsf(sl->pos.x - pl->pos.x                )<=12.0f
-                        && fabsf(sl->pos.y - pl->pos.y - pl->hull[1].y)<=4.0f ;
-          if( up_stabbed ) {
-            pl->vel.y = sl->vel.y;
-            sl->vel.y = -5.0f;
-            kill = 1;
-          } else if( dn_stabbed ) {
-            pl->vel.y = -4.5f;
-            pl->hovertime = 7;
-            sl->vel.y = 0.0f;
-            kill = 1;
-          }
-        } else if(fr[b].objs[i].type==OBJT_BULLET) {
-          BULLET_t *bu = fr[b].objs[i].data;
-          if( fabsf(sl->pos.x - bu->pos.x)>8.0f || fabsf(sl->pos.y - bu->pos.y)>8.0f )
-            continue; // no hit
-          bu->ttl = 0;
-          sl->vel.y = -3.0f;
-          kill = 1;
-        }
-      }
-
-      if( kill ) {
-        sl->vel.x /= 100; //preserve direction while dead
-        sl->dead = 1;
-        ob->flags &= ~OBJF_PLAT;
-      }
-
-      if( sl->dead==5 )
-        ob->flags &= ~(OBJF_CLIP|OBJF_BNDY);
-
-      if( sl->pos.x<-10.0f || sl->pos.x>NATIVEW+10.0f || sl->pos.y>NATIVEH+10.0f || sl->dead>100 )
-        ob->flags |= OBJF_DEL;
-
+      obj_slug_adv( objid, a, b, oa, ob );
       break;
     case OBJT_AMIGO:
       assert(ob->size==sizeof(AMIGO_t));
-      AMIGO_t *am = ob->data;
-      float amigo_gravity = 0.6f;
-//FIXME REMOVE! Wrap amigo since he can mostly only go left
-if( am->pos.x <        -20.0f ) am->pos.x += NATIVEW+39.0f;
-if( am->pos.x > NATIVEW+20.0f ) am->pos.x -= NATIVEW+39.0f;
-//
-      spatt(hotfr);
-      switch( am->state ) {
-        case AMIGO_HELLO:
-          if( am->statetime>120 ) {
-            am->state = AMIGO_COOLDOWN;
-            am->statetime = 0;
-          }
-          break;
-        case AMIGO_COOLDOWN:
-          if( am->vel.y==0 ) {
-            am->vel.x = 0.0f;
-            if( am->statetime>30 ) { // decide which attack to do!
-              am->statetime = 0;
-                switch( patt()%8 ) {
-//FIXME REMOVE! force amigo to flykick
-} unsigned pattval = patt()%8; if( flykick ) { flykick = 0; pattval = 7; } switch( pattval ) {
-//
-                case 0: am->state = AMIGO_JUMP;    am->vel.y -= 10.0f;                                        break;
-                case 1: am->state = AMIGO_JUMP;    am->vel.y -= 10.0f; am->vel.x =  4.0f;                     break;
-                case 2: am->state = AMIGO_JUMP;    am->vel.y -= 10.0f; am->vel.x = -4.0f;                     break;
-                case 3: am->state = AMIGO_JUMP;    am->vel.y -=  8.0f; am->vel.x =  4.0f;                     break;
-                case 4: am->state = AMIGO_JUMP;    am->vel.y -=  8.0f; am->vel.x = -4.0f;                     break;
-                case 5: am->state = AMIGO_SLASH;                       am->vel.x = -0.1f;                     break;
-                case 6: am->state = AMIGO_DASH;                        am->vel.x = -7.6f;                     break;
-                case 7: am->state = AMIGO_FLYKICK; am->vel.y  = -3.0f; am->vel.x = -7.5f; am->hatcounter = 0; break;
-              }
-            }
-          }
-          break;
-        case AMIGO_JUMP:
-          if( am->statetime>20 ) {
-            am->state = AMIGO_COOLDOWN;
-            am->statetime = 0;
-          }
-          break;
-        case AMIGO_SLASH:
-          am->vel.x += 0.05f;
-          if( am->vel.x > 0.0f )
-            am->vel.x = 0.0f;
-          if( am->statetime>30 ) {
-            am->state = AMIGO_COOLDOWN;
-            am->statetime = 0;
-          }
-          break;
-        case AMIGO_FLYKICK: {
-          amigo_gravity = 0.0f;
-          am->vel.y = 0.0f;
-          am->hatcounter += fabsf(am->vel.x)*10;
-          am->vel.x += am->vel.x < -2.0f ? 0.1f : 0.05;
-          if( am->vel.x > 0.0f )
-            am->vel.x = 0.0f;
-          if( am->statetime==1 ) {
-            MKOBJ( sw, AMIGOSWORD, OBJF_POS|OBJF_VEL|OBJF_VIS );
-            sw->pos = am->pos;
-            sw->vel = (V){1.5f,-2.5f,0.0f};
-            sw->hull[0] = (V){0};
-            sw->hull[1] = (V){0};
-            sw->model = 0;
-            sw->owner = objid;
-            sw->spincounter = 0;
-            am->sword = slot0;
-          }
-          GETOBJ( sw, AMIGOSWORD, am->sword );
-          am->sword_dist = (V){ fabsf(sw->pos.x - am->pos.x), fabsf(sw->pos.y - am->pos.y), 0 };
-          if( am->statetime>90 ) {
-            if( am->sword_dist.x < 41.0f && am->sword_dist.y < 11.0f ) {
-              am->state = AMIGO_COOLDOWN;
-              am->statetime = 0;
-              fr[b].objs[am->sword].flags |= OBJF_DEL;
-            }
-          }
-          break;
-        }
-        case AMIGO_DASH:
-          am->vel.x += 0.01f;
-          if( am->vel.y==0.0f && fabsf(am->vel.x)>2.0f && !(patt()%60) )
-            am->pos.y -= (patt()%2+2)*2.3f; // turbulence on the ground
-          if( am->statetime>50 ) {
-            am->state = AMIGO_COOLDOWN;
-            am->statetime = 0;
-          }
-          break;
-      }
-      am->statetime++;
-      am->vel.y += amigo_gravity; //gravity
+      obj_amigo_adv( objid, a, b, oa, ob );
       break;
     case OBJT_AMIGOSWORD:
       assert(ob->size==sizeof(AMIGOSWORD_t));
-      AMIGOSWORD_t *sw = ob->data;
-      sw->spincounter++;
-      if( sw->spincounter > 45 ) {
-        AMIGO_t *am = fr[b].objs[sw->owner].data;
-        sw->vel.x = am->pos.x+40.0f - sw->pos.x;
-        sw->vel.y = am->pos.y       - sw->pos.y;
-        float normalize = sqrt(sw->vel.x * sw->vel.x + sw->vel.y * sw->vel.y);
-        if( normalize > 4.0f ) {
-          normalize = 4.0f / normalize;
-          sw->vel.x *= normalize;
-          sw->vel.y *= normalize;
-        }
-      }
+      obj_amigosword_adv( objid, a, b, oa, ob );
+      break;
   } //end switch ob->type
-  #undef MKOBJ
 }
-
-
-#undef GETOBJ
-#undef FOBJ
 

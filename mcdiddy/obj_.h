@@ -21,6 +21,90 @@ enum { OBJT_MOTHER = 1,
        OBJT_AMIGOSWORD };
 
 
+// MOTHER //
+typedef struct{
+  int camx;
+  int camy;
+} MOTHER_t;
+
+void obj_mother_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob );
+
+
+// GHOST //
+typedef struct{
+  V pos;
+  int client;
+  int avatar;
+} GHOST_t;
+
+void obj_ghost_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob );
+
+
+// DUMMY //
+typedef struct{
+  V pos;
+  V vel;
+  V hull[2];
+  int model;
+} DUMMY_t;
+
+void obj_dummy_draw( int objid, OBJ_t *o );
+void obj_dummy_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob );
+
+
+// PLAYER //
+typedef struct{
+  V pos;
+  V vel;
+  V hull[2];
+  V pvel;
+  int model;
+  int ghost;
+  char goingl;
+  char goingr;
+  char goingu;
+  char goingd;
+  char jumping;
+  char firing;
+  char cooldown;
+  char projectiles;
+  char gunback,gundown;
+  char grounded;
+  char facingr;
+  char stabbing;
+  char hovertime;
+} PLAYER_t;
+
+void obj_player_draw( int objid, OBJ_t *o );
+void obj_player_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob );
+
+
+// BULLET //
+typedef struct{
+  V pos;
+  V vel;
+  int model;
+  int owner;
+  Uint8 ttl;
+} BULLET_t;
+
+void obj_bullet_draw( int objid, OBJ_t *o );
+void obj_bullet_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob );
+
+
+// SLUG //
+typedef struct{
+  V pos;
+  V vel;
+  V hull[2];
+  int model;
+  int dead;
+} SLUG_t;
+
+void obj_slug_draw( int objid, OBJ_t *o );
+void obj_slug_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob );
+
+
 // AMIGO //
 enum { AMIGO_HELLO,
        AMIGO_COOLDOWN,
@@ -42,7 +126,21 @@ typedef struct{
 } AMIGO_t;
 
 void obj_amigo_draw( int objid, OBJ_t *o );
+void obj_amigo_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob );
 
+
+// AMIGOSWORD //
+typedef struct{
+  V pos;
+  V vel;
+  V hull[2];
+  int model;
+  int owner;
+  int spincounter;
+} AMIGOSWORD_t;
+
+void obj_amigosword_draw( int objid, OBJ_t *o );
+void obj_amigosword_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob );
 
 #endif
 

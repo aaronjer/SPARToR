@@ -1,8 +1,21 @@
-/* PRIVATE STUFF the ENGINE shouldn't KNOW ABOUT! */
+//
+// PRIVATE STUFF the ENGINE shouldn't KNOW ABOUT!
+//
 
 
 #include "SDL.h"
 #include "main.h"
+
+
+#define MKOBJ( ptr, t, f )    t ## _t *ptr;                                       \
+                              slot0 = findfreeslot(b);                            \
+                              fr[b].objs[slot0].type = OBJT_ ## t;                \
+                              fr[b].objs[slot0].flags = f;                        \
+                              fr[b].objs[slot0].size = sizeof *ptr;               \
+                              ptr = fr[b].objs[slot0].data = malloc(sizeof *ptr)  ;
+#define GETOBJ( ptr, t, n )   t ## _t *sw = fr[b].objs[(n)].data;           \
+                              assert( fr[b].objs[(n)].type == OBJT_ ## t )  ;
+#define FOBJ( n )             fr[b].objs[(n)]
 
 
 //cmd types
@@ -18,70 +31,4 @@ enum { CMDT_1LEFT = 1,
        CMDT_0JUMP,
        CMDT_1FIRE,
        CMDT_0FIRE };
-
-
-typedef struct{
-  int camx;
-  int camy;
-} MOTHER_t;
-
-typedef struct{
-  V pos;
-  int client;
-  int avatar;
-} GHOST_t;
-
-typedef struct{
-  V pos;
-  V vel;
-  V hull[2];
-  V pvel;
-  int model;
-  int ghost;
-  char goingl;
-  char goingr;
-  char goingu;
-  char goingd;
-  char jumping;
-  char firing;
-  char cooldown;
-  char projectiles;
-  char gunback,gundown;
-  char grounded;
-  char facingr;
-  char stabbing;
-  char hovertime;
-} PLAYER_t;
-
-typedef struct{
-  V pos;
-  V vel;
-  int model;
-  int owner;
-  Uint8 ttl;
-} BULLET_t;
-
-typedef struct{
-  V pos;
-  V vel;
-  V hull[2];
-  int model;
-  int dead;
-} SLUG_t;
-
-typedef struct{
-  V pos;
-  V vel;
-  V hull[2];
-  int model;
-} DUMMY_t;
-
-typedef struct{
-  V pos;
-  V vel;
-  V hull[2];
-  int model;
-  int owner;
-  int spincounter;
-} AMIGOSWORD_t;
 

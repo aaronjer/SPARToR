@@ -65,8 +65,105 @@ void obj_amigo_draw( int objid, OBJ_t *o )
       break;
   }
   SJGL_BlitScaled(textures[TEX_AMIGO], &(SDL_Rect){     x,     y,     w,     h },
-                                        &(SDL_Rect){ am->pos.x-34,        am->pos.y-32,        0, 0 }, scale, z);
+                                       &(SDL_Rect){ am->pos.x-34,        am->pos.y-32,        0, 0 }, scale, z);
   SJGL_BlitScaled(textures[TEX_AMIGO], &(SDL_Rect){ tip.x, tip.y, tip.w, tip.h },
-                                        &(SDL_Rect){ am->pos.x-34+tip.dx, am->pos.y-32+tip.dy, 0, 0 }, scale, z);
+                                       &(SDL_Rect){ am->pos.x-34+tip.dx, am->pos.y-32+tip.dy, 0, 0 }, scale, z);
+}
+
+void obj_amigo_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob )
+{
+  int slot0;
+  AMIGO_t *am = ob->data;
+  float amigo_gravity = 0.6f;
+//FIXME REMOVE! Wrap amigo since he can mostly only go left
+if( am->pos.x <        -20.0f ) am->pos.x += NATIVEW+39.0f;
+if( am->pos.x > NATIVEW+20.0f ) am->pos.x -= NATIVEW+39.0f;
+//
+  spatt(hotfr);
+  switch( am->state ) {
+    case AMIGO_HELLO:
+      if( am->statetime>120 ) {
+        am->state = AMIGO_COOLDOWN;
+        am->statetime = 0;
+      }
+      break;
+    case AMIGO_COOLDOWN:
+      if( am->vel.y!=0 )
+        break;
+      am->vel.x = 0.0f;
+      if( am->statetime>30 ) { // decide which attack to do!
+        am->statetime = 0;
+        switch( patt()%8 ) {
+//FIXME REMOVE! force amigo to flykick
+} unsigned pattval = patt()%8; if( flykick ) { flykick = 0; pattval = 7; } switch( pattval ) {
+//
+          case 0: am->state = AMIGO_JUMP;    am->vel.y -= 10.0f;                                        break;
+          case 1: am->state = AMIGO_JUMP;    am->vel.y -= 10.0f; am->vel.x =  4.0f;                     break;
+          case 2: am->state = AMIGO_JUMP;    am->vel.y -= 10.0f; am->vel.x = -4.0f;                     break;
+          case 3: am->state = AMIGO_JUMP;    am->vel.y -=  8.0f; am->vel.x =  4.0f;                     break;
+          case 4: am->state = AMIGO_JUMP;    am->vel.y -=  8.0f; am->vel.x = -4.0f;                     break;
+          case 5: am->state = AMIGO_SLASH;                       am->vel.x = -0.1f;                     break;
+          case 6: am->state = AMIGO_DASH;                        am->vel.x = -7.6f;                     break;
+          case 7: am->state = AMIGO_FLYKICK; am->vel.y  = -3.0f; am->vel.x = -7.5f; am->hatcounter = 0; break;
+        }
+      }
+      break;
+    case AMIGO_JUMP:
+      if( am->statetime>20 ) {
+        am->state = AMIGO_COOLDOWN;
+        am->statetime = 0;
+      }
+      break;
+    case AMIGO_SLASH:
+      am->vel.x += 0.05f;
+      if( am->vel.x > 0.0f )
+        am->vel.x = 0.0f;
+      if( am->statetime>30 ) {
+        am->state = AMIGO_COOLDOWN;
+        am->statetime = 0;
+      }
+      break;
+    case AMIGO_FLYKICK: {
+      amigo_gravity = 0.0f;
+      am->vel.y = 0.0f;
+      am->hatcounter += fabsf(am->vel.x)*10;
+      am->vel.x += am->vel.x < -2.0f ? 0.1f : 0.05;
+      if( am->vel.x > 0.0f )
+        am->vel.x = 0.0f;
+      if( am->statetime==1 ) {
+        MKOBJ( sw, AMIGOSWORD, OBJF_POS|OBJF_VEL|OBJF_VIS );
+        sw->pos = am->pos;
+        sw->vel = (V){1.5f,-2.5f,0.0f};
+        sw->hull[0] = (V){0};
+        sw->hull[1] = (V){0};
+        sw->model = 0;
+        sw->owner = objid;
+        sw->spincounter = 0;
+        am->sword = slot0;
+      }
+      GETOBJ( sw, AMIGOSWORD, am->sword );
+      am->sword_dist = (V){ fabsf(sw->pos.x - am->pos.x), fabsf(sw->pos.y - am->pos.y), 0 };
+      if( am->statetime>90 ) {
+        if( am->sword_dist.x < 41.0f && am->sword_dist.y < 11.0f ) {
+          am->state = AMIGO_COOLDOWN;
+          am->statetime = 0;
+          fr[b].objs[am->sword].flags |= OBJF_DEL;
+        }
+      }
+      break;
+    }
+    case AMIGO_DASH:
+      am->vel.x += 0.01f;
+      if( am->vel.y==0.0f && fabsf(am->vel.x)>2.0f && !(patt()%60) )
+        am->pos.y -= (patt()%2+2)*2.3f; // turbulence on the ground
+      if( am->statetime>50 ) {
+        am->state = AMIGO_COOLDOWN;
+        am->statetime = 0;
+      }
+      break;
+  }
+
+  am->statetime++;
+  am->vel.y += amigo_gravity; //gravity
 }
 

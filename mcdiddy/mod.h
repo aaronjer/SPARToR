@@ -48,7 +48,7 @@ int mod_command(char *q);
 void mod_loadsurfs(int quit);
 void mod_predraw(SDL_Surface *screen,Uint32 vidfr);
 void mod_draw(SDL_Surface *screen,int objid,OBJ_t *o);
-void mod_adv(Uint32 objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob);
+void mod_adv(int objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob);
 
 
 #endif
