@@ -13,6 +13,7 @@
 
 #include "SDL.h"
 #include "SDL_net.h"
+#include "mod.h"
 #include "main.h"
 #include "console.h"
 #include "command.h"

@@ -12,13 +12,13 @@
 
 #include "SDL.h"
 #include "SDL_net.h"
+#include "mod.h"
 #include "input.h"
 #include "main.h"
 #include "console.h"
 #include "net.h"
 #include "video.h"
 #include "command.h"
-#include "mod.h"
 
 static int  kwik = 0;
 static char kwik_presscmd;

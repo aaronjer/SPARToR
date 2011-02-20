@@ -11,7 +11,9 @@
 
 
 //obj types
-enum { OBJT_MOTHER = 1,
+enum { OBJT_EMPTY = 0,
+       OBJT_CONTEXT, //from engine
+       OBJT_MOTHER,
        OBJT_GHOST,
        OBJT_DUMMY,
        OBJT_PLAYER,
@@ -23,8 +25,7 @@ enum { OBJT_MOTHER = 1,
 
 // MOTHER //
 typedef struct{
-  int camx;
-  int camy;
+  int mystery_value;
 } MOTHER_t;
 
 void obj_mother_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob );
@@ -33,10 +34,14 @@ void obj_mother_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob );
 // GHOST //
 typedef struct{
   V pos;
+  V vel;
+  V hull[2];
+  int model;
   int client;
   int avatar;
 } GHOST_t;
 
+void obj_ghost_draw( int objid, OBJ_t *o );
 void obj_ghost_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob );
 
 

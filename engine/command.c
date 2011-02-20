@@ -12,6 +12,7 @@
 
 #include "SDL.h"
 #include "SDL_net.h"
+#include "mod.h"
 #include "main.h"
 #include "console.h"
 #include "command.h"
@@ -20,7 +21,6 @@
 #include "client.h"
 #include "video.h"
 #include "input.h"
-#include "mod.h"
 
 
 void command(const char *s){

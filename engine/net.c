@@ -13,6 +13,7 @@
 
 #include "SDL.h"
 #include "SDL_net.h"
+#include "mod.h"
 #include "main.h"
 #include "console.h"
 #include "command.h"
@@ -85,6 +86,7 @@ int unpackframe(Uint32 packfr,Uint8 *data,size_t len) {
         pfr->objs[i].data  = malloc(pfr->objs[i].size); //FIXME: might already be allocated with pre-net data
         memcpy(pfr->objs[i].data, data+n, pfr->objs[i].size);
         n += pfr->objs[i].size;
+        mod_recvobj( pfr->objs + i );
       }
     }
   }

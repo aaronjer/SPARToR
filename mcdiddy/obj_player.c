@@ -79,9 +79,12 @@ void obj_player_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob )
     return;
   }
 
+  gh->vel.x = newme->pos.x - gh->pos.x; //put ghost in the right spot
+  gh->vel.y = newme->pos.y - gh->pos.y;
+
   if( ((GHOST_t *)fr[b].objs[newme->ghost].data)->client==me ) { //local client match
-    //camx = newme->pos.x - NATIVEW/2;
-    //camy = newme->pos.y - NATIVEH/2;
+    v_camx = gh->pos.x;
+    v_camy = gh->pos.y;
     if( setmodel>-1 ) { //FIXME -- just for fun, will not sync!
       newme->model = setmodel;
       setmodel = -1;
@@ -158,7 +161,7 @@ void obj_player_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob )
   if( newme->cooldown>0 )
     newme->cooldown--;
   if( newme->firing && newme->cooldown==0 && newme->projectiles<5 ) { // create bullet
-    MKOBJ( bu, BULLET, OBJF_POS|OBJF_VEL|OBJF_VIS );
+    MKOBJ( bu, BULLET, ob->context, OBJF_POS|OBJF_VEL|OBJF_VIS );
     if( newme->facingr ) {
       bu->pos = (V){newme->pos.x+19.0f,newme->pos.y-3.0f,0.0f};
       bu->vel = (V){ 8.0f,0.0f,0.0f};

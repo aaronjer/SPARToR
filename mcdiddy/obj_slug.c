@@ -64,7 +64,7 @@ void obj_slug_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob )
   }
 
   if( sl->dead==5 )
-    ob->flags &= ~(OBJF_CLIP|OBJF_BNDY);
+    ob->flags &= ~(OBJF_CLIP|OBJF_BNDB);
 
   if( sl->pos.x<-10.0f || sl->pos.x>NATIVEW+10.0f || sl->pos.y>NATIVEH+10.0f || sl->dead>100 )
     ob->flags |= OBJF_DEL;

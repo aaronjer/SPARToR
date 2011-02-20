@@ -46,10 +46,14 @@ int SJGL_BlitScaled(GLuint tex, SDL_Rect *s, SDL_Rect *d, int scale, int z) {
 
   if( z<0 ) z = (d->y+s->h)*-z;
 
+  /*
   d->x *= scale;
   d->y *= scale;
   d->w = s->w*scale;
   d->h = s->h*scale;
+  */
+  d->w = s->w;
+  d->h = s->h;
 
   glBegin(GL_QUADS);
   glTexCoord3i(s->x     ,s->y     ,z); glVertex3i(d->x     ,d->y     ,z);

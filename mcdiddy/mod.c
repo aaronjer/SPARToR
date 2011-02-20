@@ -32,6 +32,9 @@ static struct {
   char  _pad;
 }            *binds;
 
+static CB *hack_map; //FIXME remove hack
+static CB *hack_dmap;
+
 
 //FIXME REMOVE! change local player model
 extern int    setmodel;
@@ -41,7 +44,8 @@ extern int    flykick;
 //
 
 
-void mod_setup(Uint32 setupfr) {
+void mod_setup(Uint32 setupfr)
+{
   //default key bindings
   #define MAYBE_BIND(dev,sym,cmd)         \
     mod_keybind(dev,sym,0,CMDT_0 ## cmd); \
@@ -61,14 +65,33 @@ void mod_setup(Uint32 setupfr) {
   #undef MAYBE_BIND
 
   //make the mother object
-  fr[setupfr].objs[0] = (OBJ_t){ OBJT_MOTHER, 0, sizeof(MOTHER_t), malloc(sizeof(MOTHER_t)) };
-  *(MOTHER_t *)fr[setupfr].objs[0].data = (MOTHER_t){0,0};
+  fr[setupfr].objs[0] = (OBJ_t){ OBJT_MOTHER, 0, 0, sizeof(MOTHER_t), malloc(sizeof(MOTHER_t)) };
+  *(MOTHER_t *)fr[setupfr].objs[0].data = (MOTHER_t){0};
+
+  //make default context object (map)
+  fr[setupfr].objs[1] = (OBJ_t){ OBJT_CONTEXT, 0, 0, sizeof(CONTEXT_t), malloc(sizeof(CONTEXT_t)) };
+  CONTEXT_t *co = fr[setupfr].objs[1].data;
+  co->blocksize = 16;
+  co->x = 100;
+  co->y =  15;
+  co->z =   1;
+  int volume = co->x * co->y * co->z;
+  co->map  = hack_map  = malloc( (sizeof *co->map ) * volume ); //FIXME remove hack
+  co->dmap = hack_dmap = malloc( (sizeof *co->dmap) * volume );
+  memset( co->map,  0, (sizeof *co->map ) * volume );
+  memset( co->dmap, 0, (sizeof *co->dmap) * volume );
+  int i;
+  for( i=0; i<volume; i++ ) {
+    co->map[ i].data[0] = i%13;
+    co->dmap[i].flags   = CBF_NULL;
+  }
 
   //make some dummys
   #define MAYBE_A_DUMMY(i,x,y,w,h) {                                                                             \
     DUMMY_t *du;                                                                                                 \
     fr[setupfr].objs[i+20].type = OBJT_DUMMY;                                                                    \
-    fr[setupfr].objs[i+20].flags = OBJF_POS|OBJF_VEL|OBJF_HULL|OBJF_VIS|OBJF_PLAT|OBJF_CLIP|OBJF_BNDX|OBJF_BNDY; \
+    fr[setupfr].objs[i+20].flags = OBJF_POS|OBJF_VEL|OBJF_HULL|OBJF_VIS|OBJF_PLAT|OBJF_CLIP|OBJF_BNDX|OBJF_BNDB; \
+    fr[setupfr].objs[i+20].context = 1;                                                                          \
     fr[setupfr].objs[i+20].size = sizeof *du;                                                                    \
     du = fr[setupfr].objs[i+20].data = malloc(sizeof *du);                                                       \
     du->pos = (V){x*8,y*8,0.0f};                                                                                 \
@@ -115,17 +138,34 @@ void mod_setup(Uint32 setupfr) {
 }
 
 
-void mod_setvideo(int w,int h) {
+void mod_recvobj(OBJ_t *o)
+{
+  CONTEXT_t *co;
+
+  switch( o->type ) {
+    case OBJT_CONTEXT:
+      co = o->data;
+      co->map  = hack_map; // FIXME: horrible hack FOR NOW!
+      co->dmap = hack_dmap;//        when receiving map, use data we already have
+      SJC_Write("mod_recvobj(): reusing map data before network connect (hack)");
+      break;
+  }
+}
+
+void mod_setvideo(int w,int h)
+{
   mod_loadsurfs(0);
 }
 
 
-void mod_quit() {
+void mod_quit()
+{
   mod_loadsurfs(1);
 }
 
 
-void mod_keybind(int device,int sym,int press,char cmd) {
+void mod_keybind(int device,int sym,int press,char cmd)
+{
   int i;
   short hash = press<<15 | device<<8 | sym;
 
@@ -142,7 +182,8 @@ void mod_keybind(int device,int sym,int press,char cmd) {
 }
 
 
-char mod_key2cmd(int device,int sym,int press) {
+char mod_key2cmd(int device,int sym,int press)
+{
   int i;
   short hash = press<<15 | device<<8 | sym;
 
@@ -153,7 +194,8 @@ char mod_key2cmd(int device,int sym,int press) {
 }
 
 
-int mod_command(char *q) {
+int mod_command(char *q)
+{
   TRY
     if( q==NULL ){
       ;
@@ -169,7 +211,8 @@ else if( strcmp(q,"flykick")==0 ){ flykick = 1; return 0; }
 }
 
 
-void mod_loadsurfs(int quit) {
+void mod_loadsurfs(int quit)
+{
   SDL_Surface *surf;
 
   // free existing textures
@@ -195,9 +238,10 @@ void mod_loadsurfs(int quit) {
 }
 
 
-void mod_predraw(SDL_Surface *screen,Uint32 vidfr) {
+void mod_predraw(SDL_Surface *screen,Uint32 vidfr)
+{
   //draw background
-  int i=0,j;
+  int i=0,j,k;
   while(i<23) {
     int step = (i<6||i==10||i==15) ? 1 : 4;
     for(j=0;j<15;j++)
@@ -217,12 +261,27 @@ void mod_predraw(SDL_Surface *screen,Uint32 vidfr) {
   SJGL_BlitScaled(  textures[TEX_WORLD], &(SDL_Rect){ 80,48,16,16}, &(SDL_Rect){11*16, 5*16,0,0}, scale, 0); //pipe end
   SJGL_BlitScaled(  textures[TEX_WORLD], &(SDL_Rect){144,16,48,16}, &(SDL_Rect){12*16, 8*16,0,0}, scale, 0); //shadow
   SJGL_BlitScaled(  textures[TEX_WORLD], &(SDL_Rect){ 80,32,16,16}, &(SDL_Rect){ 6*16, 7*16,0,0}, scale, 0); //end cap
+
+  //draw context
+  CONTEXT_t *co = fr[vidfr%maxframes].objs[1].data; //FIXME: get correct context!
+  for( k=0; k<co->z; k++ )
+    for( j=0; j<co->y; j++ )
+      for( i=0; i<co->x; i++ ) {
+        int pos = co->x*co->y*k + co->x*j + i;
+        int tile = co->map[ pos ].data[0];
+
+        SJGL_BlitScaled( textures[TEX_WORLD], &(SDL_Rect){tile*16,0,16,16},
+                                              &(SDL_Rect){i*16,j*16,0,0},
+                                              scale, 0 );
+      }
 }
 
 
-void mod_draw(SDL_Surface *screen,int objid,OBJ_t *o) {
+void mod_draw(SDL_Surface *screen,int objid,OBJ_t *o)
+{
   switch(o->type) {
     case OBJT_PLAYER:         obj_player_draw(     objid, o );     break;
+    case OBJT_GHOST:          obj_ghost_draw(      objid, o );     break;
     case OBJT_BULLET:         obj_bullet_draw(     objid, o );     break;
     case OBJT_SLUG:           obj_slug_draw(       objid, o );     break;
     case OBJT_DUMMY:          obj_dummy_draw(      objid, o );     break;
@@ -232,36 +291,37 @@ void mod_draw(SDL_Surface *screen,int objid,OBJ_t *o) {
 }
 
 
-void mod_adv(int objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob) {
+void mod_adv(int objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob)
+{
   switch( ob->type ) {
     case OBJT_MOTHER:
       assert(ob->size==sizeof(MOTHER_t));
       assert(objid==0);
-      obj_mother_adv( objid, a, b, oa, ob );
+      obj_mother_adv(     objid, a, b, oa, ob );
       break;
     case OBJT_GHOST:
       assert(ob->size==sizeof(GHOST_t));
-      obj_ghost_adv( objid, a, b, oa, ob );
+      obj_ghost_adv(      objid, a, b, oa, ob );
       break;
     case OBJT_DUMMY:
       assert(ob->size==sizeof(DUMMY_t));
-      obj_dummy_adv( objid, a, b, oa, ob );
+      obj_dummy_adv(      objid, a, b, oa, ob );
       break;
     case OBJT_PLAYER:
       assert(ob->size==sizeof(PLAYER_t));
-      obj_player_adv( objid, a, b, oa, ob );
+      obj_player_adv(     objid, a, b, oa, ob );
       break;
     case OBJT_BULLET:
       assert(ob->size==sizeof(BULLET_t));
-      obj_bullet_adv( objid, a, b, oa, ob );
+      obj_bullet_adv(     objid, a, b, oa, ob );
       break;
     case OBJT_SLUG:
       assert(ob->size==sizeof(SLUG_t));
-      obj_slug_adv( objid, a, b, oa, ob );
+      obj_slug_adv(       objid, a, b, oa, ob );
       break;
     case OBJT_AMIGO:
       assert(ob->size==sizeof(AMIGO_t));
-      obj_amigo_adv( objid, a, b, oa, ob );
+      obj_amigo_adv(      objid, a, b, oa, ob );
       break;
     case OBJT_AMIGOSWORD:
       assert(ob->size==sizeof(AMIGOSWORD_t));
