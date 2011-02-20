@@ -21,26 +21,27 @@
 #define assert(expr) { if(!(expr)) SJC_Write( "%s(%d) Assert failed! %s", __FILE__, __LINE__, #expr ); }
 
 //obj flags
-#define OBJF_POS  (1<<0) //has position
-#define OBJF_VEL  (1<<1) //has velocity
-#define OBJF_VIS  (1<<2) //is visible
-#define OBJF_HULL (1<<3) //has a hull
-#define OBJF_CLIP (1<<4) //clips against solids
-#define OBJF_PLAT (1<<5) //acts as a platform
-#define OBJF_PVEL (1<<6) //has player-controlled velocity
-#define OBJF_DEL  (1<<7) //object is marked for deletion
-#define OBJF_BNDX (1<<8) //clips against screen edge X-wise
-#define OBJF_BNDY (1<<9) //clips against screen edge Y-wise (lower only)
+#define OBJF_POS  (1<< 0) //has position
+#define OBJF_VEL  (1<< 1) //has velocity
+#define OBJF_VIS  (1<< 2) //is visible
+#define OBJF_HULL (1<< 3) //has a hull
+#define OBJF_CLIP (1<< 4) //clips against solids
+#define OBJF_PLAT (1<< 5) //acts as a platform
+#define OBJF_PVEL (1<< 6) //has player-controlled velocity
+#define OBJF_DEL  (1<< 7) //object is marked for deletion
+#define OBJF_BNDX (1<< 8) //clips against context edge X-wise
+#define OBJF_BNDT (1<< 9) //clips against context top edge
+#define OBJF_BNDB (1<<10) //clips against context bottom edge
 
 //cmd flags
-#define CMDF_NEW  (1<<0) //new client connect
-#define CMDF_QUIT (1<<0) //disconenct
+#define CMDF_NEW  (1<< 0) //new client connect
+#define CMDF_QUIT (1<< 1) //disconenct
 
 //CB flags
-#define CBF_SOLID (1<<0) //solid
-#define CBF_PLAT  (1<<1) //platform
-#define CBF_VIS   (1<<2) //is visible
-#define CBF_NULL  (1<<3) //(dmap only) delta data not present
+#define CBF_SOLID (1<< 0) //solid
+#define CBF_PLAT  (1<< 1) //platform
+#define CBF_VIS   (1<< 2) //is visible
+#define CBF_NULL  (1<< 3) //(dmap only) delta data not present
 
 
 typedef struct{

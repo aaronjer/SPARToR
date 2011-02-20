@@ -22,7 +22,8 @@ void obj_bullet_draw( int objid, OBJ_t *o )
 void obj_bullet_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob )
 {
   int i;
-  BULLET_t *bu = ob->data;
+  BULLET_t  *bu = ob->data;
+  CONTEXT_t *co = fr[b].objs[ob->context].data;
 
   if( bu->ttl ) bu->ttl--;
 
@@ -38,7 +39,7 @@ void obj_bullet_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob )
       bu->ttl = 0; //delete bullet
     }
 
-  if(bu->pos.x<=-10.0f || bu->pos.x>=NATIVEW+10.0f || bu->ttl==0) {
+  if(bu->pos.x<=-10.0f || bu->pos.x>=co->x*co->blocksize+10.0f || bu->ttl==0) {
     if( fr[b].objs[bu->owner].type==OBJT_PLAYER )
       ((PLAYER_t *)fr[b].objs[bu->owner].data)->projectiles--;
     ob->flags |= OBJF_DEL;

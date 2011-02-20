@@ -34,6 +34,8 @@ void obj_mother_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob );
 // GHOST //
 typedef struct{
   V pos;
+  V vel;
+  V hull[2];
   int model;
   int client;
   int avatar;

@@ -118,7 +118,6 @@ void render() {
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
   int camx = NATIVEW/2-(int)v_camx, camy = NATIVEH/2-(int)v_camy;
-  SJC_Write("Cam: %i %i",camx,camy);
   glTranslatef(camx,camy,0);
 
   mod_predraw(screen,vidfr);

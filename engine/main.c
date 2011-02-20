@@ -156,9 +156,7 @@ void advance() {
       free(ob->data);
       memset(ob,0,sizeof(*ob));
       if(oa->type && !(oa->flags&OBJF_DEL)) {
-        ob->type = oa->type;
-        ob->flags = oa->flags;
-        ob->size = oa->size;
+        memcpy(ob,oa,sizeof(*ob));
         ob->data = malloc(oa->size);
         memcpy(ob->data,oa->data,oa->size);
       }
@@ -169,23 +167,33 @@ void advance() {
         V *hull = (ob->flags & OBJF_HULL) ? flex(ob,OBJF_HULL) : NULL;
         pos->x += vel->x + (pvel?pvel->x:0.0f);  //apply velocity
         pos->y += vel->y + (pvel?pvel->y:0.0f);
-/* probably shouldn't be in the engine code anyways
-        if( ob->flags & OBJF_BNDX )
+
+        if( (ob->flags & OBJF_BNDX) && ob->context )
         {
-          if( pos->x + (hull?hull[0].x:0.0f) < 0.0f ) {    //screen edges
-            pos->x = 0.0f   - (hull?hull[0].x:0.0f);
+          CONTEXT_t *co = fr[b].objs[ob->context].data;
+          if( pos->x + (hull?hull[0].x:0.0f) <                0.0f ) {  //context edges left & right
+            pos->x =                0.0f - (hull?hull[0].x:0.0f);
             vel->x = 0.0f;
           }
-          if( pos->x + (hull?hull[1].x:0.0f) > NATIVEW ) {
-            pos->x = NATIVEW - (hull?hull[1].x:0.0f);
+          if( pos->x + (hull?hull[1].x:0.0f) > co->x*co->blocksize ) {
+            pos->x = co->x*co->blocksize - (hull?hull[1].x:0.0f);
             vel->x = 0.0f;
           }
         }
-*/
-        if( ob->flags & OBJF_BNDY )
+
+        if( (ob->flags & OBJF_BNDT) && ob->context )
         {
-          if( pos->y + (hull?hull[1].y:0.0f) > NATIVEH ) {  //floor
-            pos->y = NATIVEH - (hull?hull[1].y:0.0f);
+          if( pos->y + (hull?hull[0].y:0.0f) <                0.0f ) {  //context edge top
+            pos->y =                0.0f - (hull?hull[0].y:0.0f);
+            vel->y = 0.0f;
+          }
+        }
+
+        if( (ob->flags & OBJF_BNDB) && ob->context )
+        {
+          CONTEXT_t *co = fr[b].objs[ob->context].data;
+          if( pos->y + (hull?hull[1].y:0.0f) > co->y*co->blocksize ) {  //context edge bottom
+            pos->y = co->y*co->blocksize - (hull?hull[1].y:0.0f);
             vel->y = 0.0f;
           }
         }

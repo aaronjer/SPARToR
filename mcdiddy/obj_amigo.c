@@ -131,7 +131,7 @@ if( am->pos.x > NATIVEW+20.0f ) am->pos.x -= NATIVEW+39.0f;
       if( am->vel.x > 0.0f )
         am->vel.x = 0.0f;
       if( am->statetime==1 ) {
-        MKOBJ( sw, AMIGOSWORD, OBJF_POS|OBJF_VEL|OBJF_VIS );
+        MKOBJ( sw, AMIGOSWORD, ob->context, OBJF_POS|OBJF_VEL|OBJF_VIS );
         sw->pos = am->pos;
         sw->vel = (V){1.5f,-2.5f,0.0f};
         sw->hull[0] = (V){0};

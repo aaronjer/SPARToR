@@ -90,7 +90,8 @@ void mod_setup(Uint32 setupfr)
   #define MAYBE_A_DUMMY(i,x,y,w,h) {                                                                             \
     DUMMY_t *du;                                                                                                 \
     fr[setupfr].objs[i+20].type = OBJT_DUMMY;                                                                    \
-    fr[setupfr].objs[i+20].flags = OBJF_POS|OBJF_VEL|OBJF_HULL|OBJF_VIS|OBJF_PLAT|OBJF_CLIP|OBJF_BNDX|OBJF_BNDY; \
+    fr[setupfr].objs[i+20].flags = OBJF_POS|OBJF_VEL|OBJF_HULL|OBJF_VIS|OBJF_PLAT|OBJF_CLIP|OBJF_BNDX|OBJF_BNDB; \
+    fr[setupfr].objs[i+20].context = 1;                                                                          \
     fr[setupfr].objs[i+20].size = sizeof *du;                                                                    \
     du = fr[setupfr].objs[i+20].data = malloc(sizeof *du);                                                       \
     du->pos = (V){x*8,y*8,0.0f};                                                                                 \
@@ -240,7 +241,7 @@ void mod_loadsurfs(int quit)
 void mod_predraw(SDL_Surface *screen,Uint32 vidfr)
 {
   //draw background
-  int i=0,j;
+  int i=0,j,k;
   while(i<23) {
     int step = (i<6||i==10||i==15) ? 1 : 4;
     for(j=0;j<15;j++)
@@ -260,6 +261,19 @@ void mod_predraw(SDL_Surface *screen,Uint32 vidfr)
   SJGL_BlitScaled(  textures[TEX_WORLD], &(SDL_Rect){ 80,48,16,16}, &(SDL_Rect){11*16, 5*16,0,0}, scale, 0); //pipe end
   SJGL_BlitScaled(  textures[TEX_WORLD], &(SDL_Rect){144,16,48,16}, &(SDL_Rect){12*16, 8*16,0,0}, scale, 0); //shadow
   SJGL_BlitScaled(  textures[TEX_WORLD], &(SDL_Rect){ 80,32,16,16}, &(SDL_Rect){ 6*16, 7*16,0,0}, scale, 0); //end cap
+
+  //draw context
+  CONTEXT_t *co = fr[vidfr%maxframes].objs[1].data; //FIXME: get correct context!
+  for( k=0; k<co->z; k++ )
+    for( j=0; j<co->y; j++ )
+      for( i=0; i<co->x; i++ ) {
+        int pos = co->x*co->y*k + co->x*j + i;
+        int tile = co->map[ pos ].data[0];
+
+        SJGL_BlitScaled( textures[TEX_WORLD], &(SDL_Rect){tile*16,0,16,16},
+                                              &(SDL_Rect){i*16,j*16,0,0},
+                                              scale, 0 );
+      }
 }
 
 
@@ -283,31 +297,31 @@ void mod_adv(int objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob)
     case OBJT_MOTHER:
       assert(ob->size==sizeof(MOTHER_t));
       assert(objid==0);
-      obj_mother_adv( objid, a, b, oa, ob );
+      obj_mother_adv(     objid, a, b, oa, ob );
       break;
     case OBJT_GHOST:
       assert(ob->size==sizeof(GHOST_t));
-      obj_ghost_adv( objid, a, b, oa, ob );
+      obj_ghost_adv(      objid, a, b, oa, ob );
       break;
     case OBJT_DUMMY:
       assert(ob->size==sizeof(DUMMY_t));
-      obj_dummy_adv( objid, a, b, oa, ob );
+      obj_dummy_adv(      objid, a, b, oa, ob );
       break;
     case OBJT_PLAYER:
       assert(ob->size==sizeof(PLAYER_t));
-      obj_player_adv( objid, a, b, oa, ob );
+      obj_player_adv(     objid, a, b, oa, ob );
       break;
     case OBJT_BULLET:
       assert(ob->size==sizeof(BULLET_t));
-      obj_bullet_adv( objid, a, b, oa, ob );
+      obj_bullet_adv(     objid, a, b, oa, ob );
       break;
     case OBJT_SLUG:
       assert(ob->size==sizeof(SLUG_t));
-      obj_slug_adv( objid, a, b, oa, ob );
+      obj_slug_adv(       objid, a, b, oa, ob );
       break;
     case OBJT_AMIGO:
       assert(ob->size==sizeof(AMIGO_t));
-      obj_amigo_adv( objid, a, b, oa, ob );
+      obj_amigo_adv(      objid, a, b, oa, ob );
       break;
     case OBJT_AMIGOSWORD:
       assert(ob->size==sizeof(AMIGOSWORD_t));
