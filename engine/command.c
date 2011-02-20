@@ -109,6 +109,13 @@ void command(const char *s){
       SJC_Write("     window 3x -- go windowed at 3x up-scale");
       SJC_Write("     bind -- choose input keys");
       SJC_Write("Default controls: Z, X, ARROWS, F11");
+    }else if( strcmp(q,"report")==0 ){
+      int i;
+      for( i=0; i<maxobjs; i++ ) {
+        OBJ_t *o = fr[surefr%maxframes].objs+i;
+        if( o->type )
+          SJC_Write( "#%i %s C:%i F:%x", i, objectnames[o->type], o->context, o->flags );
+      }
     }else if( mod_command(q) ){
       SJC_Write("Huh?");
     }

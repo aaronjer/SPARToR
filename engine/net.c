@@ -34,6 +34,7 @@ Uint8 *packframe(Uint32 packfr,size_t *n) {
     packbytes(data,pfr->objs[i].type,n,2);
     if(pfr->objs[i].type) {
       packbytes(data,pfr->objs[i].flags,n,2);
+      packbytes(data,pfr->objs[i].context,n,4);
       packbytes(data,pfr->objs[i].size ,n,sizeof(size_t));
       memcpy(data+*n, pfr->objs[i].data, pfr->objs[i].size);
       *n += pfr->objs[i].size;
@@ -76,8 +77,9 @@ int unpackframe(Uint32 packfr,Uint8 *data,size_t len) {
   for(i=0;i<maxobjs;i++) {
     pfr->objs[i].type = unpackbytes(data,len,&n,2);
     if(pfr->objs[i].type) {
-      pfr->objs[i].flags = unpackbytes(data,len,&n,2);
-      pfr->objs[i].size  = unpackbytes(data,len,&n,sizeof(size_t));
+      pfr->objs[i].flags   = unpackbytes(data,len,&n,2);
+      pfr->objs[i].context = unpackbytes(data,len,&n,4);
+      pfr->objs[i].size    = unpackbytes(data,len,&n,sizeof(size_t));
       if( pfr->objs[i].size ) {
         if( len<n+pfr->objs[i].size ) {
           SJC_Write("Packed data ended early!");

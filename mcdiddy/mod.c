@@ -24,6 +24,18 @@ INPUTNAME_t inputnames[] = {{"left" ,CMDT_1LEFT ,CMDT_0LEFT },
                             {"jump" ,CMDT_1JUMP ,CMDT_0JUMP }};
 int numinputnames = (sizeof inputnames) / (sizeof *inputnames);
 
+char objectnames[][16] =
+     { "empty",
+       "context",
+       "mother",
+       "ghost",
+       "dummy",
+       "player",
+       "bullet",
+       "slug",
+       "amigo",
+       "amigosword" };
+
 
 static int    binds_size = 0;
 static struct {

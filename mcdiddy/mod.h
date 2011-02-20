@@ -39,6 +39,7 @@ extern GLuint textures[TEX_COUNT];
 
 extern int numinputnames;
 extern INPUTNAME_t inputnames[];
+extern char objectnames[][16];
 
 
 void mod_setup(Uint32 setupfr);

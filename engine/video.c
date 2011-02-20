@@ -54,7 +54,12 @@ void videoinit() {
   vidinfo = SDL_GetVideoInfo();
   *((int*)&desktop_w) = vidinfo->current_w;
   *((int*)&desktop_h) = vidinfo->current_h;
-  setvideo(NATIVEW*2,NATIVEH*2,0,0);
+  int i;
+  int default_scale = 1;
+  for( i=2; i<=5; i++ )
+    if( desktop_w-50 > NATIVEW*i && desktop_h-50 > NATIVEH*i )
+      default_scale = i;
+  setvideo(NATIVEW*default_scale,NATIVEH*default_scale,0,0);
 
   GLenum glewerr = glewInit();
   if( glewerr!=GLEW_OK ) { fprintf(stderr,"glewInit: %s\n",glewGetErrorString(glewerr)); exit(-4); }
@@ -294,8 +299,8 @@ void setvideosoon(int w,int h,int go_full,int delay) {
       soon_w = desktop_w;
       soon_h = desktop_h;
     } else {
-      soon_w = NATIVEW*2;
-      soon_h = NATIVEH*2;
+      soon_w = prev_w;
+      soon_h = prev_h;
     }
   } else {
     soon_w = w;
