@@ -25,7 +25,7 @@ void obj_mother_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob )
       if( fr[b].objs[j].type==OBJT_GHOST && ((GHOST_t *)fr[b].objs[j].data)->client==i )
         SJC_Write( "%d: Client %i already has a ghost at obj#%d!", hotfr, i, j );
 
-    MKOBJ( gh, GHOST, OBJF_POS );
+    MKOBJ( gh, GHOST, OBJF_POS|OBJF_VIS );
     int ghostslot = slot0;
     MKOBJ( pl, PLAYER, OBJF_POS|OBJF_VEL|OBJF_HULL|OBJF_PVEL|OBJF_VIS|OBJF_PLAT|OBJF_CLIP|OBJF_BNDX|OBJF_BNDY );
 

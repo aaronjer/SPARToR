@@ -62,7 +62,7 @@ void mod_setup(Uint32 setupfr) {
 
   //make the mother object
   fr[setupfr].objs[0] = (OBJ_t){ OBJT_MOTHER, 0, sizeof(MOTHER_t), malloc(sizeof(MOTHER_t)) };
-  *(MOTHER_t *)fr[setupfr].objs[0].data = (MOTHER_t){0,0};
+  *(MOTHER_t *)fr[setupfr].objs[0].data = (MOTHER_t){0};
 
   //make some dummys
   #define MAYBE_A_DUMMY(i,x,y,w,h) {                                                                             \
@@ -223,6 +223,7 @@ void mod_predraw(SDL_Surface *screen,Uint32 vidfr) {
 void mod_draw(SDL_Surface *screen,int objid,OBJ_t *o) {
   switch(o->type) {
     case OBJT_PLAYER:         obj_player_draw(     objid, o );     break;
+    case OBJT_GHOST:          obj_ghost_draw(      objid, o );     break;
     case OBJT_BULLET:         obj_bullet_draw(     objid, o );     break;
     case OBJT_SLUG:           obj_slug_draw(       objid, o );     break;
     case OBJT_DUMMY:          obj_dummy_draw(      objid, o );     break;

@@ -9,6 +9,9 @@ extern int v_usealpha;
 extern int v_fullscreen;
 extern int v_oob;
 
+extern int v_camx;
+extern int v_camy;
+
 
 void videoinit();
 void render();

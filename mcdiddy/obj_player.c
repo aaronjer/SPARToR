@@ -79,9 +79,11 @@ void obj_player_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob )
     return;
   }
 
+  gh->pos = (V){newme->pos.x, NATIVEH/2, 0}; //put ghost in the right spot
+
   if( ((GHOST_t *)fr[b].objs[newme->ghost].data)->client==me ) { //local client match
-    //camx = newme->pos.x - NATIVEW/2;
-    //camy = newme->pos.y - NATIVEH/2;
+    v_camx = gh->pos.x;
+    v_camy = gh->pos.y;
     if( setmodel>-1 ) { //FIXME -- just for fun, will not sync!
       newme->model = setmodel;
       setmodel = -1;

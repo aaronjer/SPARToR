@@ -23,8 +23,7 @@ enum { OBJT_MOTHER = 1,
 
 // MOTHER //
 typedef struct{
-  int camx;
-  int camy;
+  int mystery_value;
 } MOTHER_t;
 
 void obj_mother_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob );
@@ -33,10 +32,12 @@ void obj_mother_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob );
 // GHOST //
 typedef struct{
   V pos;
+  int model;
   int client;
   int avatar;
 } GHOST_t;
 
+void obj_ghost_draw( int objid, OBJ_t *o );
 void obj_ghost_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob );
 
 

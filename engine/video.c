@@ -25,6 +25,9 @@ int v_usealpha   = 1;
 int v_fullscreen = 0;
 int v_oob        = 0; // show objects out-of-bounds fading away
 
+int v_camx       = 0;
+int v_camy       = 0;
+
 static int screen_w  = NATIVEW;
 static int screen_h  = NATIVEH;
 static int prev_w    = NATIVEW;
@@ -81,21 +84,15 @@ void render() {
   if( soon>0 )
     soon--;
 
-  vidinfo = SDL_GetVideoInfo();
-  w = vidinfo->current_w;
-  h = vidinfo->current_h;
-
-  glViewport(0,0,w,h);
+  vidinfo  = SDL_GetVideoInfo();
+  w        = vidinfo->current_w;
+  h        = vidinfo->current_h;
+  pad_left = (w - NATIVEW*scale)/2;
+  pad_top  = (h - NATIVEH*scale)/2;
 
   glMatrixMode(GL_TEXTURE);
   glLoadIdentity();
   glScalef(1.0f/256.0f, 1.0f/256.0f, 1);
-
-  glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();
-  pad_left = (w - NATIVEW*scale)/2;
-  pad_top  = (h - NATIVEH*scale)/2;
-  glOrtho(-pad_left,w-pad_left,h-pad_top,-pad_top,-NATIVEH*3-1,NATIVEH*3+1);
 
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
@@ -115,6 +112,16 @@ void render() {
   glEnable(GL_DEPTH_TEST);
 
   glClear(GL_DEPTH_BUFFER_BIT);
+
+  int camx = NATIVEW/2-(int)v_camx, camy = NATIVEH/2-(int)v_camy;
+  glTranslatef(camx,camy,0);
+
+  glViewport(pad_left,pad_top,NATIVEW*scale,NATIVEH*scale);
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  glOrtho(0,NATIVEW,NATIVEH,0,-NATIVEH*3-1,NATIVEH*3+1);
+
+  SJC_Write("Cam: %i %i",camx,camy);
 
   mod_predraw(screen,vidfr);
 
@@ -138,7 +145,6 @@ void render() {
         if( hull ) {
           glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
           SDL_Rect rect = (SDL_Rect){pos->x+hull[0].x, pos->y+hull[0].y, hull[1].x-hull[0].x, hull[1].y-hull[0].y};
-          //FIXME: set GL color instead: color = SDL_MapRGB(screen->format, 0x90+0x22*((i/1)%3), 0x90+0x22*((i/3)%3), 0x90+0x22*((i/9)%3));
           SJGL_BlitScaled(0, &rect, &rect, scale, 0);
           glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
         }
@@ -147,6 +153,12 @@ void render() {
       }
     }
   }
+
+  glViewport(0,0,w,h);
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  glOrtho(-pad_left,w-pad_left,h-pad_top,-pad_top,-NATIVEH*3-1,NATIVEH*3+1);
+
 
   //paint black over the border areas, subtractively with v_oob
   {
