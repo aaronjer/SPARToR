@@ -13,11 +13,11 @@
 #include <GL/glew.h>
 #include "SDL.h"
 #include "SDL_net.h"
+#include "mod.h"
 #include "video.h"
 #include "main.h"
 #include "console.h"
 #include "font.h"
-#include "mod.h"
 
 int v_drawhulls  = 0;
 int v_showstats  = 1;
@@ -94,9 +94,6 @@ void render() {
   glLoadIdentity();
   glScalef(1.0f/256.0f, 1.0f/256.0f, 1);
 
-  glMatrixMode(GL_MODELVIEW);
-  glLoadIdentity();
-
   glColor4f(1.0f,1.0f,1.0f,1.0f);
   glEnable(GL_TEXTURE_2D);
   if( v_usealpha )
@@ -113,15 +110,16 @@ void render() {
 
   glClear(GL_DEPTH_BUFFER_BIT);
 
-  int camx = NATIVEW/2-(int)v_camx, camy = NATIVEH/2-(int)v_camy;
-  glTranslatef(camx,camy,0);
-
+  // viewport and matrixes for game objects
   glViewport(pad_left,pad_top,NATIVEW*scale,NATIVEH*scale);
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   glOrtho(0,NATIVEW,NATIVEH,0,-NATIVEH*3-1,NATIVEH*3+1);
-
+  glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity();
+  int camx = NATIVEW/2-(int)v_camx, camy = NATIVEH/2-(int)v_camy;
   SJC_Write("Cam: %i %i",camx,camy);
+  glTranslatef(camx,camy,0);
 
   mod_predraw(screen,vidfr);
 
@@ -154,11 +152,13 @@ void render() {
     }
   }
 
+  // viewport and matrixes for HUD
   glViewport(0,0,w,h);
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   glOrtho(-pad_left,w-pad_left,h-pad_top,-pad_top,-NATIVEH*3-1,NATIVEH*3+1);
-
+  glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity();
 
   //paint black over the border areas, subtractively with v_oob
   {

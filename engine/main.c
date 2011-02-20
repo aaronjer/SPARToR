@@ -14,13 +14,13 @@
 #include "SDL.h"
 #include "SDL_net.h"
 #include "SDL_image.h"
+#include "mod.h"
 #include "main.h"
 #include "font.h"
 #include "console.h"
 #include "net.h"
 #include "host.h"
 #include "client.h"
-#include "mod.h"
 #include "input.h"
 #include "video.h"
 #include <math.h>
@@ -169,6 +169,7 @@ void advance() {
         V *hull = (ob->flags & OBJF_HULL) ? flex(ob,OBJF_HULL) : NULL;
         pos->x += vel->x + (pvel?pvel->x:0.0f);  //apply velocity
         pos->y += vel->y + (pvel?pvel->y:0.0f);
+/* probably shouldn't be in the engine code anyways
         if( ob->flags & OBJF_BNDX )
         {
           if( pos->x + (hull?hull[0].x:0.0f) < 0.0f ) {    //screen edges
@@ -180,6 +181,7 @@ void advance() {
             vel->x = 0.0f;
           }
         }
+*/
         if( ob->flags & OBJF_BNDY )
         {
           if( pos->y + (hull?hull[1].y:0.0f) > NATIVEH ) {  //floor

@@ -11,7 +11,9 @@
 
 
 //obj types
-enum { OBJT_MOTHER = 1,
+enum { OBJT_EMPTY = 0,
+       OBJT_CONTEXT, //from engine
+       OBJT_MOTHER,
        OBJT_GHOST,
        OBJT_DUMMY,
        OBJT_PLAYER,
