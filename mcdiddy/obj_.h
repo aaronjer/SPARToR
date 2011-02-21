@@ -76,6 +76,7 @@ typedef struct{
   char gunback,gundown;
   char grounded;
   char facingr;
+  char turning;
   char stabbing;
   char hovertime;
 } PLAYER_t;

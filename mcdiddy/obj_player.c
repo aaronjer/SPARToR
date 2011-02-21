@@ -25,13 +25,13 @@ void obj_player_draw( int objid, OBJ_t *o )
   if( pl->goingu==pl->goingd ) gunshift = 0;
   SDL_Rect drect = (SDL_Rect){(pl->pos.x-10),(pl->pos.y-15),0,0};
   int z = drect.y + pl->hull[1].y;
-  int duck = pl->goingd>0 ? 40 : 0;
+  int xshift = (pl->goingd>0 ? 40 : 0) + (pl->turning ? 80 : (pl->facingr ? 0 : 20 ));
 
   if( pl->facingr ) {
     if( pl->model==4 ) //girl hair
       SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){ 80,120,20,15},
                                             &(SDL_Rect){drect.x-4,drect.y+(pl->goingd?4:0)+pl->gundown/7,0,0}, scale, z);
-    SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){ 0+duck, 0+pl->model*30,20,30}, &drect, scale, z);
+    SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){ xshift, 0+pl->model*30,20,30}, &drect, scale, z);
     drect = (SDL_Rect){(pl->pos.x- 5-pl->gunback),(pl->pos.y-10+pl->gundown/5),0,0};
     if( !pl->stabbing ) //gun
       SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){ 0+gunshift,150,24,27}, &drect, scale, z);
@@ -39,7 +39,7 @@ void obj_player_draw( int objid, OBJ_t *o )
     if( pl->model==4 ) //girl hair
       SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){100,120,20,15},
                                             &(SDL_Rect){drect.x+4,drect.y+(pl->goingd?4:0)+pl->gundown/7,0,0}, scale, z);
-    SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){20+duck, 0+pl->model*30,20,30}, &drect, scale, z);
+    SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){ xshift, 0+pl->model*30,20,30}, &drect, scale, z);
     drect = (SDL_Rect){(pl->pos.x-19+pl->gunback),(pl->pos.y-10+pl->gundown/5),0,0};
     if( !pl->stabbing ) //gun
       SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){24+gunshift,150,24,27}, &drect, scale, z);
@@ -60,9 +60,13 @@ void obj_player_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob )
   GHOST_t *gh = fr[b].objs[newme->ghost].data;
 
   switch( fr[b].cmds[gh->client].cmd ) {
-    case CMDT_1LEFT:  newme->goingl  = 1; newme->facingr = 0;  break;
+    case CMDT_1LEFT:  newme->goingl  = 1;
+                      if( newme->facingr) newme->turning = 3;
+                      newme->facingr = 0;                      break;
     case CMDT_0LEFT:  newme->goingl  = 0;                      break;
-    case CMDT_1RIGHT: newme->goingr  = 1; newme->facingr = 1;  break;
+    case CMDT_1RIGHT: newme->goingr  = 1;
+                      if(!newme->facingr) newme->turning = 3;
+                      newme->facingr = 1;                      break;
     case CMDT_0RIGHT: newme->goingr  = 0;                      break;
     case CMDT_1UP:    newme->goingu  = 1;                      break;
     case CMDT_0UP:    newme->goingu  = 0;                      break;
@@ -133,6 +137,8 @@ void obj_player_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob )
   else                           newme->pvel.x += 0.5f;
 
   // -- WALK --
+  if( newme->turning )
+    newme->turning--;
   if( newme->goingl ) {
     if(      newme->pvel.x>-2.0f ) newme->pvel.x += -1.0f;
     else if( newme->pvel.x>-3.0f ) newme->pvel.x  = -3.0f;

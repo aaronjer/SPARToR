@@ -20,6 +20,11 @@
 #include "video.h"
 #include "command.h"
 
+
+int i_mousex = 0;
+int i_mousey = 0;
+
+
 static int  kwik = 0;
 static char kwik_presscmd;
 static char kwik_releasecmd;
@@ -31,7 +36,8 @@ static int  cbread = 0;
 static SDL_Joystick **joysticks;
 
 
-void inputinit() {
+void inputinit()
+{
   int i, numjoysticks;
   if( (numjoysticks=SDL_NumJoysticks())>0 ) {
     joysticks = malloc(sizeof(*joysticks)*numjoysticks);
@@ -45,14 +51,16 @@ void inputinit() {
 }
 
 
-void putcmd(char cmd) {
+void putcmd(char cmd)
+{
   if( !cmd || cbread%250==(cbwrite+1)%250 )
     return;
   cmdbuf[cbwrite] = cmd;
   cbwrite = (cbwrite+1)%250;
 }
 
-char getnextcmd() {
+char getnextcmd()
+{
   char cmd = cmdbuf[cbread];
   if( cmd==0 ) return 0;
   cmdbuf[cbread] = 0;
@@ -61,7 +69,8 @@ char getnextcmd() {
 }
 
 
-void kbinput(int press,SDL_keysym keysym) {
+void kbinput(int press,SDL_keysym keysym)
+{
   SDLKey sym = keysym.sym;
   SDLMod mod = keysym.mod;
   Uint16 unicode = keysym.unicode;
@@ -93,7 +102,8 @@ void kbinput(int press,SDL_keysym keysym) {
 }
 
 
-void joyinput(int press,SDL_JoyButtonEvent jbutton) {
+void joyinput(int press,SDL_JoyButtonEvent jbutton)
+{
   if( kwik && press )
     kwikbind( INP_JBUT, jbutton.button );
   else
@@ -101,7 +111,8 @@ void joyinput(int press,SDL_JoyButtonEvent jbutton) {
 }
 
 
-void axisinput(SDL_JoyAxisEvent jaxis) {
+void axisinput(SDL_JoyAxisEvent jaxis)
+{
   static char **axdats = NULL;
   static int size = 0;
   static const char POS_ON  = 1;
@@ -126,7 +137,26 @@ void axisinput(SDL_JoyAxisEvent jaxis) {
 }
 
 
-void readinput() {
+void mouseinput(int press,SDL_MouseButtonEvent mbutton)
+{
+  i_mousex = mbutton.x;
+  i_mousey = mbutton.y;
+  if( kwik )
+    kwikbind(INP_MBUT,mbutton.button);
+  else
+    putcmd( mod_key2cmd(INP_MBUT,mbutton.button,press) );
+}
+
+
+void mousemove(SDL_MouseMotionEvent mmotion)
+{
+  i_mousex = mmotion.x;
+  i_mousey = mmotion.y;
+}
+
+
+void readinput()
+{
   Uint32 infr = hotfr+1; //TODO: _should_ we always insert on hotfr+1?
   if( cmdfr<infr ) //this is the new cmdfr, so clear it, unless we already have cmds stored in the future!
     setcmdfr(infr);
@@ -141,21 +171,24 @@ void readinput() {
 }
 
 
-void input_bindsoon(int presscmd,int releasecmd) {
+void input_bindsoon(int presscmd,int releasecmd)
+{
   kwik_presscmd = presscmd;
   kwik_releasecmd = releasecmd;
   kwik = 1;
 }
 
-void kwikbind(int device,int sym) {
+void kwikbind(int device,int sym)
+{
   mod_keybind( device, sym, 0, kwik_releasecmd );
   mod_keybind( device, sym, 1, kwik_presscmd );
   kwik = 0;
   switch( device ) {
     case INP_KEYB: SJC_Write("Key #%d selected"                ,sym); break;
-    case INP_JBUT: SJC_Write("Button #%d selected"             ,sym); break;
+    case INP_JBUT: SJC_Write("Joy button #%d selected"         ,sym); break;
     case INP_JAXP: SJC_Write("Axis #%d (+) selected"           ,sym); break;
     case INP_JAXN: SJC_Write("Axis #%d (-) selected"           ,sym); break;
+    case INP_MBUT: SJC_Write("Mouse button #%d selected"       ,sym); break;
     default:       SJC_Write("Unkown device input #%d selected",sym); break;
   }
 }

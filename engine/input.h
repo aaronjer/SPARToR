@@ -10,12 +10,19 @@
 #define INP_JBUT 2 //joystick button
 #define INP_JAXP 3 //joystick axis, positive
 #define INP_JAXN 4 //joystick axis, negative
+#define INP_MBUT 5 //mouse button
+
+
+extern int i_mousex; //last seen mouse position
+extern int i_mousey;
 
 
 void inputinit();
 void kbinput(int press,SDL_keysym keysym);
 void joyinput(int press,SDL_JoyButtonEvent jbutton);
 void axisinput(SDL_JoyAxisEvent jaxis);
+void mouseinput(int press,SDL_MouseButtonEvent mbutton);
+void mousemove(SDL_MouseMotionEvent mmotion);
 void readinput();
 void input_bindsoon(int presscmd,int releasecmd);
 void kwikbind(int device,int sym);

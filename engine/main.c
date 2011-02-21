@@ -104,14 +104,16 @@ int main(int argc,char **argv) {
     ticks = newticks;
     metafr = ticks/ticksaframe + frameoffset;
     while( SDL_PollEvent(&event) ) switch(event.type) {
-      case SDL_VIDEOEXPOSE:                                                     break;
-      case SDL_VIDEORESIZE:   setvideosoon(event.resize.w,event.resize.h,0,10); break;
-      case SDL_KEYDOWN:       kbinput(  1, event.key.keysym );                  break;
-      case SDL_KEYUP:         kbinput(  0, event.key.keysym );                  break;
-      case SDL_JOYBUTTONDOWN: joyinput( 1, event.jbutton );                     break;
-      case SDL_JOYBUTTONUP:   joyinput( 0, event.jbutton );                     break;
-      case SDL_JOYAXISMOTION: axisinput( event.jaxis );                         break;
-      case SDL_QUIT:          cleanup();                                        break;
+      case SDL_VIDEOEXPOSE:                                                         break;
+      case SDL_VIDEORESIZE:     setvideosoon(event.resize.w,event.resize.h,0,10);   break;
+      case SDL_KEYDOWN:         kbinput(    1, event.key.keysym );                  break;
+      case SDL_KEYUP:           kbinput(    0, event.key.keysym );                  break;
+      case SDL_JOYBUTTONDOWN:   joyinput(   1, event.jbutton );                     break;
+      case SDL_JOYBUTTONUP:     joyinput(   0, event.jbutton );                     break;
+      case SDL_JOYAXISMOTION:   axisinput(  event.jaxis );                          break;
+      case SDL_MOUSEBUTTONDOWN: mouseinput( 1, event.button );                      break;
+      case SDL_MOUSEBUTTONUP:   mouseinput( 0, event.button );                      break;
+      case SDL_QUIT:            cleanup();                                          break;
     }
     idle_time += SDL_GetTicks() - idle_start;
     readinput();

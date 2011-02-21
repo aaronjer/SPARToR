@@ -57,6 +57,7 @@ void obj_mother_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob )
     pl->projectiles = 0;
     pl->grounded = 0;
     pl->facingr = 1;
+    pl->turning = 0;
     pl->stabbing = 0;
     pl->hovertime = 0;
   } //end for i<maxclients

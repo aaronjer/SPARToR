@@ -252,27 +252,7 @@ void mod_loadsurfs(int quit)
 
 void mod_predraw(SDL_Surface *screen,Uint32 vidfr)
 {
-  //draw background
-  int i=0,j,k;
-  while(i<23) {
-    int step = (i<6||i==10||i==15) ? 1 : 4;
-    for(j=0;j<15;j++)
-      SJGL_BlitScaled(textures[TEX_WORLD], &(SDL_Rect){80,16,step*16,16}, &(SDL_Rect){i*16,j*16,0,0}, scale, 0);
-    i += step;
-  }
-  for(i=8;i<15;i++)
-    SJGL_BlitScaled(textures[TEX_WORLD], &(SDL_Rect){ 80,64,16,16}, &(SDL_Rect){ 9*16, i*16,0,0}, scale, 0); //low tall
-  SJGL_BlitScaled(  textures[TEX_WORLD], &(SDL_Rect){ 96,48,16,16}, &(SDL_Rect){ 9*16, 7*16,0,0}, scale, 0); //corner nw
-  for(i=10;i<16;i++)
-    SJGL_BlitScaled(textures[TEX_WORLD], &(SDL_Rect){112,32,16,16}, &(SDL_Rect){ i*16, 7*16,0,0}, scale, 0); //long horiz
-  SJGL_BlitScaled(  textures[TEX_WORLD], &(SDL_Rect){112,80,16,16}, &(SDL_Rect){11*16, 7*16,0,0}, scale, 0); //t-piece
-  SJGL_BlitScaled(  textures[TEX_WORLD], &(SDL_Rect){128,80,16,16}, &(SDL_Rect){16*16, 7*16,0,0}, scale, 0); //corner se
-  for(i=0;i<7;i++)
-    SJGL_BlitScaled(textures[TEX_WORLD], &(SDL_Rect){ 80,64,16,16}, &(SDL_Rect){16*16, i*16,0,0}, scale, 0); //high tall
-  SJGL_BlitScaled(  textures[TEX_WORLD], &(SDL_Rect){ 80,64,16,16}, &(SDL_Rect){11*16, 6*16,0,0}, scale, 0); //little pipe
-  SJGL_BlitScaled(  textures[TEX_WORLD], &(SDL_Rect){ 80,48,16,16}, &(SDL_Rect){11*16, 5*16,0,0}, scale, 0); //pipe end
-  SJGL_BlitScaled(  textures[TEX_WORLD], &(SDL_Rect){144,16,48,16}, &(SDL_Rect){12*16, 8*16,0,0}, scale, 0); //shadow
-  SJGL_BlitScaled(  textures[TEX_WORLD], &(SDL_Rect){ 80,32,16,16}, &(SDL_Rect){ 6*16, 7*16,0,0}, scale, 0); //end cap
+  int i,j,k;
 
   //draw context
   CONTEXT_t *co = fr[vidfr%maxframes].objs[1].data; //FIXME: get correct context!
@@ -280,7 +260,11 @@ void mod_predraw(SDL_Surface *screen,Uint32 vidfr)
     for( j=0; j<co->y; j++ )
       for( i=0; i<co->x; i++ ) {
         int pos = co->x*co->y*k + co->x*j + i;
-        int tile = co->map[ pos ].data[0];
+        int tile;
+        if( co->dmap[ pos ].flags & CBF_NULL )
+          tile = co->map[  pos ].data[0];
+        else
+          tile = co->dmap[ pos ].data[0];
 
         SJGL_BlitScaled( textures[TEX_WORLD], &(SDL_Rect){tile*16,0,16,16},
                                               &(SDL_Rect){i*16,j*16,0,0},
