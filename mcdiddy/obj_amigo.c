@@ -64,10 +64,9 @@ void obj_amigo_draw( int objid, OBJ_t *o )
       y = 50;
       break;
   }
-  SJGL_BlitScaled(textures[TEX_AMIGO], &(SDL_Rect){     x,     y,     w,     h },
-                                       &(SDL_Rect){ am->pos.x-34,        am->pos.y-32,        0, 0 }, scale, z);
-  SJGL_BlitScaled(textures[TEX_AMIGO], &(SDL_Rect){ tip.x, tip.y, tip.w, tip.h },
-                                       &(SDL_Rect){ am->pos.x-34+tip.dx, am->pos.y-32+tip.dy, 0, 0 }, scale, z);
+  SJGL_SetTex(TEX_AMIGO);
+  SJGL_Blit(&(SDL_Rect){     x,     y,     w,     h }, am->pos.x-34,        am->pos.y-32,        z);
+  SJGL_Blit(&(SDL_Rect){ tip.x, tip.y, tip.w, tip.h }, am->pos.x-34+tip.dx, am->pos.y-32+tip.dy, z);
 }
 
 void obj_amigo_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob )

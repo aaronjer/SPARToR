@@ -15,8 +15,8 @@
 void obj_ghost_draw( int objid, OBJ_t *o )
 {
   GHOST_t *gh = o->data;
-  SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){80,177,16,16},
-                                        &(SDL_Rect){gh->pos.x, gh->pos.y, 16, 16}, scale,NATIVEH);
+  SJGL_SetTex( TEX_PLAYER );
+  SJGL_Blit( &(SDL_Rect){80,177,16,16}, gh->pos.x, gh->pos.y, NATIVEH );
 }
 
 void obj_ghost_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob )

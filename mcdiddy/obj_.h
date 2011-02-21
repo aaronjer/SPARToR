@@ -25,7 +25,7 @@ enum { OBJT_EMPTY = 0,
 
 // MOTHER //
 typedef struct{
-  int mystery_value;
+  char edit;
 } MOTHER_t;
 
 void obj_mother_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob );

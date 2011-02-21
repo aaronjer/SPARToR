@@ -19,15 +19,15 @@ void obj_dummy_draw( int objid, OBJ_t *o )
                               du->hull[1].x-du->hull[0].x, du->hull[1].y-du->hull[0].y};
   Sint16 offs = drect.w==drect.h ? 48 : 0;
 
+  SJGL_SetTex( TEX_WORLD );
+
   if( drect.w > drect.h ) while( drect.w>0 && drect.w<400 ) {
-    SJGL_BlitScaled(textures[TEX_WORLD], &(SDL_Rect){0+offs,16,16,16},
-                                         &(SDL_Rect){drect.x,drect.y,drect.w,drect.h}, scale, 0);
+    SJGL_Blit( &(SDL_Rect){0+offs,16,16,16}, drect.x, drect.y, 0 );
     drect.x += 16;
     drect.w -= 16;
     offs = drect.w==16 ? 32 : 16;
   } else                  while( drect.h>0 && drect.h<400 ) {
-    SJGL_BlitScaled(textures[TEX_WORLD], &(SDL_Rect){48,0+offs,16,16},
-                                         &(SDL_Rect){drect.x,drect.y,drect.w,drect.h}, scale, 0);
+    SJGL_Blit( &(SDL_Rect){48,0+offs,16,16}, drect.x, drect.y, 0 );
     drect.y += 16;
     drect.h -= 16;
     offs = drect.h==16 ? 32 : 16;

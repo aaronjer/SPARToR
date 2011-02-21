@@ -15,8 +15,8 @@
 void obj_amigosword_draw( int objid, OBJ_t *o )
 {
   AMIGOSWORD_t *sw = o->data;
-  SJGL_BlitScaled(textures[TEX_AMIGO], &(SDL_Rect){ 200, 50+50*(hotfr%3), 56, 50 },
-                                       &(SDL_Rect){ sw->pos.x-25, sw->pos.y-28, 0, 0 }, scale, sw->pos.y );
+  SJGL_SetTex( TEX_AMIGO );
+  SJGL_Blit( &(SDL_Rect){ 200, 50+50*(hotfr%3), 56, 50 }, sw->pos.x-25, sw->pos.y-28, sw->pos.y );
 }
 
 void obj_amigosword_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob )

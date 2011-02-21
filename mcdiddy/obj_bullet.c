@@ -15,8 +15,8 @@
 void obj_bullet_draw( int objid, OBJ_t *o )
 {
   BULLET_t *bu = o->data;
-  SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){144,150,4,4},
-                                        &(SDL_Rect){bu->pos.x-2, bu->pos.y-2, 4, 4}, scale,NATIVEH);
+  SJGL_SetTex( TEX_PLAYER );
+  SJGL_Blit( &(SDL_Rect){144,150,4,4}, bu->pos.x-2, bu->pos.y-2, NATIVEH );
 }
 
 void obj_bullet_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob )

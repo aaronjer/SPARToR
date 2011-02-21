@@ -125,6 +125,8 @@ void render() {
   int camx = NATIVEW/2-(int)v_camx, camy = NATIVEH/2-(int)v_camy;
   glTranslatef(camx,camy,0);
 
+  SJGL_SetTex( (GLuint)-1 ); //forget previous texture name
+
   mod_predraw(screen,vidfr);
 
   //display objects
@@ -146,8 +148,8 @@ void render() {
       if( pos ) {
         if( hull ) {
           glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
-          SDL_Rect rect = (SDL_Rect){pos->x+hull[0].x, pos->y+hull[0].y, hull[1].x-hull[0].x, hull[1].y-hull[0].y};
-          SJGL_BlitScaled(0, &rect, &rect, scale, 0);
+          SDL_Rect rect = (SDL_Rect){0, 0, hull[1].x-hull[0].x, hull[1].y-hull[0].y};
+          SJGL_Blit( &rect, pos->x+hull[0].x, pos->y+hull[0].y, 0 );
           glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
         }
         sprintf(buf,"%d",i);

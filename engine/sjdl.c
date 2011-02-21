@@ -13,10 +13,12 @@
 
 #include <GL/glew.h>
 #include "SDL.h"
+#include "mod.h"
 #include "sjdl.h"
 
 //create a new surface by copying and scaling another
-SDL_Surface *SJDL_CopyScaled(SDL_Surface *src,Uint32 flags,int scale) {
+SDL_Surface *SJDL_CopyScaled(SDL_Surface *src,Uint32 flags,int scale)
+{
   Uint32 u,v,i,j;
   Uint8 r,g,b;
   SDL_Surface *dst = SDL_CreateRGBSurface(flags,src->w*scale,src->h*scale,
@@ -39,45 +41,53 @@ SDL_Surface *SJDL_CopyScaled(SDL_Surface *src,Uint32 flags,int scale) {
   return dst;
 }
 
-//uses GL to do the same thing as SJDL_BlitScaled
-int SJGL_BlitScaled(GLuint tex, SDL_Rect *s, SDL_Rect *d, int scale, int z) {
+
+//sets the current texture unless it is already set
+void SJGL_SetTex(GLuint tex)
+{
+  static GLuint prev = (GLuint)-1;
+  if( prev==tex ) return;
+  prev = tex;
+  if( prev==(GLuint)-1 ) return;
+
   glBindTexture(GL_TEXTURE_2D,0); //FIXME: hack 4 win
-  glBindTexture(GL_TEXTURE_2D,tex);
+  glBindTexture(GL_TEXTURE_2D,textures[tex]);
+}
 
-  if( z<0 ) z = (d->y+s->h)*-z;
 
-  /*
-  d->x *= scale;
-  d->y *= scale;
-  d->w = s->w*scale;
-  d->h = s->h*scale;
-  */
-  d->w = s->w;
-  d->h = s->h;
+//uses GL to do the same thing as SJDL_BlitScaled
+int SJGL_Blit(SDL_Rect *s, int x, int y, int z)
+{
+  if( z<0 ) z = (y+s->h)*-z;
 
   glBegin(GL_QUADS);
-  glTexCoord3i(s->x     ,s->y     ,z); glVertex3i(d->x     ,d->y     ,z);
-  glTexCoord3i(s->x+s->w,s->y     ,z); glVertex3i(d->x+d->w,d->y     ,z);
-  glTexCoord3i(s->x+s->w,s->y+s->h,z); glVertex3i(d->x+d->w,d->y+d->h,z);
-  glTexCoord3i(s->x     ,s->y+s->h,z); glVertex3i(d->x     ,d->y+d->h,z);
+  glTexCoord3i(s->x     ,s->y     ,z); glVertex3i(x     ,y     ,z);
+  glTexCoord3i(s->x+s->w,s->y     ,z); glVertex3i(x+s->w,y     ,z);
+  glTexCoord3i(s->x+s->w,s->y+s->h,z); glVertex3i(x+s->w,y+s->h,z);
+  glTexCoord3i(s->x     ,s->y+s->h,z); glVertex3i(x     ,y+s->h,z);
   glEnd();
 
   return 0;
 }
 
+
 //blits from one surface to another after scaling s/drect positions and sizes
-int SJDL_BlitScaled(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst, SDL_Rect *dstrect, int scale) {
+int SJDL_BlitScaled(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst, SDL_Rect *dstrect, int scale)
+{
   SDL_Rect srcrect2 = (SDL_Rect){srcrect->x*scale, srcrect->y*scale, srcrect->w*scale, srcrect->h*scale};
   dstrect->x *= scale;
   dstrect->y *= scale;
   return SDL_BlitSurface(src,&srcrect2,dst,dstrect);
 }
 
+
 //fills a rectangle after scaling its position and size
-int SJDL_FillScaled(SDL_Surface *dst, SDL_Rect *dstrect, Uint32 color, int scale) {
+int SJDL_FillScaled(SDL_Surface *dst, SDL_Rect *dstrect, Uint32 color, int scale)
+{
   SDL_Rect dstrect2 = (SDL_Rect){dstrect->x*scale, dstrect->y*scale, dstrect->w*scale, dstrect->h*scale};
   return SDL_FillRect(dst,&dstrect2,color);
 }
+
 
 //sets a pixel on an sdl surface
 void SJDL_SetPixel(SDL_Surface *surf, int x, int y, Uint8 R, Uint8 G, Uint8 B)
@@ -166,7 +176,8 @@ void SJDL_GetPixel(SDL_Surface *surf, int x, int y, Uint8 *R, Uint8 *G, Uint8 *B
 } 
 
 
-void SJDL_DrawSquare(SDL_Surface *surf, SDL_Rect *rect, unsigned int color) {
+void SJDL_DrawSquare(SDL_Surface *surf, SDL_Rect *rect, unsigned int color)
+{
   SDL_Rect edge;
   glBegin(GL_LINE_LOOP);
   glVertex2i(rect->x        ,rect->y        );
@@ -188,7 +199,8 @@ void SJDL_DrawSquare(SDL_Surface *surf, SDL_Rect *rect, unsigned int color) {
 
 
 // returns the equivalent opengl format of an sdl surface
-GLenum SJDL_GLFormatOf(SDL_Surface *surf) {
+GLenum SJDL_GLFormatOf(SDL_Surface *surf)
+{
   if( surf->format->Amask > 0 ) {
     if( surf->format->Rmask > surf->format->Bmask )
       return (SDL_BYTEORDER==SDL_LIL_ENDIAN ? GL_BGRA : GL_RGBA);
@@ -201,5 +213,4 @@ GLenum SJDL_GLFormatOf(SDL_Surface *surf) {
       return (SDL_BYTEORDER==SDL_LIL_ENDIAN ? GL_RGB : GL_BGR);
   }
 }
-
 

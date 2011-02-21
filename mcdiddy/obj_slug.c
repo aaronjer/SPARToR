@@ -15,8 +15,8 @@
 void obj_slug_draw( int objid, OBJ_t *o )
 {
   SLUG_t *sl = o->data;
-  SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){(sl->vel.x>0?20:0)+(sl->dead?40:0),177,20,16},
-                                        &(SDL_Rect){sl->pos.x-10,sl->pos.y-8,0,0}, scale, sl->pos.y);
+  SJGL_SetTex( TEX_PLAYER );
+  SJGL_Blit( &(SDL_Rect){(sl->vel.x>0?20:0)+(sl->dead?40:0),177,20,16}, sl->pos.x-10, sl->pos.y-8, sl->pos.y );
 }
 
 void obj_slug_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob )

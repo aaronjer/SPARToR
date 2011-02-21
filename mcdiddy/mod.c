@@ -94,7 +94,7 @@ void mod_setup(Uint32 setupfr)
   memset( co->dmap, 0, (sizeof *co->dmap) * volume );
   int i;
   for( i=0; i<volume; i++ ) {
-    co->map[ i].data[0] = i%13;
+    co->map[ i].data[0] = 4;
     co->dmap[i].flags   = CBF_NULL;
   }
 
@@ -254,6 +254,8 @@ void mod_predraw(SDL_Surface *screen,Uint32 vidfr)
 {
   int i,j,k;
 
+  SJGL_SetTex( TEX_WORLD );
+
   //draw context
   CONTEXT_t *co = fr[vidfr%maxframes].objs[1].data; //FIXME: get correct context!
   for( k=0; k<co->z; k++ )
@@ -266,9 +268,7 @@ void mod_predraw(SDL_Surface *screen,Uint32 vidfr)
         else
           tile = co->dmap[ pos ].data[0];
 
-        SJGL_BlitScaled( textures[TEX_WORLD], &(SDL_Rect){tile*16,0,16,16},
-                                              &(SDL_Rect){i*16,j*16,0,0},
-                                              scale, 0 );
+        SJGL_Blit( &(SDL_Rect){tile*16,0,16,16}, i*16, j*16, 0 );
       }
 }
 

@@ -23,32 +23,33 @@ void obj_player_draw( int objid, OBJ_t *o )
   if( pl->goingu ) gunshift = 96;
   if( pl->goingd ) gunshift = 48;
   if( pl->goingu==pl->goingd ) gunshift = 0;
-  SDL_Rect drect = (SDL_Rect){(pl->pos.x-10),(pl->pos.y-15),0,0};
-  int z = drect.y + pl->hull[1].y;
+  int x = pl->pos.x-10;
+  int y = pl->pos.y-15;
+  int z = y + pl->hull[1].y;
   int xshift = (pl->goingd>0 ? 40 : 0) + (pl->turning ? 80 : (pl->facingr ? 0 : 20 ));
+
+  SJGL_SetTex( TEX_PLAYER );
 
   if( pl->facingr ) {
     if( pl->model==4 ) //girl hair
-      SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){ 80,120,20,15},
-                                            &(SDL_Rect){drect.x-4,drect.y+(pl->goingd?4:0)+pl->gundown/7,0,0}, scale, z);
-    SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){ xshift, 0+pl->model*30,20,30}, &drect, scale, z);
-    drect = (SDL_Rect){(pl->pos.x- 5-pl->gunback),(pl->pos.y-10+pl->gundown/5),0,0};
+      SJGL_Blit( &(SDL_Rect){80,120,20,15}, x-4, y+(pl->goingd?4:0)+pl->gundown/7, z );
+
+    SJGL_Blit( &(SDL_Rect){xshift,pl->model*30,20,30}, x, y, z);
+
     if( !pl->stabbing ) //gun
-      SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){ 0+gunshift,150,24,27}, &drect, scale, z);
+      SJGL_Blit( &(SDL_Rect){0+gunshift,150,24,27}, pl->pos.x- 5-pl->gunback, pl->pos.y-10+pl->gundown/5, z );
   } else {
     if( pl->model==4 ) //girl hair
-      SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){100,120,20,15},
-                                            &(SDL_Rect){drect.x+4,drect.y+(pl->goingd?4:0)+pl->gundown/7,0,0}, scale, z);
-    SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){ xshift, 0+pl->model*30,20,30}, &drect, scale, z);
-    drect = (SDL_Rect){(pl->pos.x-19+pl->gunback),(pl->pos.y-10+pl->gundown/5),0,0};
+      SJGL_Blit( &(SDL_Rect){100,120,20,15}, x+4, y+(pl->goingd?4:0)+pl->gundown/7, z );
+
+    SJGL_Blit( &(SDL_Rect){xshift,pl->model*30,20,30}, x, y, z);
+
     if( !pl->stabbing ) //gun
-      SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){24+gunshift,150,24,27}, &drect, scale, z);
+      SJGL_Blit( &(SDL_Rect){24+gunshift,150,24,27}, pl->pos.x-19+pl->gunback, pl->pos.y-10+pl->gundown/5, z );
   }
 
-  if( pl->stabbing ) { //up/down stabbing
-    drect = (SDL_Rect){pl->pos.x-2,pl->pos.y-(pl->stabbing<0?30:0),0,0};
-    SJGL_BlitScaled(textures[TEX_PLAYER], &(SDL_Rect){148+(pl->stabbing<0?5:0),150,5,27}, &drect, scale, z);
-  }
+  if( pl->stabbing ) //up/down stabbing
+    SJGL_Blit( &(SDL_Rect){148+(pl->stabbing<0?5:0),150,5,27}, pl->pos.x-2, pl->pos.y-(pl->stabbing<0?30:0), z );
 }
 
 void obj_player_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob )
