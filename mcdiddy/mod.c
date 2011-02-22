@@ -195,15 +195,18 @@ void mod_keybind(int device,int sym,int press,char cmd)
 }
 
 
-char mod_key2cmd(int device,int sym,int press)
+int mod_mkcmd(FCMD_t *c,int device,int sym,int press)
 {
   int i;
   short hash = press<<15 | device<<8 | sym;
 
   for(i=0; i<binds_size; i++)
-    if( binds[i].hash==hash )
-      return binds[i].cmd;
-  return 0;
+    if( binds[i].hash==hash ) {
+      memset( c, 0, sizeof *c );
+      c->cmd = binds[i].cmd;
+      return 0; //success
+    }
+  return -1; //fail
 }
 
 

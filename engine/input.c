@@ -29,9 +29,9 @@ static int  kwik = 0;
 static char kwik_presscmd;
 static char kwik_releasecmd;
 
-static char cmdbuf[250] = {0};
-static int  cbwrite = 0;
-static int  cbread = 0;
+static FCMD_t cmdbuf[250] = {{0}};
+static int    cbwrite = 0;
+static int    cbread = 0;
 
 static SDL_Joystick **joysticks;
 
@@ -51,22 +51,23 @@ void inputinit()
 }
 
 
-void putcmd(char cmd)
+void putcmd(int device,int sym,int press)
 {
-  if( !cmd || cbread%250==(cbwrite+1)%250 )
+  if( cbread%250==(cbwrite+1)%250 )
     return;
-  cmdbuf[cbwrite] = cmd;
+  if( mod_mkcmd( cmdbuf+cbwrite, device, sym, press ) )
+    return;
   cbwrite = (cbwrite+1)%250;
 }
 
 
-char getnextcmd()
+FCMD_t *getnextcmd()
 {
-  char cmd = cmdbuf[cbread];
-  if( cmd==0 ) return 0;
-  cmdbuf[cbread] = 0;
+  if( cbread==cbwrite )
+    return NULL;
+  FCMD_t *c = cmdbuf+cbread;
   cbread = (cbread+1)%250;
-  return cmd;
+  return c;
 }
 
 
@@ -99,7 +100,7 @@ void kbinput(int press,SDL_keysym keysym)
     else if(sym==SDLK_ESCAPE && console_open)
       toggleconsole();
   } else
-    putcmd( mod_key2cmd(INP_KEYB,sym,press) );
+    putcmd( INP_KEYB,sym,press );
 }
 
 
@@ -108,7 +109,7 @@ void joyinput(int press,SDL_JoyButtonEvent jbutton)
   if( kwik && press )
     kwikbind( INP_JBUT, jbutton.button );
   else
-    putcmd( mod_key2cmd(INP_JBUT,jbutton.button,press) );
+    putcmd( INP_JBUT,jbutton.button,press );
 }
 
 
@@ -131,10 +132,10 @@ void axisinput(SDL_JoyAxisEvent jaxis)
   int val = jaxis.value;
   int ax = jaxis.axis;
 
-  if( val> 3400 && !(*stat&POS_ON) ) { *stat|= POS_ON; kwik ? kwikbind(INP_JAXP,ax) : putcmd( mod_key2cmd(INP_JAXP,ax,1) ); }
-  if( val< 3000 &&  (*stat&POS_ON) ) { *stat&=~POS_ON;                                putcmd( mod_key2cmd(INP_JAXP,ax,0) ); }
-  if( val<-3400 && !(*stat&NEG_ON) ) { *stat|= NEG_ON; kwik ? kwikbind(INP_JAXN,ax) : putcmd( mod_key2cmd(INP_JAXN,ax,1) ); }
-  if( val>-3000 &&  (*stat&NEG_ON) ) { *stat&=~NEG_ON;                                putcmd( mod_key2cmd(INP_JAXN,ax,0) ); }
+  if( val> 3400 && !(*stat&POS_ON) ) { *stat|= POS_ON; kwik ? kwikbind(INP_JAXP,ax) : putcmd( INP_JAXP,ax,1 ); }
+  if( val< 3000 &&  (*stat&POS_ON) ) { *stat&=~POS_ON;                                putcmd( INP_JAXP,ax,0 ); }
+  if( val<-3400 && !(*stat&NEG_ON) ) { *stat|= NEG_ON; kwik ? kwikbind(INP_JAXN,ax) : putcmd( INP_JAXN,ax,1 ); }
+  if( val>-3000 &&  (*stat&NEG_ON) ) { *stat&=~NEG_ON;                                putcmd( INP_JAXN,ax,0 ); }
 }
 
 
@@ -145,7 +146,7 @@ void mouseinput(int press,SDL_MouseButtonEvent mbutton)
   if( kwik )
     kwikbind(INP_MBUT,mbutton.button);
   else
-    putcmd( mod_key2cmd(INP_MBUT,mbutton.button,press) );
+    putcmd( INP_MBUT,mbutton.button,press );
 }
 
 
@@ -162,10 +163,10 @@ void readinput()
   if( cmdfr<infr ) //this is the new cmdfr, so clear it, unless we already have cmds stored in the future!
     setcmdfr(infr);
   infr %= maxframes;
-  if( fr[infr].cmds[me].cmd==0 && cmdbuf[cbread] ) {
-    char cmd;
-    if( (cmd = getnextcmd()) ) { // dirty frame if new cmd inserted
-      fr[infr].cmds[me].cmd = cmd;
+  if( fr[infr].cmds[me].cmd==0 ) {
+    FCMD_t *c;
+    if( (c = getnextcmd()) ) { // dirty frame if new cmd inserted
+      fr[infr].cmds[me] = *c;
       fr[infr].dirty = 1;
     }
   }

@@ -47,7 +47,7 @@ void mod_recvobj(OBJ_t *o);
 void mod_setvideo(int w,int h);
 void mod_quit();
 void mod_keybind(int device,int sym,int press,char cmd);
-char mod_key2cmd(int device,int sym,int press);
+int  mod_mkcmd(FCMD_t *c,int device,int sym,int press);
 int  mod_command(char *q);
 void mod_loadsurfs(int quit);
 void mod_predraw(SDL_Surface *screen,Uint32 vidfr);
