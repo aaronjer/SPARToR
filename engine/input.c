@@ -59,6 +59,7 @@ void putcmd(char cmd)
   cbwrite = (cbwrite+1)%250;
 }
 
+
 char getnextcmd()
 {
   char cmd = cmdbuf[cbread];

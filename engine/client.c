@@ -82,13 +82,20 @@ void client() {
     Uint32 sentfrmod = sentfr%maxframes;
     if( fr[sentfrmod].dirty ) {
       n = 0;
-      packbytes(pkt->data,'c'                           ,&n,1);
-      packbytes(pkt->data,pktnum++                      ,&n,4);
-      packbytes(pkt->data,sentfr                        ,&n,4);
-      packbytes(pkt->data,fr[sentfrmod].cmds[me].cmd    ,&n,1);
-      packbytes(pkt->data,fr[sentfrmod].cmds[me].mousehi,&n,1);
-      packbytes(pkt->data,fr[sentfrmod].cmds[me].mousex ,&n,1);
-      packbytes(pkt->data,fr[sentfrmod].cmds[me].mousey ,&n,1);
+      FCMD_t *c = fr[sentfrmod].cmds+me;
+      packbytes(pkt->data,'c'             ,&n,1);
+      packbytes(pkt->data,pktnum++        ,&n,4);
+      packbytes(pkt->data,sentfr          ,&n,4);
+      packbytes(pkt->data,c->cmd          ,&n,1);
+      packbytes(pkt->data,c->mousehi      ,&n,1);
+      packbytes(pkt->data,c->mousex       ,&n,1);
+      packbytes(pkt->data,c->mousey       ,&n,1);
+      packbytes(pkt->data,c->flags        ,&n,2);
+      if( c->flags & CMDF_DATA ) {
+        packbytes(pkt->data,c->datasz     ,&n,2);
+        memcpy(pkt->data+n,c->data,c->datasz);
+        n += c->datasz;
+      }
       pkt->len = n;
       if( !SDLNet_UDP_Send(clientsock,-1,pkt) ) {
         SJC_Write("Error: Could not send cmd update packet!");

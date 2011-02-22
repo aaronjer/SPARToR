@@ -36,6 +36,7 @@
 //cmd flags
 #define CMDF_NEW  (1<< 0) //new client connect
 #define CMDF_QUIT (1<< 1) //disconenct
+#define CMDF_DATA (1<< 2) //command has associated data
 
 //CB flags
 #define CBF_SOLID (1<< 0) //solid
@@ -50,6 +51,8 @@ typedef struct{
   char      mousex;
   char      mousey;
   short     flags;
+  size_t    datasz;
+  char     *data;
 } FCMD_t;
 
 typedef struct{

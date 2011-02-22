@@ -102,6 +102,16 @@ SJC_Write("Miracle! Packet number %d received from client %d",pktnum,i);
         pcmd->mousehi = unpackbytes(pkt->data,pkt->len,&n,1);
         pcmd->mousex  = unpackbytes(pkt->data,pkt->len,&n,1);
         pcmd->mousey  = unpackbytes(pkt->data,pkt->len,&n,1);
+        pcmd->flags   = unpackbytes(pkt->data,pkt->len,&n,2);
+        if( pcmd->flags & CMDF_DATA ) { //check for variable data
+          pcmd->datasz = unpackbytes(pkt->data,pkt->len,&n,2);
+          if( pcmd->datasz > sizeof pcmd->data ) {
+            SJC_Write("Treachery: datasz too large (%d) from client %d",pcmd->datasz,i);
+            break;
+          }
+          memcpy( pcmd->data, pkt->data+n, pcmd->datasz );
+          n += pcmd->datasz;
+        }
         break;
       default:
         SJC_Write("Client %d sent mysterious, incomprehensible packet",i);

@@ -21,7 +21,8 @@ INPUTNAME_t inputnames[] = {{"left" ,CMDT_1LEFT ,CMDT_0LEFT },
                             {"up"   ,CMDT_1UP   ,CMDT_0UP   },
                             {"down" ,CMDT_1DOWN ,CMDT_0DOWN },
                             {"fire" ,CMDT_1FIRE ,CMDT_0FIRE },
-                            {"jump" ,CMDT_1JUMP ,CMDT_0JUMP }};
+                            {"jump" ,CMDT_1JUMP ,CMDT_0JUMP },
+                            {"edit" ,CMDT_1EDIT ,CMDT_0EDIT }};
 int numinputnames = (sizeof inputnames) / (sizeof *inputnames);
 
 char objectnames[][16] =

@@ -24,9 +24,9 @@
 
 
 typedef struct {
-  char name[16];
-  int  presscmd;
-  int  releasecmd;
+  char   name[16];
+  int    presscmd;
+  int    releasecmd;
 } INPUTNAME_t;
 
 

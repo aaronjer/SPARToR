@@ -31,5 +31,7 @@ enum { CMDT_1LEFT = 1,
        CMDT_1JUMP,
        CMDT_0JUMP,
        CMDT_1FIRE,
-       CMDT_0FIRE };
+       CMDT_0FIRE,
+       CMDT_1EDIT,
+       CMDT_0EDIT };
 

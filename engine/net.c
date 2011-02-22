@@ -53,12 +53,18 @@ Uint8 *packframecmds(Uint32 packfr,size_t *n) {
 
   packbytes(data,maxclients,n,4);
   for(i=0;i<maxclients;i++) {
-    packbytes(data,pfr->cmds[i].cmd    ,n,1);
-    packbytes(data,pfr->cmds[i].mousehi,n,1);
-    packbytes(data,pfr->cmds[i].mousex ,n,1);
-    packbytes(data,pfr->cmds[i].mousey ,n,1);
-    packbytes(data,pfr->cmds[i].flags  ,n,2);
-    if( pfr->cmds[i].flags & CMDF_NEW )
+    FCMD_t *c = pfr->cmds+i;
+    packbytes(data,c->cmd    ,n,1);
+    packbytes(data,c->mousehi,n,1);
+    packbytes(data,c->mousex ,n,1);
+    packbytes(data,c->mousey ,n,1);
+    packbytes(data,c->flags  ,n,2);
+    if( c->flags & CMDF_DATA ) {
+      packbytes(data,c->datasz     ,n,2);
+      memcpy(data+*n,c->data,c->datasz);
+      *n += c->datasz;
+    }
+    if( c->flags & CMDF_NEW )
       SJC_Write("%u: Packed CMDF_NEW for client %d",packfr,i);
   }
   return data;
@@ -106,12 +112,22 @@ int unpackframecmds(Uint32 packfr,Uint8 *data,size_t len) {
     return -1;
   }
   for(i=0;i<maxclients;i++) {
-    pfr->cmds[i].cmd     = unpackbytes(data,len,&n,1);
-    pfr->cmds[i].mousehi = unpackbytes(data,len,&n,1);
-    pfr->cmds[i].mousex  = unpackbytes(data,len,&n,1);
-    pfr->cmds[i].mousey  = unpackbytes(data,len,&n,1);
-    pfr->cmds[i].flags   = unpackbytes(data,len,&n,2);
-    if( pfr->cmds[i].flags & CMDF_NEW )
+    FCMD_t *c = pfr->cmds+i;
+    c->cmd     = unpackbytes(data,len,&n,1);
+    c->mousehi = unpackbytes(data,len,&n,1);
+    c->mousex  = unpackbytes(data,len,&n,1);
+    c->mousey  = unpackbytes(data,len,&n,1);
+    c->flags   = unpackbytes(data,len,&n,2);
+    if( c->flags & CMDF_DATA ) { //check for variable data
+      c->datasz = unpackbytes(data,len,&n,2);
+      if( c->datasz > sizeof c->data ) {
+        SJC_Write("Treachery: datasz too large (%d) from server",c->datasz);
+        break;
+      }
+      memcpy( c->data, data+n, c->datasz );
+      n += c->datasz;
+    }
+    if( c->flags & CMDF_NEW )
       SJC_Write("%u: Unpacked CMDF_NEW for client %d",packfr,i);
   }
   return n;
