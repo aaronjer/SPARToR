@@ -7,6 +7,7 @@
 #define NATIVEH    240
 #define MODNAME    "mcdiddy"
 #define CBDATASIZE 4     //context block (CB) payload size
+#define MAXCMDDATA 64    //maximum size of extra command data
 
 
 #include <GL/glew.h>

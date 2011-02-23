@@ -207,8 +207,16 @@ int mod_mkcmd(FCMD_t *c,int device,int sym,int press)
     if( binds[i].hash==hash ) {
       memset( c, 0, sizeof *c );
       c->cmd = binds[i].cmd;
-      if( c->cmd==CMDT_0EDIT ) { //edit command?
-        SJC_Write("Edit cmd, mouse is at %i,%i",screen2native_x(i_mousex),screen2native_y(i_mousey));
+      if( c->cmd==CMDT_1EDIT ) { //edit command?
+        int tilex = (myghostleft + screen2native_x(i_mousex))/16;
+        int tiley = (myghosttop  + screen2native_y(i_mousey))/16;
+        size_t n = 0;
+        packbytes(c->data,  'p',&n,1);
+        packbytes(c->data,tilex,&n,4);
+        packbytes(c->data,tiley,&n,4);
+        packbytes(c->data,    1,&n,4);
+        c->datasz = n;
+        c->flags |= CMDF_DATA; //indicate presence of extra cmd data
       }
       return 0; //success
     }

@@ -28,5 +28,25 @@ void obj_ghost_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob )
     myghostleft = gh->pos.x + gh->hull[0].x;
     myghosttop  = gh->pos.y + gh->hull[0].y;
   }
+
+  FCMD_t *c = fr[b].cmds + gh->client;
+  switch( c->cmd ) {
+    case CMDT_1EDIT: { //FIXME: UNSAFE check for edit rights, data values
+      size_t n = 0;
+      char letter = (char)unpackbytes(c->data,MAXCMDDATA,&n,1);
+      int  tilex  = (int) unpackbytes(c->data,MAXCMDDATA,&n,4);
+      int  tiley  = (int) unpackbytes(c->data,MAXCMDDATA,&n,4);
+      int  value  = (int) unpackbytes(c->data,MAXCMDDATA,&n,4);
+
+      CONTEXT_t *co = fr[b].objs[ob->context].data;
+      int pos = 0*co->y*co->x + tiley*co->x + tilex;
+
+      if( letter!='p' ) { SJC_Write("Unknown edit command!"); break; }
+
+      co->dmap[pos].data[0] = (char)value;
+      co->dmap[pos].flags   = 0;
+      break;
+    }
+  }
 }
 

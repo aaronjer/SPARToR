@@ -52,7 +52,7 @@ typedef struct{
   char      mousey;
   short     flags;
   size_t    datasz;
-  char     *data;
+  Uint8     data[MAXCMDDATA];
 } FCMD_t;
 
 typedef struct{

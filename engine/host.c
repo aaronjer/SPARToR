@@ -128,7 +128,7 @@ SJC_Write("Miracle! Packet number %d received from client %d",pktnum,i);
     if( fr[u%maxframes].dirty ) {
       data = packframecmds(u,&n);
       if( pkt->len+4+n >= 500 /*pkt->maxlen*/ || pkt->data[1]>100 ) { //FIXME: use a smaller pkt->maxlen
-        //SJC_Write("%u: Packed too many cmds! Will get the rest next frame...",hotfr);
+        SJC_Write("%u: Packed too many cmds! Will get the rest next frame...",hotfr);
         free(data);
         break;
       }
