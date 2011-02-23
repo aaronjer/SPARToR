@@ -19,7 +19,7 @@
 //create a new surface by copying and scaling another
 SDL_Surface *SJDL_CopyScaled(SDL_Surface *src,Uint32 flags,int scale)
 {
-  Uint32 u,v,i,j;
+  int u,v,i,j;
   Uint8 r,g,b;
   SDL_Surface *dst = SDL_CreateRGBSurface(flags,src->w*scale,src->h*scale,
                                           src->format->BitsPerPixel,

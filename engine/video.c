@@ -249,7 +249,7 @@ void render() {
   SDL_GL_SwapBuffers();
   setdrawnfr(vidfr);
 
-  if( vidfrmod==maxframes-1 ) { // reset time stats
+  if( (int)vidfrmod==maxframes-1 ) { // reset time stats
     total_time       = 0;
     idle_time        = 0;
     render_time      = 0;

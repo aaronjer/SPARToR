@@ -33,8 +33,8 @@ void IMG_Quit() {}
 
 //globals
 Uint32 ticksaframe = TICKSAFRAME;
-size_t maxframes = 360;
-size_t maxobjs = 100;
+int maxframes = 360;
+int maxobjs = 100;
 int maxclients = 32;
 
 FRAME_t *fr;
@@ -331,7 +331,7 @@ void *flex(OBJ_t *o,Uint32 part) {
     if( o->flags & OBJF_PVEL ) offset += sizeof(V);
     return NULL;
   HARDER
-  return (V*)(o->data+offset);
+  return (V*)((char *)o->data+offset);
 }
 
 

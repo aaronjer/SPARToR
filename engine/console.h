@@ -8,7 +8,7 @@
 typedef struct
 {
   char *buf[200];
-  int size[200];
+  size_t size[200];
 } SJC_t;
 
 extern SJC_t SJC;

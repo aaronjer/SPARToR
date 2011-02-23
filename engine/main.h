@@ -92,8 +92,8 @@ typedef struct{
 
 //externs
 extern Uint32 ticksaframe;
-extern size_t maxframes;
-extern size_t maxobjs;
+extern int    maxframes;
+extern int    maxobjs;
 extern int    maxclients;
 
 extern FRAME_t *fr;

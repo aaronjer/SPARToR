@@ -29,7 +29,7 @@ static int  kwik = 0;
 static char kwik_presscmd;
 static char kwik_releasecmd;
 
-static FCMD_t cmdbuf[250] = {{0}};
+static FCMD_t cmdbuf[250];
 static int    cbwrite = 0;
 static int    cbread = 0;
 

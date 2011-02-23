@@ -54,6 +54,7 @@ void host_stop() {
 void host() {
   int status;
   int i;
+  Uint32 u;
   Uint8 *data;
   size_t n;
   Uint32 packfr;
@@ -123,20 +124,20 @@ SJC_Write("Miracle! Packet number %d received from client %d",pktnum,i);
   pkt->data[0] = 'C';
   pkt->data[1] = 0;
   pkt->len = 2;
-  for(i=surefr+1;i<=cmdfr;i++) { //scan for dirty frames to send
-    if( fr[i%maxframes].dirty ) {
-      data = packframecmds(i,&n);
+  for(u=surefr+1;u<=cmdfr;u++) { //scan for dirty frames to send
+    if( fr[u%maxframes].dirty ) {
+      data = packframecmds(u,&n);
       if( pkt->len+4+n >= 500 /*pkt->maxlen*/ || pkt->data[1]>100 ) { //FIXME: use a smaller pkt->maxlen
         //SJC_Write("%u: Packed too many cmds! Will get the rest next frame...",hotfr);
         free(data);
         break;
       }
-      packbytes(pkt->data+pkt->len,i,NULL,4);
+      packbytes(pkt->data+pkt->len,u,NULL,4);
       memcpy(pkt->data+pkt->len+4, data, n);
       free(data);
       pkt->len += 4+n;
       pkt->data[1]++;
-      fr[i%maxframes].dirty = 0;
+      fr[u%maxframes].dirty = 0;
     }
   }
   if( pkt->data[1]>0 ) { //we have packed cmds to send along!
@@ -153,9 +154,10 @@ SJC_Write("Miracle! Packet number %d received from client %d",pktnum,i);
 
 //accept a new client and store the "connection"
 void host_welcome() {
-  int i;
+  int    i;
+  Uint32 u;
   size_t n;
-  char *p = (char *)pkt->data;
+  char  *p = (char *)pkt->data;
   Uint8 *q;
   if( strncmp(p,PROTONAME,strlen(PROTONAME)) ) {
     SJC_Write("Junk packet from unknown client at %u:%u.",pkt->address.host,pkt->address.port);
@@ -192,7 +194,7 @@ void host_welcome() {
   // send state!
   q = packframe(surefr,&n);
   SJC_Write("Frame %u packed into %d bytes, ready to send state.",surefr,n);
-  if( n+10>pkt->maxlen ) {
+  if( n+10>(size_t)pkt->maxlen ) {
     SJC_Write("Error: Packed frame is too big to send!");
     free(q);
     return;
@@ -211,8 +213,8 @@ void host_welcome() {
   }
   //dirty all unsure frames
   SJC_Write("%u: Dirtying all frames from %u to %u",hotfr,surefr,cmdfr);
-  for(i=surefr+1;i<cmdfr;i++)
-    fr[i%maxframes].dirty = 1;
+  for(u=surefr+1;u<cmdfr;u++)
+    fr[u%maxframes].dirty = 1;
 
   free(q);
 

@@ -76,7 +76,7 @@ int unpackframe(Uint32 packfr,Uint8 *data,size_t len) {
   int i;
   size_t n = 0;
 
-  if( maxobjs!=unpackbytes(data,len,&n,4) ) {
+  if( maxobjs!=(int)unpackbytes(data,len,&n,4) ) {
     SJC_Write("Your maxobjs setting (%d) differs from server's!",maxobjs);
     return 1;
   }
@@ -107,7 +107,7 @@ int unpackframecmds(Uint32 packfr,Uint8 *data,size_t len) {
   int i;
   size_t n = 0;
 
-  if( maxclients!=unpackbytes(data,len,&n,4) ) {
+  if( maxclients!=(int)unpackbytes(data,len,&n,4) ) {
     SJC_Write("Your maxclients setting (%d) differs from server's! packfr=%d",maxclients,packfr);
     return -1;
   }

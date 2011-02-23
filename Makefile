@@ -29,7 +29,7 @@ POSTCC =
 
 ifeq ($(UNAME),Linux)
 	EXE_NAME = spartor_linux
-	FLAGS = `sdl-config --cflags` -g -Wall -DGLEW_STATIC
+	FLAGS = `sdl-config --cflags` --std=c99 -g -Wall -Wextra -Wno-unused-parameter -Wno-overlength-strings -pedantic -DGLEW_STATIC
 	LIBS = -lm -lSDL -lSDL_net -lSDL_image -lGL -lGLU -lGLEW
 	INC = -Iengine -I$(MODNAME) -Imt19937ar
 endif

@@ -19,7 +19,7 @@ int flykick = 0;
 void obj_amigo_draw( int objid, OBJ_t *o )
 {
   typedef struct { int x, y, w, h, dx, dy; } XSPR;
-  XSPR tip = {0}; // extra sprite for tip of sword
+  XSPR tip = {0,0,0,0,0,0}; // extra sprite for tip of sword
   AMIGO_t *am = o->data;
   int w = 50;
   int h = 50;
@@ -28,9 +28,9 @@ void obj_amigo_draw( int objid, OBJ_t *o )
   switch( am->state ) {
     case AMIGO_HELLO:
       x = (am->statetime/30) * 50; //                       x   y  w  h  dx  dy
-      if(      am->statetime<30 ) { x =   0; tip = (XSPR){0}; }
-      else if( am->statetime<60 ) { x =  50; tip = (XSPR){0}; }
-      else if( am->statetime<90 ) { x = 100; tip = (XSPR){0}; }
+      if(      am->statetime<30 ) { x =   0; tip = (XSPR){  0,  0, 0, 0,  0,  0}; }
+      else if( am->statetime<60 ) { x =  50; tip = (XSPR){  0,  0, 0, 0,  0,  0}; }
+      else if( am->statetime<90 ) { x = 100; tip = (XSPR){  0,  0, 0, 0,  0,  0}; }
       else                        { x = 150; tip = (XSPR){220,230,10,10,  8,-10}; }
       y = 150;
       break;
@@ -133,8 +133,8 @@ if( am->pos.x > NATIVEW+20.0f ) am->pos.x -= NATIVEW+39.0f;
         MKOBJ( sw, AMIGOSWORD, ob->context, OBJF_POS|OBJF_VEL|OBJF_VIS );
         sw->pos = am->pos;
         sw->vel = (V){1.5f,-2.5f,0.0f};
-        sw->hull[0] = (V){0};
-        sw->hull[1] = (V){0};
+        sw->hull[0] = (V){0,0,0};
+        sw->hull[1] = (V){0,0,0};
         sw->model = 0;
         sw->owner = objid;
         sw->spincounter = 0;

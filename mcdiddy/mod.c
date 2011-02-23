@@ -204,6 +204,9 @@ int mod_mkcmd(FCMD_t *c,int device,int sym,int press)
     if( binds[i].hash==hash ) {
       memset( c, 0, sizeof *c );
       c->cmd = binds[i].cmd;
+      if( c->cmd==CMDT_0EDIT ) { //edit command?
+        SJC_Write("Edit cmd, mouse is at %i,%i",i_mousex,i_mousey);
+      }
       return 0; //success
     }
   return -1; //fail

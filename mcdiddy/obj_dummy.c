@@ -43,7 +43,7 @@ void obj_dummy_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob )
   else if( du->vel.x>-0.1f ) du->vel.x  = 0.0f;
   else                       du->vel.x += 0.1f;
 
-  if( objid==(hotfr+100)%2000 ) //tee-hee
+  if( objid==(int)(hotfr+100)%2000 ) //tee-hee
     du->vel.x += (float)(b%4)-1.5;
 
   du->vel.y += 0.7f;        //gravity
