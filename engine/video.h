@@ -17,6 +17,8 @@ void videoinit();
 void render();
 void setvideo(int w,int h,int go_full,int quiet);
 void setvideosoon(int w,int h,int go_full,int delay);
+int  screen2native_x(int x);
+int  screen2native_y(int y);
 
 #endif
 

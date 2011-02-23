@@ -46,7 +46,6 @@ Uint32 hotfr;
 Uint32 cmdfr = 1; //DO NOT clear frame 1, it is prefilled with client-connect for local person
 
 SDL_Surface *screen;
-Uint32 scale = 2;
 Uint32 ticks,newticks;
 int me;
 int console_open;
@@ -110,9 +109,10 @@ int main(int argc,char **argv) {
       case SDL_KEYUP:           kbinput(    0, event.key.keysym );                  break;
       case SDL_JOYBUTTONDOWN:   joyinput(   1, event.jbutton );                     break;
       case SDL_JOYBUTTONUP:     joyinput(   0, event.jbutton );                     break;
-      case SDL_JOYAXISMOTION:   axisinput(  event.jaxis );                          break;
+      case SDL_JOYAXISMOTION:   axisinput(     event.jaxis );                       break;
       case SDL_MOUSEBUTTONDOWN: mouseinput( 1, event.button );                      break;
       case SDL_MOUSEBUTTONUP:   mouseinput( 0, event.button );                      break;
+      case SDL_MOUSEMOTION:     mousemove(     event.motion );                      break;
       case SDL_QUIT:            cleanup();                                          break;
     }
     idle_time += SDL_GetTicks() - idle_start;

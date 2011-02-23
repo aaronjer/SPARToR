@@ -40,9 +40,11 @@ static int soon      = 0;
 static int soon_w    = 0;
 static int soon_h    = 0;
 static int soon_full = 0;
+static int scale     = 2;
 
 
-void videoinit() {
+void videoinit()
+{
   const SDL_VideoInfo *vidinfo;
 
   SDL_GL_SetAttribute(SDL_GL_RED_SIZE,   8);
@@ -69,7 +71,8 @@ void videoinit() {
 }
 
 
-void render() {
+void render()
+{
   const SDL_VideoInfo *vidinfo;
   int x,y,w,h;
   int i;
@@ -127,14 +130,16 @@ void render() {
 
   SJGL_SetTex( (GLuint)-1 ); //forget previous texture name
 
-  mod_predraw(screen,vidfr);
+  mod_predraw(vidfr);
 
   //display objects
   for(i=0;i<maxobjs;i++) {
     OBJ_t *o = fr[vidfrmod].objs+i;
     if( o->flags&OBJF_VIS )
-      mod_draw(screen,i,o); // have the mod draw the actual thing
+      mod_draw(i,o); // have the mod draw the actual thing
   }
+
+  mod_postdraw(vidfr);
 
   glDisable(GL_DEPTH_TEST);
   
@@ -261,7 +266,8 @@ void render() {
 }
 
 
-void setvideo(int w,int h,int go_full,int quiet) {
+void setvideo(int w,int h,int go_full,int quiet)
+{
   Uint32 flags = 0;
   if( !w || !h ) { //default to previous res
     w = prev_w;
@@ -286,7 +292,7 @@ void setvideo(int w,int h,int go_full,int quiet) {
   const SDL_VideoInfo *vidinfo = SDL_GetVideoInfo();
   screen_w = w = vidinfo->current_w;
   screen_h = h = vidinfo->current_h;
-  scale = (w/NATIVEW > h/NATIVEH) ? h/NATIVEH : w/NATIVEW;
+  scale = (h/NATIVEW < w/NATIVEH) ? h/NATIVEH : w/NATIVEW;
   if( scale<1 )
     scale = 1;
   SJF_Init();
@@ -295,7 +301,9 @@ void setvideo(int w,int h,int go_full,int quiet) {
     SJC_Write("Video mode set to %d x %d",w,h);
 }
 
-void setvideosoon(int w,int h,int go_full,int delay) {
+
+void setvideosoon(int w,int h,int go_full,int delay)
+{
   if( !w || !h ) {
     if( go_full ) {
       soon_w = desktop_w;
@@ -310,5 +318,17 @@ void setvideosoon(int w,int h,int go_full,int delay) {
   }
   soon_full = go_full;
   soon = delay;
+}
+
+
+int screen2native_x(int x)
+{
+  return (x - pad_left)/scale;
+}
+
+
+int screen2native_y(int y)
+{
+  return (y - pad_top)/scale;
 }
 

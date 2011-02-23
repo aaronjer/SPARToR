@@ -105,7 +105,6 @@ extern Uint32 hotfr;  //newest fully advanced frame (it's hot and fresh)
 extern Uint32 cmdfr;  //newest frame with cmds inserted (possibly in future)
 
 extern SDL_Surface *screen;
-extern Uint32 scale;
 extern Uint32 ticks;
 extern int    me;
 extern int    console_open;

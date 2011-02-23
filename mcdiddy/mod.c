@@ -38,6 +38,16 @@ char objectnames[][16] =
        "amigosword" };
 
 
+int    myghostleft;
+int    myghosttop;
+//FIXME REMOVE! change local player model
+int    setmodel;
+//
+//FIXME REMOVE! force amigo to flykick
+int    flykick;
+//
+
+
 static int    binds_size = 0;
 static struct {
   short hash;
@@ -47,14 +57,6 @@ static struct {
 
 static CB *hack_map; //FIXME remove hack
 static CB *hack_dmap;
-
-
-//FIXME REMOVE! change local player model
-extern int    setmodel;
-//
-//FIXME REMOVE! force amigo to flykick
-extern int    flykick;
-//
 
 
 void mod_setup(Uint32 setupfr)
@@ -75,6 +77,7 @@ void mod_setup(Uint32 setupfr)
   MAYBE_BIND(INP_JAXP,1         ,DOWN ); MAYBE_BIND(INP_JAXP,4         ,DOWN );
   MAYBE_BIND(INP_JBUT,1         ,JUMP );
   MAYBE_BIND(INP_JBUT,2         ,FIRE );
+  MAYBE_BIND(INP_MBUT,1         ,EDIT );
   #undef MAYBE_BIND
 
   //make the mother object
@@ -205,7 +208,7 @@ int mod_mkcmd(FCMD_t *c,int device,int sym,int press)
       memset( c, 0, sizeof *c );
       c->cmd = binds[i].cmd;
       if( c->cmd==CMDT_0EDIT ) { //edit command?
-        SJC_Write("Edit cmd, mouse is at %i,%i",i_mousex,i_mousey);
+        SJC_Write("Edit cmd, mouse is at %i,%i",screen2native_x(i_mousex),screen2native_y(i_mousey));
       }
       return 0; //success
     }
@@ -257,7 +260,7 @@ void mod_loadsurfs(int quit)
 }
 
 
-void mod_predraw(SDL_Surface *screen,Uint32 vidfr)
+void mod_predraw(Uint32 vidfr)
 {
   int i,j,k;
 
@@ -280,7 +283,17 @@ void mod_predraw(SDL_Surface *screen,Uint32 vidfr)
 }
 
 
-void mod_draw(SDL_Surface *screen,int objid,OBJ_t *o)
+void mod_postdraw(Uint32 vidfr)
+{
+  int tilex = (myghostleft + screen2native_x(i_mousex))/16;
+  int tiley = (myghosttop  + screen2native_y(i_mousey))/16;
+
+  SJGL_SetTex( TEX_WORLD );
+  SJGL_Blit( &(SDL_Rect){0,0,16,16}, tilex*16, tiley*16, NATIVEH );
+}
+
+
+void mod_draw(int objid,OBJ_t *o)
 {
   switch(o->type) {
     case OBJT_PLAYER:         obj_player_draw(     objid, o );     break;

@@ -21,6 +21,12 @@ void obj_ghost_draw( int objid, OBJ_t *o )
 
 void obj_ghost_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob )
 {
-  //nothing to do... yet?
+  GHOST_t *gh = ob->data;
+
+  if( gh->client==me )
+  {
+    myghostleft = gh->pos.x + gh->hull[0].x;
+    myghosttop  = gh->pos.y + gh->hull[0].y;
+  }
 }
 
