@@ -288,6 +288,9 @@ void mod_postdraw(Uint32 vidfr)
   int tilex = (myghostleft + screen2native_x(i_mousex))/16;
   int tiley = (myghosttop  + screen2native_y(i_mousey))/16;
 
+  if( !i_hasmouse ) return;
+  if( (vidfr/8)%3 == 0 ) return;
+
   SJGL_SetTex( TEX_WORLD );
   SJGL_Blit( &(SDL_Rect){0,0,16,16}, tilex*16, tiley*16, NATIVEH );
 }

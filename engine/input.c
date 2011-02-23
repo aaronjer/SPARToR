@@ -24,6 +24,10 @@
 int i_mousex = 0;
 int i_mousey = 0;
 
+int i_hasmouse = 1;
+int i_hasfocus = 1;
+int i_minimized = 0;
+
 
 static int  kwik = 0;
 static char kwik_presscmd;
@@ -68,6 +72,17 @@ FCMD_t *getnextcmd()
   FCMD_t *c = cmdbuf+cbread;
   cbread = (cbread+1)%250;
   return c;
+}
+
+
+void setactive(Uint8 gain,Uint8 state)
+{
+  if( state & SDL_APPMOUSEFOCUS )
+    i_hasmouse = gain;
+  if( state & SDL_APPINPUTFOCUS )
+    i_hasfocus = gain;
+  if( state & SDL_APPACTIVE )
+    i_minimized = !gain;
 }
 
 

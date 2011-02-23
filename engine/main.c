@@ -105,6 +105,7 @@ int main(int argc,char **argv) {
     while( SDL_PollEvent(&event) ) switch(event.type) {
       case SDL_VIDEOEXPOSE:                                                         break;
       case SDL_VIDEORESIZE:     setvideosoon(event.resize.w,event.resize.h,0,10);   break;
+      case SDL_ACTIVEEVENT:     setactive(event.active.gain,event.active.state);    break;
       case SDL_KEYDOWN:         kbinput(    1, event.key.keysym );                  break;
       case SDL_KEYUP:           kbinput(    0, event.key.keysym );                  break;
       case SDL_JOYBUTTONDOWN:   joyinput(   1, event.jbutton );                     break;

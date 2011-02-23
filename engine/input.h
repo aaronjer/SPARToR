@@ -16,8 +16,12 @@
 extern int i_mousex; //last seen mouse position
 extern int i_mousey;
 
+extern int i_hasmouse;
+extern int i_hasfocus;
+extern int i_minimized;
 
 void inputinit();
+void setactive(Uint8 gain,Uint8 state);
 void kbinput(int press,SDL_keysym keysym);
 void joyinput(int press,SDL_JoyButtonEvent jbutton);
 void axisinput(SDL_JoyAxisEvent jaxis);
