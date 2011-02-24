@@ -293,14 +293,17 @@ void mod_predraw(Uint32 vidfr)
 
 void mod_postdraw(Uint32 vidfr)
 {
-  int tilex = (myghostleft + screen2native_x(i_mousex))/16;
-  int tiley = (myghosttop  + screen2native_y(i_mousey))/16;
+  int tilex = screen2native_x(i_mousex);
+  int tiley = screen2native_y(i_mousey);
+  if( !i_hasmouse || tilex<0 || tiley<0 || tilex>=NATIVEW || tiley>=NATIVEH ) return;
+  tilex = (myghostleft + tilex) / 16;
+  tiley = (myghosttop  + tiley) / 16;
 
-  if( !i_hasmouse ) return;
-  if( (vidfr/8)%3 == 0 ) return;
-
+  glPushAttrib(GL_CURRENT_BIT);
+  glColor4f(1.0f,1.0f,1.0f,fabsf((float)(vidfr%30)-15.0f)/15.0f);
   SJGL_SetTex( TEX_WORLD );
-  SJGL_Blit( &(SDL_Rect){0,0,16,16}, tilex*16, tiley*16, NATIVEH );
+  SJGL_Blit( &(SDL_Rect){16,0,16,16}, tilex*16, tiley*16, NATIVEH );
+  glPopAttrib();
 }
 
 

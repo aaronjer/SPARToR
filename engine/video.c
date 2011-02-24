@@ -143,22 +143,26 @@ void render()
 
   glDisable(GL_DEPTH_TEST);
   
-  //display hulls
+  //display hulls and object numbers
   if( v_drawhulls ) {
+    glBindTexture( GL_TEXTURE_2D, 0 );
+    glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
     for(i=0;i<maxobjs;i++) {
       OBJ_t *o = fr[vidfrmod].objs+i;
       V *pos  = flex(o,OBJF_POS);
       V *hull = flex(o,OBJF_HULL);
-
+      if( pos && hull ) {
+        SDL_Rect rect = (SDL_Rect){0, 0, hull[1].x-hull[0].x, hull[1].y-hull[0].y};
+        SJGL_Blit( &rect, pos->x+hull[0].x, pos->y+hull[0].y, 0 );
+      }
+    }
+    glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+    for(i=0;i<maxobjs;i++) {
+      OBJ_t *o = fr[vidfrmod].objs+i;
+      V *pos  = flex(o,OBJF_POS);
       if( pos ) {
-        if( hull ) {
-          glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
-          SDL_Rect rect = (SDL_Rect){0, 0, hull[1].x-hull[0].x, hull[1].y-hull[0].y};
-          SJGL_Blit( &rect, pos->x+hull[0].x, pos->y+hull[0].y, 0 );
-          glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
-        }
         sprintf(buf,"%d",i);
-        SJF_DrawText(pos->x*scale, pos->y*scale, buf);
+        SJF_DrawText(pos->x, pos->y, buf);
       }
     }
   }
