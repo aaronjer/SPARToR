@@ -8,9 +8,13 @@ extern int v_showstats;
 extern int v_usealpha;
 extern int v_fullscreen;
 extern int v_oob;
+extern int v_center;
 
 extern int v_camx;
 extern int v_camy;
+
+extern int v_w;
+extern int v_h;
 
 
 void videoinit();

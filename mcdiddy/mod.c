@@ -54,6 +54,8 @@ static struct {
   char  cmd;
   char  _pad;
 }            *binds;
+static int    editmode = 0;
+static int    mytile   = 0;
 
 static CB *hack_map; //FIXME remove hack
 static CB *hack_dmap;
@@ -207,20 +209,33 @@ int mod_mkcmd(FCMD_t *c,int device,int sym,int press)
     if( binds[i].hash==hash ) {
       memset( c, 0, sizeof *c );
       c->cmd = binds[i].cmd;
+      if( c->cmd==CMDT_0EDIT ) //edit event off not used (yet)
+        return -1; //no cmd created
       if( c->cmd==CMDT_1EDIT ) { //edit command?
-        int tilex = (myghostleft + screen2native_x(i_mousex))/16;
-        int tiley = (myghosttop  + screen2native_y(i_mousey))/16;
+        if( !editmode )
+          return -1; //no cmd created
+        if( i_mousex >= v_w-256 && i_mousey < 256 ) { //click in texture selector
+          mytile = (i_mousex-(v_w-256))/16 + (i_mousey/16)*16;
+          SJC_Write("mytile is %i",mytile);
+          return -1; //no cmd created
+        }
+        int tilex = screen2native_x(i_mousex);
+        int tiley = screen2native_y(i_mousey);
+        if( !i_hasmouse || tilex<0 || tiley<0 || tilex>=NATIVEW || tiley>=NATIVEH )
+          return -1; //no cmd created
+        tilex = (myghostleft + tilex) / 16;
+        tiley = (myghosttop  + tiley) / 16;
         size_t n = 0;
-        packbytes(c->data,  'p',&n,1);
-        packbytes(c->data,tilex,&n,4);
-        packbytes(c->data,tiley,&n,4);
-        packbytes(c->data,    1,&n,4);
+        packbytes(c->data,   'p',&n,1);
+        packbytes(c->data, tilex,&n,4);
+        packbytes(c->data, tiley,&n,4);
+        packbytes(c->data,mytile,&n,4);
         c->datasz = n;
         c->flags |= CMDF_DATA; //indicate presence of extra cmd data
       }
-      return 0; //success
+      return 0; //cmd created
     }
-  return -1; //fail
+  return -1; //no cmd created
 }
 
 
@@ -229,6 +244,10 @@ int mod_command(char *q)
   TRY
     if( q==NULL ){
       ;
+    }else if( strcmp(q,"edit")==0 ){
+      editmode = editmode ? 0 : 1;
+      v_center = editmode ? 0 : 1;
+      return 0;
     }else if( strcmp(q,"model")==0 ){
       setmodel = atoi(strtok(NULL," ")); // FIXME: lame hack
       return 0;
@@ -286,7 +305,7 @@ void mod_predraw(Uint32 vidfr)
         else
           tile = co->dmap[ pos ].data[0];
 
-        SJGL_Blit( &(SDL_Rect){tile*16,0,16,16}, i*16, j*16, 0 );
+        SJGL_Blit( &(SDL_Rect){(tile%16)*16,(tile/16)*16,16,16}, i*16, j*16, 0 );
       }
 }
 
@@ -309,22 +328,28 @@ void mod_postdraw(Uint32 vidfr)
 {
   int tilex = screen2native_x(i_mousex);
   int tiley = screen2native_y(i_mousey);
-  if( !i_hasmouse || tilex<0 || tiley<0 || tilex>=NATIVEW || tiley>=NATIVEH ) return;
+  if( !editmode || !i_hasmouse || tilex<0 || tiley<0 || tilex>=NATIVEW || tiley>=NATIVEH ) return;
   tilex = (myghostleft + tilex) / 16;
   tiley = (myghosttop  + tiley) / 16;
 
   glPushAttrib(GL_CURRENT_BIT);
   glColor4f(1.0f,1.0f,1.0f,fabsf((float)(vidfr%30)-15.0f)/15.0f);
   SJGL_SetTex( TEX_WORLD );
-  SJGL_Blit( &(SDL_Rect){16,0,16,16}, tilex*16, tiley*16, NATIVEH );
+  SJGL_Blit( &(SDL_Rect){(mytile%16)*16,(mytile/16)*16,16,16}, tilex*16, tiley*16, NATIVEH );
   glPopAttrib();
 }
 
 
-void mod_outerdraw(Uint32 vidfr)
+void mod_outerdraw(Uint32 vidfr,int w,int h)
 {
+  if( !editmode ) return;
+
   SJGL_SetTex( TEX_WORLD );
-  SJGL_Blit( &(SDL_Rect){0,0,256,256}, 0, 0, 0 );
+  SJGL_Blit( &(SDL_Rect){0,0,256,256}, w-256, 0, 0 );
+
+  glBindTexture(GL_TEXTURE_2D,0);
+  glColor4f(1,1,1,0.5f);
+  SJGL_Blit( &(SDL_Rect){0,0,16,16}, w-256+(mytile%16)*16, (mytile/16)*16, 0 );
 }
 
 

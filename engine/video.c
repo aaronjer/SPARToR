@@ -24,9 +24,13 @@ int v_showstats  = 1;
 int v_usealpha   = 1;
 int v_fullscreen = 0;
 int v_oob        = 0; // show objects out-of-bounds fading away
+int v_center     = 1; // whether to center the scaled game rendering
 
 int v_camx       = 0;
 int v_camy       = 0;
+
+int v_w;
+int v_h;
 
 static int screen_w  = NATIVEW;
 static int screen_h  = NATIVEH;
@@ -93,10 +97,14 @@ void render()
     soon--;
 
   vidinfo  = SDL_GetVideoInfo();
-  w        = vidinfo->current_w;
-  h        = vidinfo->current_h;
-  pad_left = (w - NATIVEW*scale)/2;
-  pad_top  = (h - NATIVEH*scale)/2;
+  w = v_w  = vidinfo->current_w;
+  h = v_h  = vidinfo->current_h;
+  pad_left = 0;
+  pad_top  = 0;
+  if( v_center ) {
+    pad_left = (w - NATIVEW*scale)/2;
+    pad_top  = (h - NATIVEH*scale)/2;
+  }
 
   glMatrixMode(GL_TEXTURE);
   glLoadIdentity();
@@ -119,7 +127,7 @@ void render()
   glClear(GL_DEPTH_BUFFER_BIT);
 
   // viewport and matrixes for game objects
-  glViewport(pad_left,pad_top,NATIVEW*scale,NATIVEH*scale);
+  glViewport(pad_left,h-NATIVEH*scale-pad_top,NATIVEW*scale,NATIVEH*scale);
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   glOrtho(0,NATIVEW,NATIVEH,0,-NATIVEH*3-1,NATIVEH*3+1);
@@ -129,7 +137,6 @@ void render()
   glTranslatef(camx,camy,0);
 
   SJGL_SetTex( (GLuint)-1 ); //forget previous texture name
-
   mod_predraw(vidfr);
 
   //display objects
@@ -202,7 +209,8 @@ void render()
     glColor4f(1.0f,1.0f,1.0f,1.0f);
   }
 
-  mod_outerdraw(vidfr);
+  SJGL_SetTex( (GLuint)-1 ); //forget previous texture name
+  mod_outerdraw(vidfr,w,h);
 
   //display console
   if(console_open) {
