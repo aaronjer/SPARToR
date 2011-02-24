@@ -52,8 +52,9 @@ int  mod_mkcmd(FCMD_t *c,int device,int sym,int press);
 int  mod_command(char *q);
 void mod_loadsurfs(int quit);
 void mod_predraw(Uint32 vidfr);
-void mod_postdraw(Uint32 vidfr);
 void mod_draw(int objid,OBJ_t *o);
+void mod_postdraw(Uint32 vidfr);
+void mod_outerdraw(Uint32 vidfr);
 void mod_adv(int objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob);
 
 

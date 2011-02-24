@@ -291,6 +291,20 @@ void mod_predraw(Uint32 vidfr)
 }
 
 
+void mod_draw(int objid,OBJ_t *o)
+{
+  switch(o->type) {
+    case OBJT_PLAYER:         obj_player_draw(     objid, o );     break;
+    case OBJT_GHOST:          obj_ghost_draw(      objid, o );     break;
+    case OBJT_BULLET:         obj_bullet_draw(     objid, o );     break;
+    case OBJT_SLUG:           obj_slug_draw(       objid, o );     break;
+    case OBJT_DUMMY:          obj_dummy_draw(      objid, o );     break;
+    case OBJT_AMIGO:          obj_amigo_draw(      objid, o );     break;
+    case OBJT_AMIGOSWORD:     obj_amigosword_draw( objid, o );     break;
+  }
+}
+
+
 void mod_postdraw(Uint32 vidfr)
 {
   int tilex = screen2native_x(i_mousex);
@@ -307,17 +321,10 @@ void mod_postdraw(Uint32 vidfr)
 }
 
 
-void mod_draw(int objid,OBJ_t *o)
+void mod_outerdraw(Uint32 vidfr)
 {
-  switch(o->type) {
-    case OBJT_PLAYER:         obj_player_draw(     objid, o );     break;
-    case OBJT_GHOST:          obj_ghost_draw(      objid, o );     break;
-    case OBJT_BULLET:         obj_bullet_draw(     objid, o );     break;
-    case OBJT_SLUG:           obj_slug_draw(       objid, o );     break;
-    case OBJT_DUMMY:          obj_dummy_draw(      objid, o );     break;
-    case OBJT_AMIGO:          obj_amigo_draw(      objid, o );     break;
-    case OBJT_AMIGOSWORD:     obj_amigosword_draw( objid, o );     break;
-  }
+  SJGL_SetTex( TEX_WORLD );
+  SJGL_Blit( &(SDL_Rect){0,0,256,256}, 0, 0, 0 );
 }
 
 
