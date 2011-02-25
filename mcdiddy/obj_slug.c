@@ -22,7 +22,8 @@ void obj_slug_draw( int objid, OBJ_t *o )
 void obj_slug_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob )
 {
   int i;
-  SLUG_t *sl = ob->data;
+  SLUG_t    *sl = ob->data;
+  CONTEXT_t *co = fr[b].objs[ob->context].data;
   int kill = 0;
   sl->vel.y += 0.6f;      //gravity
 
@@ -66,7 +67,8 @@ void obj_slug_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob )
   if( sl->dead==5 )
     ob->flags &= ~(OBJF_CLIP|OBJF_BNDB);
 
-  if( sl->pos.x<-10.0f || sl->pos.x>NATIVEW+10.0f || sl->pos.y>NATIVEH+10.0f || sl->dead>100 )
+  if( sl->dead > 100 || sl->pos.x < -10.0f || sl->pos.x > co->x*co->blocksize+10.0f
+                                           || sl->pos.y > co->y*co->blocksize+10.0f )
     ob->flags |= OBJF_DEL;
 }
 

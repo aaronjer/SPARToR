@@ -71,13 +71,17 @@ void obj_amigo_draw( int objid, OBJ_t *o )
 
 void obj_amigo_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob )
 {
-  int slot0;
-  AMIGO_t *am = ob->data;
-  float amigo_gravity = 0.6f;
+  int        slot0;
+  AMIGO_t   *am            = ob->data;
+  float      amigo_gravity = 0.6f;
+
 //FIXME REMOVE! Wrap amigo since he can mostly only go left
-if( am->pos.x <        -20.0f ) am->pos.x += NATIVEW+39.0f;
-if( am->pos.x > NATIVEW+20.0f ) am->pos.x -= NATIVEW+39.0f;
+CONTEXT_t *co = fr[b].objs[ob->context].data;
+float cowidth = co->x*co->blocksize;
+if( am->pos.x <        -20.0f ) am->pos.x += cowidth+39.0f;
+if( am->pos.x > cowidth+20.0f ) am->pos.x -= cowidth+39.0f;
 //
+
   spatt(hotfr);
   switch( am->state ) {
     case AMIGO_HELLO:
