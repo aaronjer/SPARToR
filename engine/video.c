@@ -20,7 +20,7 @@
 #include "font.h"
 
 int v_drawhulls  = 0;
-int v_showstats  = 1;
+int v_showstats  = 0;
 int v_usealpha   = 1;
 int v_fullscreen = 0;
 int v_oob        = 0; // show objects out-of-bounds fading away
@@ -306,7 +306,7 @@ void setvideo(int w,int h,int go_full,int quiet)
   const SDL_VideoInfo *vidinfo = SDL_GetVideoInfo();
   screen_w = w = vidinfo->current_w;
   screen_h = h = vidinfo->current_h;
-  scale = (h/NATIVEW < w/NATIVEH) ? h/NATIVEH : w/NATIVEW;
+  scale = (h/NATIVEH < w/NATIVEW) ? h/NATIVEH : w/NATIVEW;
   if( scale<1 )
     scale = 1;
   SJF_Init();

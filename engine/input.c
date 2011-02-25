@@ -103,8 +103,10 @@ void kbinput(int press,SDL_keysym keysym)
     toggleconsole();
   else if(press && kwik)
     kwikbind( INP_KEYB, sym );
-  else if(press && console_open) {
-    if(unicode>31 && unicode<127)
+  else if(console_open) {
+    if(!press)
+      ; //nothing on key up
+    else if(unicode>31 && unicode<127)
       SJC_Put((char)unicode);
     else if(sym==SDLK_RETURN) {
       if( SJC_Submit() )

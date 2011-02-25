@@ -16,13 +16,15 @@
 
 GLuint textures[TEX_COUNT];
 
-INPUTNAME_t inputnames[] = {{"left" ,CMDT_1LEFT ,CMDT_0LEFT },
-                            {"right",CMDT_1RIGHT,CMDT_0RIGHT},
-                            {"up"   ,CMDT_1UP   ,CMDT_0UP   },
-                            {"down" ,CMDT_1DOWN ,CMDT_0DOWN },
-                            {"fire" ,CMDT_1FIRE ,CMDT_0FIRE },
-                            {"jump" ,CMDT_1JUMP ,CMDT_0JUMP },
-                            {"edit" ,CMDT_1EDIT ,CMDT_0EDIT }};
+INPUTNAME_t inputnames[] = {{"left"       ,CMDT_1LEFT ,CMDT_0LEFT },
+                            {"right"      ,CMDT_1RIGHT,CMDT_0RIGHT},
+                            {"up"         ,CMDT_1UP   ,CMDT_0UP   },
+                            {"down"       ,CMDT_1DOWN ,CMDT_0DOWN },
+                            {"fire"       ,CMDT_1FIRE ,CMDT_0FIRE },
+                            {"jump"       ,CMDT_1JUMP ,CMDT_0JUMP },
+                            {"edit-paint" ,CMDT_1EPANT,CMDT_0EPANT},
+                            {"edit-prev"  ,CMDT_1EPREV,CMDT_0EPREV},
+                            {"edit-next"  ,CMDT_1ENEXT,CMDT_0ENEXT}};
 int numinputnames = (sizeof inputnames) / (sizeof *inputnames);
 
 char objectnames[][16] =
@@ -38,8 +40,11 @@ char objectnames[][16] =
        "amigosword" };
 
 
-int    myghostleft;
+int    myghostleft; //top left of visible area for local player
 int    myghosttop;
+int    downx = -1; //position of mousedown at beginning of edit cmd
+int    downy = -1;
+
 //FIXME REMOVE! change local player model
 int    setmodel;
 //
@@ -79,7 +84,9 @@ void mod_setup(Uint32 setupfr)
   MAYBE_BIND(INP_JAXP,1         ,DOWN ); MAYBE_BIND(INP_JAXP,4         ,DOWN );
   MAYBE_BIND(INP_JBUT,1         ,JUMP );
   MAYBE_BIND(INP_JBUT,2         ,FIRE );
-  MAYBE_BIND(INP_MBUT,1         ,EDIT );
+  MAYBE_BIND(INP_MBUT,1         ,EPANT); //editing controls...
+  MAYBE_BIND(INP_MBUT,4         ,EPREV);
+  MAYBE_BIND(INP_MBUT,5         ,ENEXT);
   #undef MAYBE_BIND
 
   //make the mother object
@@ -200,6 +207,7 @@ void mod_keybind(int device,int sym,int press,char cmd)
 }
 
 
+// returns 0 iff a command is created to be put on the network
 int mod_mkcmd(FCMD_t *c,int device,int sym,int press)
 {
   int i;
@@ -209,24 +217,48 @@ int mod_mkcmd(FCMD_t *c,int device,int sym,int press)
     if( binds[i].hash==hash ) {
       memset( c, 0, sizeof *c );
       c->cmd = binds[i].cmd;
-      if( c->cmd==CMDT_0EDIT ) //edit event off not used (yet)
-        return -1; //no cmd created
-      if( c->cmd==CMDT_1EDIT ) { //edit command?
+
+      if( c->cmd==CMDT_0EPREV || c->cmd==CMDT_0ENEXT ) //these shouldn't really happen and wouldn't mean anything
+        return -1;
+
+      if( c->cmd==CMDT_1EPREV || c->cmd==CMDT_1ENEXT ) { //select previous/next tile
+        if( c->cmd==CMDT_1EPREV )
+          mytile += mytile%16==15 ? -15 : 1;
+        else
+          mytile = (mytile+16)%256;
+        return -1;
+      }
+
+      if( c->cmd==CMDT_1EPANT || c->cmd==CMDT_0EPANT ) { //edit-paint command
+        int dnx = downx;
+        int dny = downy;
+        if( c->cmd==CMDT_0EPANT ) { //always clear mousedown pos on mouseup
+          downx = -1;
+          downy = -1;
+        }
         if( !editmode )
-          return -1; //no cmd created
+          return -1;
         if( i_mousex >= v_w-256 && i_mousey < 256 ) { //click in texture selector
           mytile = (i_mousex-(v_w-256))/16 + (i_mousey/16)*16;
-          SJC_Write("mytile is %i",mytile);
-          return -1; //no cmd created
+          return -1;
         }
         int tilex = screen2native_x(i_mousex);
         int tiley = screen2native_y(i_mousey);
         if( !i_hasmouse || tilex<0 || tiley<0 || tilex>=NATIVEW || tiley>=NATIVEH )
-          return -1; //no cmd created
+          return -1;
         tilex = (myghostleft + tilex) / 16;
         tiley = (myghosttop  + tiley) / 16;
+        if( c->cmd==CMDT_1EPANT ) {
+          downx = tilex;
+          downy = tiley;
+          return -1; //finish cmd later...
+        }
+        if( dnx<0 || dny<0 )
+          return -1; //no mousedown? no cmd
         size_t n = 0;
         packbytes(c->data,   'p',&n,1);
+        packbytes(c->data,   dnx,&n,4);
+        packbytes(c->data,   dny,&n,4);
         packbytes(c->data, tilex,&n,4);
         packbytes(c->data, tiley,&n,4);
         packbytes(c->data,mytile,&n,4);
@@ -235,7 +267,7 @@ int mod_mkcmd(FCMD_t *c,int device,int sym,int press)
       }
       return 0; //cmd created
     }
-  return -1; //no cmd created
+  return -1;
 }
 
 
@@ -326,16 +358,29 @@ void mod_draw(int objid,OBJ_t *o)
 
 void mod_postdraw(Uint32 vidfr)
 {
-  int tilex = screen2native_x(i_mousex);
-  int tiley = screen2native_y(i_mousey);
-  if( !editmode || !i_hasmouse || tilex<0 || tiley<0 || tilex>=NATIVEW || tiley>=NATIVEH ) return;
-  tilex = (myghostleft + tilex) / 16;
-  tiley = (myghosttop  + tiley) / 16;
+  int i,j;
+  int upx = screen2native_x(i_mousex);
+  int upy = screen2native_y(i_mousey);
+
+  if( !editmode || !i_hasmouse || upx<0 || upy<0 || upx>=NATIVEW || upy>=NATIVEH ) return;
+
+  upx = (myghostleft + upx) / 16;
+  upy = (myghosttop  + upy) / 16;
+
+  int dnx = downx>=0 ? downx : upx;
+  int dny = downy>=0 ? downy : upy;
+
+  if( dnx > upx )  { int tmp = upx; upx = dnx; dnx = tmp; } //make so dn is less than up
+  if( dny > upy )  { int tmp = upy; upy = dny; dny = tmp; }
 
   glPushAttrib(GL_CURRENT_BIT);
   glColor4f(1.0f,1.0f,1.0f,fabsf((float)(vidfr%30)-15.0f)/15.0f);
   SJGL_SetTex( TEX_WORLD );
-  SJGL_Blit( &(SDL_Rect){(mytile%16)*16,(mytile/16)*16,16,16}, tilex*16, tiley*16, NATIVEH );
+
+  for( j=dny; j<=upy; j++ )
+    for( i=dnx; i<=upx; i++ )
+      SJGL_Blit( &(SDL_Rect){(mytile%16)*16,(mytile/16)*16,16,16}, i*16, j*16, NATIVEH );
+
   glPopAttrib();
 }
 
@@ -344,12 +389,21 @@ void mod_outerdraw(Uint32 vidfr,int w,int h)
 {
   if( !editmode ) return;
 
+  glPushAttrib(GL_CURRENT_BIT);
+
   SJGL_SetTex( TEX_WORLD );
   SJGL_Blit( &(SDL_Rect){0,0,256,256}, w-256, 0, 0 );
 
   glBindTexture(GL_TEXTURE_2D,0);
-  glColor4f(1,1,1,0.5f);
-  SJGL_Blit( &(SDL_Rect){0,0,16,16}, w-256+(mytile%16)*16, (mytile/16)*16, 0 );
+  glColor4f(1,1,0,0.8f);
+  int x = w-256+(mytile%16)*16;
+  int y = (mytile/16)*16;
+  SJGL_Blit( &(SDL_Rect){0,0,20, 2}, x- 2, y- 2, 0 );
+  SJGL_Blit( &(SDL_Rect){0,0,20, 2}, x- 2, y+16, 0 );
+  SJGL_Blit( &(SDL_Rect){0,0, 2,16}, x- 2, y   , 0 );
+  SJGL_Blit( &(SDL_Rect){0,0, 2,16}, x+16, y   , 0 );
+
+  glPopAttrib();
 }
 
 

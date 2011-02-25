@@ -32,10 +32,16 @@ enum { CMDT_1LEFT = 1,
        CMDT_0JUMP,
        CMDT_1FIRE,
        CMDT_0FIRE,
-       CMDT_1EDIT,
-       CMDT_0EDIT };
+       CMDT_1EPANT, //editing controls...
+       CMDT_0EPANT,
+       CMDT_1EPREV,
+       CMDT_0EPREV,
+       CMDT_1ENEXT,
+       CMDT_0ENEXT };
 
 
 extern int    myghostleft;
 extern int    myghosttop;
+extern int    downx;
+extern int    downy;
 
