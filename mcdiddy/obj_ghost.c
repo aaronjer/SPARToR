@@ -54,7 +54,7 @@ void obj_ghost_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob )
         for( i=dnx; i<=upx; i++ ) {
           int pos = 0*co->y*co->x + j*co->x + i;
           co->dmap[pos].data[0] = (char)value;
-          co->dmap[pos].flags   = 0;
+          co->dmap[pos].flags   = CBF_SOLID;
         }
 
       break;

@@ -209,7 +209,7 @@ void advance() {
       for(i=0;i<maxobjs;i++) {
         if(r!=0 && !recheck[(r+1)%2][i])
           continue;
-        if( !HAS(fr[b].objs[i].flags,OBJF_POS|OBJF_VEL|OBJF_HULL) )
+        if( !HAS( fr[b].objs[i].flags, OBJF_POS|OBJF_VEL|OBJF_HULL ) )
           continue;
         OBJ_t *oldme = fr[a].objs+i, *newme = fr[b].objs+i;
         V *oldmepos  = flex(oldme,OBJF_POS );
@@ -217,6 +217,43 @@ void advance() {
         V *newmevel  = flex(newme,OBJF_VEL );
         V *oldmehull = flex(oldme,OBJF_HULL);
         V *newmehull = flex(newme,OBJF_HULL);
+
+        if( newme->context && (newme->flags & OBJF_CLIP) ) { //check CBs (context blocks (map tiles))
+          CONTEXT_t *co = fr[b].objs[newme->context].data;
+          int x,y;
+          int dnx = ((int)(newmepos->x+newmehull[0].x)/16); //FIXME: 16 assumed
+          int dny = ((int)(newmepos->y+newmehull[0].y)/16);
+          int upx = ((int)(newmepos->x+newmehull[1].x)/16);
+          int upy = ((int)(newmepos->y+newmehull[1].y)/16);
+          for( y=dny; y<=upy; y++ )
+            for( x=dnx; x<=upx; x++ ) {
+              if( x<0 || x>=co->x || y<0 || y>=co->y ) //out of bounds?
+                continue;
+              int pos = y*co->x + x;
+              short flags = (co->dmap[pos].flags & CBF_NULL) ? co->map[pos].flags : co->dmap[pos].flags;
+              if( !(flags & CBF_SOLID) )
+                continue;
+              V *cbpos  = &(V){x*16,y*16};
+              V *cbhull = (V[2]){{0,0,0},{16,16,0}};
+              /* no way NOT to collide??
+              if( newmepos->x+newmehull[0].x >= cbpos->x+cbhull[1].x ||   //we dont collide NOW
+                  newmepos->x+newmehull[1].x <= cbpos->x+cbhull[0].x ||
+                  newmepos->y+newmehull[0].y >= cbpos->y+cbhull[1].y ||
+                  newmepos->y+newmehull[1].y <= cbpos->y+cbhull[0].y    )
+                continue;
+              */
+              if(        cbpos->y+cbhull[0].y >= oldmepos->y+oldmehull[1].y ) {  //I was ABOVE before
+                newmepos->y = cbpos->y + cbhull[0].y - newmehull[1].y;
+                newmevel->y = 0;
+                recheck[r%2][i] = 1; //I've moved, so recheck me
+              } else if( cbpos->y+cbhull[1].y <= oldmepos->y+oldmehull[0].y ) {  //I was BELOW before
+                newmepos->y = cbpos->y + cbhull[1].y - newmehull[0].y;
+                newmevel->y = 0;
+                recheck[r%2][i] = 1; //I've moved, so recheck me
+              }
+            }
+        }
+
         for(j=0;j<(r==0?i:maxobjs);j++) { //find other objs to interact with -- don't need to check all on 1st 2 passes
           if(i==j || !fr[a].objs[i].data || !fr[a].objs[j].data )
             continue;

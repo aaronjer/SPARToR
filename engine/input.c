@@ -184,7 +184,6 @@ void readinput()
     FCMD_t *c;
     if( (c = getnextcmd()) ) { // dirty frame if new cmd inserted
       fr[infr].cmds[me] = *c;
-SJC_Write("Inserted command type %i with size=%u and idchar=%c",c->cmd,c->datasz,c->data[0]);
       fr[infr].dirty = 1;
     }
   }
