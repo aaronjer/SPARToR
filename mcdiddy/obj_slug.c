@@ -67,8 +67,9 @@ void obj_slug_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob )
   if( sl->dead==5 )
     ob->flags &= ~(OBJF_CLIP|OBJF_BNDB);
 
-  if( sl->dead > 100 || sl->pos.x < -10.0f || sl->pos.x > co->x*co->blocksize+10.0f
-                                           || sl->pos.y > co->y*co->blocksize+10.0f )
+  if(    sl->dead > 100 || sl->vel.x == 0 || sl->pos.x < -10.0f
+      || sl->pos.x > co->x*co->blocksize+10.0f
+      || sl->pos.y > co->y*co->blocksize+10.0f )
     ob->flags |= OBJF_DEL;
 }
 

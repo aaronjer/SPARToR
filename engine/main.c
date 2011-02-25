@@ -235,13 +235,7 @@ void advance() {
                 continue;
               V *cbpos  = &(V){x*16,y*16};
               V *cbhull = (V[2]){{0,0,0},{16,16,0}};
-              /* no way NOT to collide??
-              if( newmepos->x+newmehull[0].x >= cbpos->x+cbhull[1].x ||   //we dont collide NOW
-                  newmepos->x+newmehull[1].x <= cbpos->x+cbhull[0].x ||
-                  newmepos->y+newmehull[0].y >= cbpos->y+cbhull[1].y ||
-                  newmepos->y+newmehull[1].y <= cbpos->y+cbhull[0].y    )
-                continue;
-              */
+
               if(        cbpos->y+cbhull[0].y >= oldmepos->y+oldmehull[1].y ) {  //I was ABOVE before
                 newmepos->y = cbpos->y + cbhull[0].y - newmehull[1].y;
                 newmevel->y = 0;
@@ -249,6 +243,22 @@ void advance() {
               } else if( cbpos->y+cbhull[1].y <= oldmepos->y+oldmehull[0].y ) {  //I was BELOW before
                 newmepos->y = cbpos->y + cbhull[1].y - newmehull[0].y;
                 newmevel->y = 0;
+                recheck[r%2][i] = 1; //I've moved, so recheck me
+              }
+
+              if( newmepos->x+newmehull[0].x >= cbpos->x+cbhull[1].x ||   //we dont collide NOW
+                  newmepos->x+newmehull[1].x <= cbpos->x+cbhull[0].x ||
+                  newmepos->y+newmehull[0].y >= cbpos->y+cbhull[1].y ||
+                  newmepos->y+newmehull[1].y <= cbpos->y+cbhull[0].y    )
+                continue;
+
+              if(        cbpos->x+cbhull[0].x >= oldmepos->x+oldmehull[1].x ) {  //I was LEFT before
+                newmepos->x = cbpos->x + cbhull[0].x - newmehull[1].x;
+                newmevel->x = 0;
+                recheck[r%2][i] = 1; //I've moved, so recheck me
+              } else if( cbpos->x+cbhull[1].x <= oldmepos->x+oldmehull[0].x ) {  //I was RIGHT before
+                newmepos->x = cbpos->x + cbhull[1].x - newmehull[0].x;
+                newmevel->x = 0;
                 recheck[r%2][i] = 1; //I've moved, so recheck me
               }
             }
