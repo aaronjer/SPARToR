@@ -150,19 +150,24 @@ void advance() {
     sethotfr(hotfr+1);
     Uint32 a = (hotfr-1)%maxframes; //a: frame to advance from, b: frame to advance to
     Uint32 b = (hotfr  )%maxframes;
+
     if( cmdfr<hotfr ) //need to clear out the cmds in forward frame since it hasn't been done yet!
       setcmdfr(hotfr);
+
     Uint32 adv_move_start = SDL_GetTicks();
+
     for(i=0;i<maxobjs;i++) { //first pass -- copy forward, move, clip with world
       OBJ_t *oa = fr[a].objs+i;
       OBJ_t *ob = fr[b].objs+i;
       free(ob->data);
       memset(ob,0,sizeof(*ob));
+
       if(oa->type && !(oa->flags&OBJF_DEL)) {
         memcpy(ob,oa,sizeof(*ob));
         ob->data = malloc(oa->size);
         memcpy(ob->data,oa->data,oa->size);
       }
+
       if( HAS(ob->flags,OBJF_POS|OBJF_VEL) ) {
         V *pos  = flex(ob,OBJF_POS);
         V *vel  = flex(ob,OBJF_VEL);
@@ -202,37 +207,47 @@ void advance() {
         }
       }
     }
+
     Uint32 adv_collide_start = SDL_GetTicks();
     adv_move_time += adv_collide_start - adv_move_start;
-    for(r=0;r<40;r++) { //"recurse" up to 10 times to sort out collisions
+
+    for(r=0;r<40;r++) { //"recurse" up to so many times to sort out collisions
       memset(recheck[r%2],0,sizeof(recheck[0]));
+
       for(i=0;i<maxobjs;i++) {
         if(r!=0 && !recheck[(r+1)%2][i])
           continue;
         if( !HAS( fr[b].objs[i].flags, OBJF_POS|OBJF_VEL|OBJF_HULL ) )
           continue;
+
         OBJ_t *oldme = fr[a].objs+i, *newme = fr[b].objs+i;
         V *oldmepos  = flex(oldme,OBJF_POS );
         V *newmepos  = flex(newme,OBJF_POS );
+        V *oldmevel  = flex(oldme,OBJF_VEL );
         V *newmevel  = flex(newme,OBJF_VEL );
         V *oldmehull = flex(oldme,OBJF_HULL);
         V *newmehull = flex(newme,OBJF_HULL);
 
         if( newme->context && (newme->flags & OBJF_CLIP) ) { //check CBs (context blocks (map tiles))
           CONTEXT_t *co = fr[b].objs[newme->context].data;
-          int x,y;
           int dnx = ((int)(newmepos->x+newmehull[0].x)/16); //FIXME: 16 assumed
           int dny = ((int)(newmepos->y+newmehull[0].y)/16);
           int upx = ((int)(newmepos->x+newmehull[1].x)/16);
           int upy = ((int)(newmepos->y+newmehull[1].y)/16);
-          for( y=dny; y<=upy; y++ )
-            for( x=dnx; x<=upx; x++ ) {
-              if( x<0 || x>=co->x || y<0 || y>=co->y ) //out of bounds?
-                continue;
+          int iterx,itery;
+
+          for( itery=0; itery<=upy-dny; itery++ )
+            for( iterx=0; iterx<=upx-dnx; iterx++ ) {
+              int x = oldmevel->x>0 ? dnx+iterx : upx-iterx; //iterate in an order matching direction of movement
+              int y = oldmevel->y>0 ? dny+itery : upy-itery;
+
+              if( x<0 || x>=co->x || y<0 || y>=co->y ) continue; //out of bounds?
+
               int pos = y*co->x + x;
               short flags = (co->dmap[pos].flags & CBF_NULL) ? co->map[pos].flags : co->dmap[pos].flags;
-              if( !(flags & CBF_SOLID) )
-                continue;
+
+              if( !(flags & CBF_SOLID) ) continue;
+
               V *cbpos  = &(V){x*16,y*16,0};
               V *cbhull = (V[2]){{0,0,0},{16,16,0}};
 
@@ -246,28 +261,33 @@ void advance() {
                                               CBF_SOLID                                   \
                                             )                                             \
                                     )
+              #define ELSE_IF_HIT_THEN_MOVE_STOP(outX,outY,hullL,hullR,axis,LTGT)                                                 \
+                      else if( !IS_SOLID(outX,outY) && cbpos->axis+cbhull[hullL].axis LTGT oldmepos->axis+oldmehull[hullR].axis ) \
+                        { newmepos->axis = cbpos->axis+cbhull[hullL].axis-newmehull[hullR].axis; newmevel->axis = 0; }
 
-              if(        !IS_SOLID(x  ,y-1) &&
-                         cbpos->y+cbhull[0].y >= oldmepos->y+oldmehull[1].y ) {  //I was ABOVE before
-                newmepos->y = cbpos->y + cbhull[0].y - newmehull[1].y;
-                newmevel->y = 0;
-              } else if( !IS_SOLID(x-1,y  ) &&
-                         cbpos->x+cbhull[0].x >= oldmepos->x+oldmehull[1].x ) {  //I was LEFT before
-                newmepos->x = cbpos->x + cbhull[0].x - newmehull[1].x;
-                newmevel->x = 0;
-              } else if( !IS_SOLID(x+1,y  ) &&
-                         cbpos->x+cbhull[1].x <= oldmepos->x+oldmehull[0].x ) {  //I was RIGHT before
-                newmepos->x = cbpos->x + cbhull[1].x - newmehull[0].x;
-                newmevel->x = 0;
-              } else if( !IS_SOLID(x  ,y+1) &&
-                         cbpos->y+cbhull[1].y <= oldmepos->y+oldmehull[0].y ) {  //I was BELOW before
-                newmepos->y = cbpos->y + cbhull[1].y - newmehull[0].y;
-                newmevel->y = 0;
-              } else
-                continue;
+              if( 0 ) ;
+              ELSE_IF_HIT_THEN_MOVE_STOP(x  ,y-1,0,1,y,>=)
+              ELSE_IF_HIT_THEN_MOVE_STOP(x-1,y  ,0,1,x,>=)
+              ELSE_IF_HIT_THEN_MOVE_STOP(x+1,y  ,1,0,x,<=)
+              ELSE_IF_HIT_THEN_MOVE_STOP(x  ,y+1,1,0,y,<=)
+              else continue;
+
+/*
+              //I was ABOVE before
+              if(      !IS_SOLID(x  ,y-1) && cbpos->y+cbhull[0].y >= oldmepos->y+oldmehull[1].y ) { newmepos->y = cbpos->y+cbhull[0].y-newmehull[1].y; newmevel->y = 0; }
+              //I was LEFT before
+              else if( !IS_SOLID(x-1,y  ) && cbpos->x+cbhull[0].x >= oldmepos->x+oldmehull[1].x ) { newmepos->x = cbpos->x+cbhull[0].x-newmehull[1].x; newmevel->x = 0; }
+              //I was RIGHT before
+              else if( !IS_SOLID(x+1,y  ) && cbpos->x+cbhull[1].x <= oldmepos->x+oldmehull[0].x ) { newmepos->x = cbpos->x+cbhull[1].x-newmehull[0].x; newmevel->x = 0; }
+              //I was BELOW before
+              else if( !IS_SOLID(x  ,y+1) && cbpos->y+cbhull[1].y <= oldmepos->y+oldmehull[0].y ) { newmepos->y = cbpos->y+cbhull[1].y-newmehull[0].y; newmevel->y = 0; }
+              //none of the above?
+              else continue;
+*/
 
               recheck[r%2][i] = 1; //I've moved, so recheck me
 
+              #undef ELSE_IF_HIT_THEN_MOVE_STOP
               #undef IS_SOLID
             }
         }
@@ -277,17 +297,20 @@ void advance() {
             continue;
           if( !HAS(fr[b].objs[j].flags,OBJF_POS|OBJF_VEL|OBJF_HULL) )
             continue;
+
           OBJ_t *oldyou = fr[a].objs+j, *newyou = fr[b].objs+j;
           V *oldyoupos  = flex(oldyou,OBJF_POS );
           V *newyoupos  = flex(newyou,OBJF_POS );
           V *newyouvel  = flex(newyou,OBJF_VEL );
           V *oldyouhull = flex(oldyou,OBJF_HULL);
           V *newyouhull = flex(newyou,OBJF_HULL);
+
           if( newmepos->x+newmehull[0].x >= newyoupos->x+newyouhull[1].x ||   //we dont collide NOW
               newmepos->x+newmehull[1].x <= newyoupos->x+newyouhull[0].x ||
               newmepos->y+newmehull[0].y >= newyoupos->y+newyouhull[1].y ||
               newmepos->y+newmehull[1].y <= newyoupos->y+newyouhull[0].y    )
             continue;
+
           if(        oldyoupos->y+oldyouhull[0].y >= oldmepos->y+oldmehull[1].y     //I was above BEFORE
                   && (newyou->flags&OBJF_PLAT) && (newme->flags&OBJF_CLIP)      ) {
             newmepos->y = newyoupos->y + newyouhull[0].y - newmehull[1].y;
