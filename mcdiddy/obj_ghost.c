@@ -15,6 +15,9 @@
 void obj_ghost_draw( int objid, OBJ_t *o )
 {
   GHOST_t *gh = o->data;
+
+  if( !v_drawhulls ) return;
+
   SJGL_SetTex( TEX_PLAYER );
   SJGL_Blit( &(SDL_Rect){80,177,16,16}, gh->pos.x, gh->pos.y, NATIVEH );
 }

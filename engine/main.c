@@ -1,5 +1,5 @@
 /**
- **  SPARToR 
+ **  SPARToR
  **  Network Game Engine
  **  Copyright (C) 2010-2011  Jer Wilson
  **
@@ -233,34 +233,42 @@ void advance() {
               short flags = (co->dmap[pos].flags & CBF_NULL) ? co->map[pos].flags : co->dmap[pos].flags;
               if( !(flags & CBF_SOLID) )
                 continue;
-              V *cbpos  = &(V){x*16,y*16};
+              V *cbpos  = &(V){x*16,y*16,0};
               V *cbhull = (V[2]){{0,0,0},{16,16,0}};
 
-              if(        cbpos->y+cbhull[0].y >= oldmepos->y+oldmehull[1].y ) {  //I was ABOVE before
+              #define IS_SOLID(X,Y) (    (X)>=0 && (Y)>=0 && (X)<co->x && (Y)<co->y       \
+                                      &&                                                  \
+                                         HAS(                                             \
+                                               (co->dmap[(Y)*co->x+(X)].flags & CBF_NULL) \
+                                              ? co->map[ (Y)*co->x+(X)].flags             \
+                                              : co->dmap[(Y)*co->x+(X)].flags             \
+                                            ,                                             \
+                                              CBF_SOLID                                   \
+                                            )                                             \
+                                    )
+
+              if(        !IS_SOLID(x  ,y-1) &&
+                         cbpos->y+cbhull[0].y >= oldmepos->y+oldmehull[1].y ) {  //I was ABOVE before
                 newmepos->y = cbpos->y + cbhull[0].y - newmehull[1].y;
                 newmevel->y = 0;
-                recheck[r%2][i] = 1; //I've moved, so recheck me
-              } else if( cbpos->y+cbhull[1].y <= oldmepos->y+oldmehull[0].y ) {  //I was BELOW before
-                newmepos->y = cbpos->y + cbhull[1].y - newmehull[0].y;
-                newmevel->y = 0;
-                recheck[r%2][i] = 1; //I've moved, so recheck me
-              }
-
-              if( newmepos->x+newmehull[0].x >= cbpos->x+cbhull[1].x ||   //we dont collide NOW
-                  newmepos->x+newmehull[1].x <= cbpos->x+cbhull[0].x ||
-                  newmepos->y+newmehull[0].y >= cbpos->y+cbhull[1].y ||
-                  newmepos->y+newmehull[1].y <= cbpos->y+cbhull[0].y    )
-                continue;
-
-              if(        cbpos->x+cbhull[0].x >= oldmepos->x+oldmehull[1].x ) {  //I was LEFT before
+              } else if( !IS_SOLID(x-1,y  ) &&
+                         cbpos->x+cbhull[0].x >= oldmepos->x+oldmehull[1].x ) {  //I was LEFT before
                 newmepos->x = cbpos->x + cbhull[0].x - newmehull[1].x;
                 newmevel->x = 0;
-                recheck[r%2][i] = 1; //I've moved, so recheck me
-              } else if( cbpos->x+cbhull[1].x <= oldmepos->x+oldmehull[0].x ) {  //I was RIGHT before
+              } else if( !IS_SOLID(x+1,y  ) &&
+                         cbpos->x+cbhull[1].x <= oldmepos->x+oldmehull[0].x ) {  //I was RIGHT before
                 newmepos->x = cbpos->x + cbhull[1].x - newmehull[0].x;
                 newmevel->x = 0;
-                recheck[r%2][i] = 1; //I've moved, so recheck me
-              }
+              } else if( !IS_SOLID(x  ,y+1) &&
+                         cbpos->y+cbhull[1].y <= oldmepos->y+oldmehull[0].y ) {  //I was BELOW before
+                newmepos->y = cbpos->y + cbhull[1].y - newmehull[0].y;
+                newmevel->y = 0;
+              } else
+                continue;
+
+              recheck[r%2][i] = 1; //I've moved, so recheck me
+
+              #undef IS_SOLID
             }
         }
 
