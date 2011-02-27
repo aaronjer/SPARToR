@@ -40,6 +40,7 @@ enum { CMDT_1LEFT = 1,
        CMDT_0ENEXT };
 
 
+extern int    myghost;
 extern int    myghostleft;
 extern int    myghosttop;
 extern int    mycontext;

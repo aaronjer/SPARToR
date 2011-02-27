@@ -40,6 +40,7 @@ char objectnames[][16] =
        "amigosword" };
 
 
+int    myghost;     //obj number of local player ghost
 int    myghostleft; //top left of visible area for local player
 int    myghosttop;
 int    mycontext;
@@ -351,9 +352,14 @@ void mod_postdraw(Uint32 vidfr)
   glColor4f(1.0f,1.0f,1.0f,fabsf((float)(vidfr%30)-15.0f)/15.0f);
   SJGL_SetTex( TEX_WORLD );
 
+  int tile = mytile;
+  GHOST_t *gh = myghost ? fr[vidfr%maxframes].objs[myghost].data : NULL;
   for( j=dny; j<=upy; j++ )
-    for( i=dnx; i<=upx; i++ )
-      SJGL_Blit( &(SDL_Rect){(mytile%16)*16,(mytile/16)*16,16,16}, i*16, j*16, NATIVEH );
+    for( i=dnx; i<=upx; i++ ) {
+      if( mytile==0x5F && gh && gh->clipboard_data && (upy-dny||upx-dnx) ) // PSTE tool texture
+        tile = gh->clipboard_data[ ((j-dny)%gh->clipboard_y)*gh->clipboard_x + ((i-dnx)%gh->clipboard_x) ].data[0];
+      SJGL_Blit( &(SDL_Rect){(tile%16)*16,(tile/16)*16,16,16}, i*16, j*16, NATIVEH );
+    }
 
   glPopAttrib();
 }
