@@ -108,7 +108,7 @@ void mod_setup(Uint32 setupfr)
   memset( co->dmap, 0, (sizeof *co->dmap) * volume );
   int i;
   for( i=0; i<volume; i++ ) {
-    co->map[ i].data[0] = 4;
+    co->map[ i].data[0] = 255;
     co->dmap[i].flags   = CBF_NULL;
   }
 

@@ -21,6 +21,7 @@
 #include "client.h"
 #include "video.h"
 #include "input.h"
+#include "saveload.h"
 
 
 void command(const char *s){
@@ -116,6 +117,20 @@ void command(const char *s){
         if( o->type )
           SJC_Write( "#%i %s C:%i F:%x", i, objectnames[o->type], o->context, o->flags );
       }
+    }else if( strcmp(q,"save")==0 ){
+      char *name = strtok(NULL," ");
+      if( name==NULL ) {
+        SJC_Write("Please specify a file name to save");
+        break;
+      }
+      save_context( name, mycontext, hotfr );
+    }else if( strcmp(q,"load")==0 ){
+      char *name = strtok(NULL," ");
+      if( name==NULL ) {
+        SJC_Write("Please specify a file name to load");
+        break;
+      }
+      load_context( name, mycontext, hotfr );
     }else if( mod_command(q) ){
       SJC_Write("Huh?");
     }

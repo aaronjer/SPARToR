@@ -17,6 +17,7 @@ OBJS = engine/main.o \
        engine/video.o \
        engine/sjdl.o \
        engine/patt.o \
+       engine/saveload.o \
        mt19937ar/mt19937ar.o
 
 include $(MODNAME)/Makefile-include
