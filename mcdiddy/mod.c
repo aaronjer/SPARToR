@@ -12,6 +12,7 @@
 
 
 #include "mod.h"
+#include "saveload.h"
 
 
 GLuint textures[TEX_COUNT];
@@ -107,6 +108,7 @@ void mod_setup(Uint32 setupfr)
     co->map[ i].data[0] = 255;
     co->dmap[i].flags   = CBF_NULL;
   }
+  load_context("donnie",1,setupfr); //load a default map
 
   //make some dummys
   #define MAYBE_A_DUMMY(i,x,y,w,h) {                                                                             \

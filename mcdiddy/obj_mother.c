@@ -43,7 +43,7 @@ void obj_mother_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob )
     gh->clipboard_y = 0;
     gh->clipboard_data = NULL;
 
-    pl->pos  = (V){(i+1)*64,-50.0f,0.0f};
+    pl->pos  = (V){160,-50.0f,0.0f};
     pl->vel  = (V){0.0f,0.0f,0.0f};
     pl->hull[0] = (V){-6.0f,-15.0f,0.0f};
     pl->hull[1] = (V){ 6.0f, 15.0f,0.0f};
