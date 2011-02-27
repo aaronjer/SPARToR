@@ -39,6 +39,9 @@ typedef struct{
   int model;
   int client;
   int avatar;
+  int clipboard_x;
+  int clipboard_y;
+  CB *clipboard_data;
 } GHOST_t;
 
 void obj_ghost_draw( int objid, OBJ_t *o );

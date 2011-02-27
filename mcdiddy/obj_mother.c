@@ -39,6 +39,9 @@ void obj_mother_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob )
     gh->model = 0;
     gh->client = i;
     gh->avatar = slot0;
+    gh->clipboard_x = 0;
+    gh->clipboard_y = 0;
+    gh->clipboard_data = NULL;
 
     pl->pos  = (V){(i+1)*64,-50.0f,0.0f};
     pl->vel  = (V){0.0f,0.0f,0.0f};

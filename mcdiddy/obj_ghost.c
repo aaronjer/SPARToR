@@ -55,45 +55,56 @@ void obj_ghost_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob )
 
       if( dnx<0 || dny<0 || upx>=co->x || upy>=co->y ) { SJC_Write("Edit command out of bounds!"); break; }
 
+      if( value == 0x4F ) { //COPY tool texture
+        gh->clipboard_x = upx - dnx + 1;
+        gh->clipboard_y = upy - dny + 1;
+        gh->clipboard_data = malloc( gh->clipboard_x*gh->clipboard_y*(sizeof *gh->clipboard_data) ); //FIXME: mem leak
+      }
+
+      if( value == 0x5F && !gh->clipboard_data ) { SJC_Write("Clipboard is empty"); break; }
+
       for( j=dny; j<=upy; j++ )
         for( i=dnx; i<=upx; i++ ) {
           int pos = 0*co->y*co->x + j*co->x + i;
 
           // FIXME: WARNING: ALERT: LAME HACK for tool textures
           switch( value ) {
-            case 15: //NUL
+            case 0x0F: //NUL
               co->dmap[pos].flags |=  CBF_NULL;
               break;
 
-            case 31: //SOL
+            case 0x1F: //SOL
               if( co->dmap[pos].flags & CBF_NULL ) co->dmap[pos].data[0] = co->map[pos].data[0];
               co->dmap[pos].flags &= ~(CBF_NULL|CBF_PLAT);
               co->dmap[pos].flags |=  CBF_SOLID;
               break;
 
-            case 47: //PLAT
+            case 0x2F: //PLAT
               if( co->dmap[pos].flags & CBF_NULL ) co->dmap[pos].data[0] = co->map[pos].data[0];
               co->dmap[pos].flags &= ~(CBF_NULL|CBF_SOLID);
               co->dmap[pos].flags |=  CBF_PLAT;
               break;
 
-            case 63: //OPN
+            case 0x3F: //OPN
               if( co->dmap[pos].flags & CBF_NULL ) co->dmap[pos].data[0] = co->map[pos].data[0];
               co->dmap[pos].flags &= ~(CBF_NULL|CBF_SOLID|CBF_PLAT);
               break;
 
-            case 79: //COPY
+            case 0x4F: //COPY
+              gh->clipboard_data[(j-dny)*gh->clipboard_x + (i-dnx)] = (co->dmap[pos].flags & CBF_NULL) ? co->map[pos] : co->dmap[pos];
               break;
 
-            case 95: //PSTE
+            case 0x5F: //PSTE
+              co->dmap[pos] = gh->clipboard_data[ ((j-dny)%gh->clipboard_y)*gh->clipboard_x + ((i-dnx)%gh->clipboard_x) ];
               break;
 
-            case 111: //OBJ
+            case 0x6F: //OBJ
               pl->pos.x = i*co->blocksize;
               pl->pos.y = j*co->blocksize;
               break;
 
             default:
+              if( co->dmap[pos].flags & CBF_NULL ) co->dmap[pos].flags = co->map[pos].flags;
               co->dmap[pos].flags   &= ~CBF_NULL;
               co->dmap[pos].data[0]  = (char)value;
           }
