@@ -78,7 +78,7 @@ typedef struct{
 // map structures //
 typedef struct{
   short     flags;
-  char      data[CBDATASIZE];
+  Uint8      data[CBDATASIZE];
 } CB;
 
 typedef struct{

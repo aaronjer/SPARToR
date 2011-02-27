@@ -46,12 +46,10 @@ int    mycontext;
 int    downx = -1; //position of mousedown at beginning of edit cmd
 int    downy = -1;
 
-//FIXME REMOVE! change local player model
-int    setmodel;
-//
-//FIXME REMOVE! force amigo to flykick
-int    flykick;
-//
+int    setmodel; //FIXME REMOVE! change local player model
+int    flykick; //FIXME REMOVE! force amigo to flykick
+CB    *hack_map; //FIXME remove hack_map and _dmap someday
+CB    *hack_dmap;
 
 
 static int    binds_size = 0;
@@ -62,9 +60,6 @@ static struct {
 }            *binds;
 static int    editmode = 0;
 static int    mytile   = 0;
-
-static CB *hack_map; //FIXME remove hack
-static CB *hack_dmap;
 
 
 void mod_setup(Uint32 setupfr)
@@ -125,28 +120,6 @@ void mod_setup(Uint32 setupfr)
     du->hull[0] = (V){-w*8,-h*8,0.0f};                                                                           \
     du->hull[1] = (V){ w*8, h*8,0.0f};                                                                           \
     du->model = 0;                                                                                               }
-  MAYBE_A_DUMMY( 1,  1, 25,1,5);
-  MAYBE_A_DUMMY( 2,  3, 25,1,5);
-  MAYBE_A_DUMMY( 3,  5, 25,1,5);
-  MAYBE_A_DUMMY( 4,  7, 25,1,5);
-  MAYBE_A_DUMMY( 5,  9, 25,1,5);
-  MAYBE_A_DUMMY( 6, 11, 25,1,5);
-  MAYBE_A_DUMMY( 7, 13, 25,1,5);
-
-  MAYBE_A_DUMMY( 8,  7, 15,7,1);
-  MAYBE_A_DUMMY( 9, 22, 15,2,1);
-  MAYBE_A_DUMMY(10, 32, 15,2,1);
-  MAYBE_A_DUMMY(11, 44, 15,4,1);
-
-  MAYBE_A_DUMMY(12, 21, 25,1,3);
-  MAYBE_A_DUMMY(13, 23, 25,1,3);
-  MAYBE_A_DUMMY(14, 31, 25,1,3);
-  MAYBE_A_DUMMY(15, 33, 25,1,3);
-  MAYBE_A_DUMMY(16, 41, 25,1,3);
-  MAYBE_A_DUMMY(17, 43, 25,1,3);
-  MAYBE_A_DUMMY(18, 45, 25,1,3);
-  MAYBE_A_DUMMY(19, 47, 25,1,3);
-
   MAYBE_A_DUMMY(20,  3,-25,1,1);
   MAYBE_A_DUMMY(21,  3,-20,1,1);
   MAYBE_A_DUMMY(22,  3,-15,1,1);

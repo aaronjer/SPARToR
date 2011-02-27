@@ -42,6 +42,9 @@ extern int numinputnames;
 extern INPUTNAME_t inputnames[];
 extern char objectnames[][16];
 
+extern CB *hack_map; //FIXME REMOVE SOMEDAY
+extern CB *hack_dmap;
+
 
 void mod_setup(Uint32 setupfr);
 void mod_recvobj(OBJ_t *o);

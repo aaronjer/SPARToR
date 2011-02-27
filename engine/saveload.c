@@ -27,9 +27,9 @@ int save_context(const char *name,int context,int savefr)
   for( z=0; z<co->z; z++ ) {
     for( y=0; y<co->y; y++ ) {
       for( x=0; x<co->x; x++ ) {
-        int   pos = co->x*co->y*z + co->x*y + x;
-        char *data;
-        int   flags;
+        int    pos = co->x*co->y*z + co->x*y + x;
+        Uint8 *data;
+        int    flags;
 
         if( co->dmap[ pos ].flags & CBF_NULL ) {
           data  = co->map[  pos ].data;
@@ -39,7 +39,11 @@ int save_context(const char *name,int context,int savefr)
           flags = co->dmap[ pos ].flags;
         }
 
-        if(0>fprintf( f, " %.2x,%.2x", data[0], flags )) goto fail;
+        if( flags ) {
+          if(0>fprintf( f, " %.2x,%.2x", data[0], flags )) goto fail;
+        } else {
+          if(0>fprintf( f, " %.2x   "  , data[0]        )) goto fail;
+        }
       }
       if(0>fprintf( f, "\n" )) goto fail;
     }
@@ -57,9 +61,9 @@ int save_context(const char *name,int context,int savefr)
 }
 
 
-int load_fail(FILE *f,const char *msg)
+int fail(FILE *f,const char *msg)
 {
-  SJC_Write(msg);
+  SJC_Write("Context loading error: %s",msg);
   fclose(f);
   return -1;
 }
@@ -75,34 +79,49 @@ int load_context(const char *name,int context,int loadfr)
     SJC_Write("Failed to open file for reading: %s",path);
     return -1;
   }
-  
-  //if( !fgets(path,256,f) ) return load_fail(f,"Failed to read line 1");
 
   char modname[256];
   int version = 0;
-  if( 2 != fscanf(f,"%100s %d\n",modname,&version) )
-    return load_fail(f,"Failed to read line 1");
+  if( 2 != fscanf(f,"%100s %d\n",modname,&version) )        return fail(f,"failed to read line 1");
+  if( 0 != strcmp(modname,MODNAME) )                        return fail(f,"MODNAME mismatch");
+  if( version != MAPVERSION )                               return fail(f,"MAPVERSION mismatch");
 
-  SJC_Write("modname='%s' version='%s'",modname,version);
-/*
+  int blocksize,x,y,z;
+  if( 4 != fscanf(f,"%d %d %d %d\n",&blocksize,&x,&y,&z) )  return fail(f,"failed to read line 2");
+  if( blocksize<1 || blocksize>1024 )                       return fail(f,"blocksize is out of range");
+  if( x<1 || x>9000 )                                       return fail(f,"x is out of range");
+  if( y<1 || y>9000 )                                       return fail(f,"y is out of range");
+  if( z<1 || z>9000 )                                       return fail(f,"z is out of range");
+
   int volume = x * y * z;
+  CB *map  = malloc( (sizeof *map ) * volume );
 
-  // everything ok? swap it in
-  CONTEXT_t *co = fr[loadfr].objs[context].data;
-  co->blocksize = 16;
-  co->x = 100;
-  co->y =  15;
-  co->z =   1;
-  co->map  = hack_map  = malloc( (sizeof *co->map ) * volume ); //FIXME remove hack
-  co->dmap = hack_dmap = malloc( (sizeof *co->dmap) * volume );
-  memset( co->map,  0, (sizeof *co->map ) * volume );
-  memset( co->dmap, 0, (sizeof *co->dmap) * volume );
   int i;
   for( i=0; i<volume; i++ ) {
-    co->map[ i].data[0] = 255;
-    co->dmap[i].flags   = CBF_NULL;
+    unsigned int tile, flags = 0;
+    int numread;
+
+    if( 1 > (numread=fscanf(f,"%x,%x",&tile,&flags)) )  return fail(f,"failed to read block data");
+
+    map[i].data[0] = (Uint8)tile;
+    map[i].flags   = flags;
   }
-*/
+
+  // everything ok? swap it in
+  loadfr = loadfr%maxframes;
+  CONTEXT_t *co = fr[loadfr].objs[context].data;
+  co->blocksize = blocksize;
+  co->x = x;
+  co->y = y;
+  co->z = z;
+  if( co->map ) free(co->map);
+  co->map = hack_map = map; //FIXME remove hack_map someday
+
+  // clear out dmap (set null flag everywhere)
+  for( i=0; i<volume; i++ )
+    co->dmap[i].flags = CBF_NULL;
+
+  fclose(f);
 
   return 0;
 }
