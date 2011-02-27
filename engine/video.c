@@ -1,5 +1,5 @@
 /**
- **  SPARToR 
+ **  SPARToR
  **  Network Game Engine
  **  Copyright (C) 2010-2011  Jer Wilson
  **
@@ -149,11 +149,38 @@ void render()
   mod_postdraw(vidfr);
 
   glDisable(GL_DEPTH_TEST);
-  
+
   //display hulls and object numbers
   if( v_drawhulls ) {
     glBindTexture( GL_TEXTURE_2D, 0 );
     glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+
+    if( mycontext ) {
+      CONTEXT_t *co = fr[vidfrmod].objs[mycontext].data;
+      int x,y,z;
+      for( z=0; z<co->z; z++ )
+        for( y=0; y<co->y; y++ )
+          for( x=0; x<co->x; x++ ) {
+            int pos = co->x*co->y*z + co->x*y + x;
+            int flags;
+
+            if( co->dmap[ pos ].flags & CBF_NULL )
+              flags = co->map[  pos ].flags;
+            else
+              flags = co->dmap[ pos ].flags;
+
+            if( flags & CBF_SOLID ) {
+              glColor4f(1,0,0,1);
+              SJGL_Blit( &(SDL_Rect){0,0,16,16}, x*16,   y*16,   z );
+              SJGL_Blit( &(SDL_Rect){0,0,12,12}, x*16+2, y*16+2, z );
+            } else if( flags & CBF_PLAT ) {
+              glColor4f(0,1,0,1);
+              SJGL_Blit( &(SDL_Rect){0,0,16, 2}, x*16,   y*16,   z );
+            }
+          }
+    }
+
+    glColor4f(1,1,1,1);
     for(i=0;i<maxobjs;i++) {
       OBJ_t *o = fr[vidfrmod].objs+i;
       V *pos  = flex(o,OBJF_POS);
@@ -163,7 +190,9 @@ void render()
         SJGL_Blit( &rect, pos->x+hull[0].x, pos->y+hull[0].y, 0 );
       }
     }
+
     glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+
     for(i=0;i<maxobjs;i++) {
       OBJ_t *o = fr[vidfrmod].objs+i;
       V *pos  = flex(o,OBJF_POS);

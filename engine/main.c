@@ -246,7 +246,7 @@ void advance() {
               int pos = y*co->x + x;
               short flags = (co->dmap[pos].flags & CBF_NULL) ? co->map[pos].flags : co->dmap[pos].flags;
 
-              if( !(flags & CBF_SOLID) ) continue;
+              if( !(flags & (CBF_SOLID|CBF_PLAT)) ) continue;
 
               V *cbpos  = &(V){x*16,y*16,0};
               V *cbhull = (V[2]){{0,0,0},{16,16,0}};
@@ -267,6 +267,7 @@ void advance() {
 
               if( 0 ) ;
               ELSE_IF_HIT_THEN_MOVE_STOP(x  ,y-1,0,1,y,>=)
+              else if( flags & CBF_PLAT ) ; // skip other sides for plat
               ELSE_IF_HIT_THEN_MOVE_STOP(x-1,y  ,0,1,x,>=)
               ELSE_IF_HIT_THEN_MOVE_STOP(x+1,y  ,1,0,x,<=)
               ELSE_IF_HIT_THEN_MOVE_STOP(x  ,y+1,1,0,y,<=)

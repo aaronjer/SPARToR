@@ -42,6 +42,7 @@ char objectnames[][16] =
 
 int    myghostleft; //top left of visible area for local player
 int    myghosttop;
+int    mycontext;
 int    downx = -1; //position of mousedown at beginning of edit cmd
 int    downy = -1;
 
