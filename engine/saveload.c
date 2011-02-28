@@ -94,7 +94,8 @@ int load_context(const char *name,int context,int loadfr)
   if( z<1 || z>9000 )                                       return fail(f,"z is out of range");
 
   int volume = x * y * z;
-  CB *map  = malloc( (sizeof *map ) * volume );
+  CB *map  = malloc( (sizeof *map  ) * volume );
+  CB *dmap = malloc( (sizeof *dmap ) * volume );
 
   int i;
   for( i=0; i<volume; i++ ) {
@@ -103,8 +104,9 @@ int load_context(const char *name,int context,int loadfr)
 
     if( 1 > (numread=fscanf(f,"%x,%x",&tile,&flags)) )  return fail(f,"failed to read block data");
 
-    map[i].data[0] = (Uint8)tile;
-    map[i].flags   = flags;
+    map[ i].data[0] = (Uint8)tile;
+    map[ i].flags   = flags;
+    dmap[i].flags   = CBF_NULL;
   }
 
   // everything ok? swap it in
@@ -114,12 +116,10 @@ int load_context(const char *name,int context,int loadfr)
   co->x = x;
   co->y = y;
   co->z = z;
-  if( co->map ) free(co->map);
-  co->map = hack_map = map; //FIXME remove hack_map someday
-
-  // clear out dmap (set null flag everywhere)
-  for( i=0; i<volume; i++ )
-    co->dmap[i].flags = CBF_NULL;
+  if( co->map  ) free(co->map ); //FIXME remove hack_map someday and don't free this stuff here
+  if( co->dmap ) free(co->dmap);
+  co->map  = hack_map  = map;
+  co->dmap = hack_dmap = dmap;
 
   fclose(f);
 
