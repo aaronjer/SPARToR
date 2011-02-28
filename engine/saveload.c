@@ -6,9 +6,6 @@
 #include <stdio.h>
 #include <errno.h>
 #include <stdlib.h>
-#ifdef _WIN32
-#include <direct.h>
-#endif
 
 
 char *sjtempnam(const char *dir, const char *pfx, const char *ext)
@@ -31,14 +28,12 @@ char *sjtempnam(const char *dir, const char *pfx, const char *ext)
 
 int save_context(const char *name,int context,int savefr)
 {
-  char  cwd[256];
   char  path[256];
   char  bakdir[256];
   char *bakfile;
 
-  getcwd(cwd,256);
-  snprintf( path,   256, "%s/%s/maps/%s.txt", cwd, MODNAME, name );
-  snprintf( bakdir, 256, "%s/%s/maps/backup", cwd, MODNAME       );
+  snprintf( path,   256, "%s/maps/%s.txt", MODNAME, name );
+  snprintf( bakdir, 256, "%s/maps/backup", MODNAME       );
 
   // attempt to backup existing file by moving it to backup directory
   if( !(bakfile = sjtempnam(bakdir,name,".txt")) ) {
@@ -54,7 +49,7 @@ int save_context(const char *name,int context,int savefr)
       return -1;
     }
   } else
-    SJC_Write("Old file backed up to: %s",bakfile);
+    SJC_Write("Old file backed up to %s",bakfile);
 
   free( bakfile );
 
@@ -121,6 +116,7 @@ int fail(FILE *f,const char *msg)
 int load_context(const char *name,int context,int loadfr)
 {
   char path[256];
+
   snprintf( path, 256, "%s/maps/%s.txt", MODNAME, name );
 
   FILE *f = fopen( path, "r" );
