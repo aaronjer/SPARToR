@@ -19,6 +19,7 @@ OBJS = engine/main.o \
        engine/patt.o \
        engine/saveload.o \
        mt19937ar/mt19937ar.o
+FLAGS = --std=c99 -g -Wall -Wextra -Wno-unused-parameter -Wno-overlength-strings -pedantic -DGLEW_STATIC
 
 include $(MODNAME)/Makefile-include
 
@@ -30,13 +31,12 @@ POSTCC =
 
 ifeq ($(UNAME),Linux)
 	EXE_NAME = spartor_linux
-	FLAGS = `sdl-config --cflags` --std=c99 -g -Wall -Wextra -Wno-unused-parameter -Wno-overlength-strings -pedantic -DGLEW_STATIC
+	FLAGS += `sdl-config --cflags`
 	LIBS = -lm -lSDL -lSDL_net -lSDL_image -lGL -lGLU -lGLEW
 	INC = -Iengine -I$(MODNAME) -Imt19937ar
 endif
 ifeq ($(UNAME),Darwin)
 	EXE_NAME = platforms/mac/spartor_mac.app/Contents/MacOS/spartor_mac
-	FLAGS = -g -Wall -DGLEW_STATIC
 	LIBS = platforms/mac/spartor_mac.app/SDLmain.m \
 	       -lm \
 	       -L/opt/local/var/macports/software/glew/1.5.8_0/opt/local/lib -lGLEW \
@@ -58,9 +58,10 @@ ifneq (,$(findstring MINGW,$(UNAME)))
 	EXE_NAME = spartor_win32.exe
 	OBJSRES = $(MODNAME)/icon.o
 	WINDRES = windres
-	FLAGS = -g -Wall -mwindows -DGLEW_STATIC
-	LIBS = -L /local/lib -L ./glew-1.5.8/lib -lmingw32 -lSDLmain -lSDL -lSDL_net -lSDL_image -lglew32s -lopengl32 -lglu32 -lm
-	INC = -Iengine -I$(MODNAME) -Imt19937ar -I/usr/local/include/SDL -Iglew-1.5.8/include
+	FLAGS += -mwindows
+	LIBS = -L/local/lib -Lplatforms/win/glew-1.5.8/lib \
+	       -lmingw32 -lSDLmain -lSDL -lSDL_net -lSDL_image -lglew32s -lopengl32 -lglu32 -lm
+	INC = -Iengine -I$(MODNAME) -Imt19937ar -I/usr/local/include/SDL -Iplatforms/win/glew-1.5.8/include
 	POSTCC = cp platforms/win/*.dll .
 endif
 
