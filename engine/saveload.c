@@ -3,13 +3,62 @@
 #include "mod.h"
 #include "main.h"
 #include "saveload.h"
+#include <stdio.h>
+#include <errno.h>
+#include <stdlib.h>
+#ifdef _WIN32
+#include <direct.h>
+#endif
+
+
+char *sjtempnam(const char *dir, const char *pfx, const char *ext)
+{
+  FILE *f;
+  char *buf = malloc(256);
+  int i;
+
+  for( i=0; i<9999; i++ ) {
+    snprintf( buf, 256, "%s/%s%d%s", dir, pfx, i, ext);
+    f = fopen( buf, "r" );
+    if( !f )
+      return buf;
+    fclose( f );
+  }
+
+  return NULL;
+}
 
 
 int save_context(const char *name,int context,int savefr)
 {
-  char path[256];
-  snprintf( path, 256, "%s/maps/%s.txt", MODNAME, name );
+  char  cwd[256];
+  char  path[256];
+  char  bakdir[256];
+  char *bakfile;
 
+  getcwd(cwd,256);
+  snprintf( path,   256, "%s/%s/maps/%s.txt", cwd, MODNAME, name );
+  snprintf( bakdir, 256, "%s/%s/maps/backup", cwd, MODNAME       );
+
+  // attempt to backup existing file by moving it to backup directory
+  if( !(bakfile = sjtempnam(bakdir,name,".txt")) ) {
+    SJC_Write("Failed to create temporary name");
+    return -1;
+  }
+
+  // fail if any error occurs other than that the file does not already exist
+  if( -1 == rename(path,bakfile) ) {
+    if( errno != ENOENT ) {
+      SJC_Write("Failed to backup old map file");
+      free( bakfile );
+      return -1;
+    }
+  } else
+    SJC_Write("Old file backed up to: %s",bakfile);
+
+  free( bakfile );
+
+  // now that the existing file, if any, is safe, open file to write to
   FILE *f = fopen( path, "w" );
   if( !f ) {
     SJC_Write("Failed to open file for writing: %s",path);

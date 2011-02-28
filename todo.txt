@@ -4,6 +4,4 @@ garbage collect things like CONTEXT_t.map and CONTEXT_t.dmap when they roll off 
 
 add mod_pack() callback for packing custom objects like GHOST_t.clipboard_data
 
-make backup when overwriting a map
-
 autosave when editing maps
