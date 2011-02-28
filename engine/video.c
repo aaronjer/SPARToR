@@ -51,11 +51,12 @@ void videoinit()
 {
   const SDL_VideoInfo *vidinfo;
 
-  SDL_GL_SetAttribute(SDL_GL_RED_SIZE,   8);
-  SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
-  SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE,  8);
-  SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
+  SDL_GL_SetAttribute(SDL_GL_RED_SIZE,    8);
+  SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE,  8);
+  SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE,   8);
+  SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE,  8);
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER,1);
+  SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL,1);
 
   vidinfo = SDL_GetVideoInfo();
   *((int*)&desktop_w) = vidinfo->current_w;

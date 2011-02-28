@@ -273,19 +273,6 @@ void advance() {
               ELSE_IF_HIT_THEN_MOVE_STOP(x  ,y+1,1,0,y,<=)
               else continue;
 
-/*
-              //I was ABOVE before
-              if(      !IS_SOLID(x  ,y-1) && cbpos->y+cbhull[0].y >= oldmepos->y+oldmehull[1].y ) { newmepos->y = cbpos->y+cbhull[0].y-newmehull[1].y; newmevel->y = 0; }
-              //I was LEFT before
-              else if( !IS_SOLID(x-1,y  ) && cbpos->x+cbhull[0].x >= oldmepos->x+oldmehull[1].x ) { newmepos->x = cbpos->x+cbhull[0].x-newmehull[1].x; newmevel->x = 0; }
-              //I was RIGHT before
-              else if( !IS_SOLID(x+1,y  ) && cbpos->x+cbhull[1].x <= oldmepos->x+oldmehull[0].x ) { newmepos->x = cbpos->x+cbhull[1].x-newmehull[0].x; newmevel->x = 0; }
-              //I was BELOW before
-              else if( !IS_SOLID(x  ,y+1) && cbpos->y+cbhull[1].y <= oldmepos->y+oldmehull[0].y ) { newmepos->y = cbpos->y+cbhull[1].y-newmehull[0].y; newmevel->y = 0; }
-              //none of the above?
-              else continue;
-*/
-
               recheck[r%2][i] = 1; //I've moved, so recheck me
 
               #undef ELSE_IF_HIT_THEN_MOVE_STOP
