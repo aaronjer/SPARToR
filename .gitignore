@@ -1,3 +1,4 @@
+*.dll
 *.[oa]
 *.swp
 *.sh
@@ -5,6 +6,7 @@ tags
 spartor_linux
 spartor_win32.exe
 spartor_mac
+spartor_mac.app
 stdout.txt
 stderr.txt
 .DS_Store

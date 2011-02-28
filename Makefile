@@ -35,9 +35,9 @@ ifeq ($(UNAME),Linux)
 	INC = -Iengine -I$(MODNAME) -Imt19937ar
 endif
 ifeq ($(UNAME),Darwin)
-	EXE_NAME = spartor_mac
+	EXE_NAME = platforms/mac/spartor_mac.app/Contents/MacOS/spartor_mac
 	FLAGS = -g -Wall -DGLEW_STATIC
-	LIBS = spartor_mac.app/SDLmain.m \
+	LIBS = platforms/mac/spartor_mac.app/SDLmain.m \
 	       -lm \
 	       -L/opt/local/var/macports/software/glew/1.5.8_0/opt/local/lib -lGLEW \
 	       -framework OPENGL \
@@ -45,14 +45,14 @@ ifeq ($(UNAME),Darwin)
 	       -framework SDL_net \
 	       -framework SDL_image \
 	       -framework Cocoa \
-	       -Fspartor_mac.app/Contents/Frameworks
+	       -Fplatforms/mac/spartor_mac.app/Contents/Frameworks
 	INC = -Iengine -I$(MODNAME) -Imt19937ar \
 	      -I/opt/local/var/macports/software/glew/1.5.8_0/opt/local/include \
-	      -Ispartor_mac.app \
-	      -Ispartor_mac.app/Contents/Frameworks/SDL.framework/Headers \
-	      -Ispartor_mac.app/Contents/Frameworks/SDL_net.framework/Headers \
-	      -Ispartor_mac.app/Contents/Frameworks/SDL_image.framework/Headers
-	POSTCC = mv $(EXE_NAME) spartor_mac.app/Contents/MacOS
+	      -Iplatforms/mac/spartor_mac.app \
+	      -Iplatforms/mac/spartor_mac.app/Contents/Frameworks/SDL.framework/Headers \
+	      -Iplatforms/mac/spartor_mac.app/Contents/Frameworks/SDL_net.framework/Headers \
+	      -Iplatforms/mac/spartor_mac.app/Contents/Frameworks/SDL_image.framework/Headers
+	POSTCC = cp -R -f platforms/mac/spartor_mac.app .
 endif
 ifneq (,$(findstring MINGW,$(UNAME)))
 	EXE_NAME = spartor_win32.exe
@@ -61,6 +61,7 @@ ifneq (,$(findstring MINGW,$(UNAME)))
 	FLAGS = -g -Wall -mwindows -DGLEW_STATIC
 	LIBS = -L /local/lib -L ./glew-1.5.8/lib -lmingw32 -lSDLmain -lSDL -lSDL_net -lSDL_image -lglew32s -lopengl32 -lglu32 -lm
 	INC = -Iengine -I$(MODNAME) -Imt19937ar -I/usr/local/include/SDL -Iglew-1.5.8/include
+	POSTCC = cp platforms/win/*.dll .
 endif
 
 
