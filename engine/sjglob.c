@@ -17,7 +17,7 @@
 
 SJGLOB_T *SJglob( const char *path, const char *pattern, int flags )
 {
-  char *str = malloc( strlen(path) + strlen(pattern) + 2 );
+  char *str = malloc( strlen(path) + strlen(pattern) + 2 ); // room for a / in the middle and a ^@ at the end
   strcpy( str, path );
   strcat( str, "/" );
   strcat( str, pattern );
@@ -39,8 +39,10 @@ SJGLOB_T *SJglob( const char *path, const char *pattern, int flags )
     size_t i;
 
     for( i=0; i<1000; i++ ) {
-      files->gl_pathv[i] = malloc( strlen(findata.cFileName)+2 );
-      strcpy( files->gl_pathv[i], findata.cFileName );
+      files->gl_pathv[i] = malloc( strlen(path) + strlen(findata.cFileName) + 3 ); // room for a / in the middle, at the end, and a ^@
+      strcpy( files->gl_pathv[i], path );
+      strcat( files->gl_pathv[i], "/" );
+      strcat( files->gl_pathv[i], findata.cFileName );
       if( (flags&SJGLOB_MARK) && (findata.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY) )
         strcat( files->gl_pathv[i], "/" );
       files->gl_pathc++;
