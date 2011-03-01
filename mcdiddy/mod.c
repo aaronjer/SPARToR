@@ -13,6 +13,7 @@
 
 #include "mod.h"
 #include "saveload.h"
+#include <glob.h>
 
 
 GLuint textures[TEX_COUNT];
@@ -277,6 +278,13 @@ void mod_loadsurfs(int quit)
   glDeleteTextures(TEX_COUNT,textures);
 
   if( quit ) return;
+
+  glob_t files;
+  glob( MODNAME "/images/*.png", GLOB_MARK|GLOB_NOESCAPE, NULL, &files );
+  
+  size_t i;
+  for( i=0; i<files.gl_pathc; i++ )
+    SJC_Write("glob found: %s",files.gl_pathv[i]);
 
   glPixelStorei(GL_UNPACK_ALIGNMENT,4);
   glGenTextures(TEX_COUNT,textures);
