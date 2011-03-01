@@ -13,7 +13,7 @@
 
 #include "mod.h"
 #include "saveload.h"
-#include <glob.h>
+#include "sjglob.h"
 
 
 GLuint textures[TEX_COUNT];
@@ -279,12 +279,14 @@ void mod_loadsurfs(int quit)
 
   if( quit ) return;
 
-  glob_t files;
-  glob( MODNAME "/images/*.png", GLOB_MARK|GLOB_NOESCAPE, NULL, &files );
-  
+  SJGLOB_T *files = SJglob( MODNAME "/textures", "*.png", SJGLOB_MARK|SJGLOB_NOESCAPE );
+
+  SJC_Write("Texture files found: %d",files->gl_pathc);
   size_t i;
-  for( i=0; i<files.gl_pathc; i++ )
-    SJC_Write("glob found: %s",files.gl_pathv[i]);
+  for( i=0; i<files->gl_pathc; i++ )
+    SJC_Write("glob found: %s",files->gl_pathv[i]);
+
+  SJglobfree( files );
 
   glPixelStorei(GL_UNPACK_ALIGNMENT,4);
   glGenTextures(TEX_COUNT,textures);
@@ -297,9 +299,9 @@ void mod_loadsurfs(int quit)
      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, surf->w, surf->h, 0, SJDL_GLFormatOf(surf), GL_UNSIGNED_BYTE, surf->pixels); \
      SDL_FreeSurface(surf);                                                                                               \
     }                                                                                                                     }
-  LOADTEX( TEX_PLAYER, MODNAME "/images/player.png" );
-  LOADTEX( TEX_WORLD,  MODNAME "/images/world.png"  );
-  LOADTEX( TEX_AMIGO,  MODNAME "/images/amigo.png"  );
+  LOADTEX( TEX_PLAYER, MODNAME "/textures/player.png" );
+  LOADTEX( TEX_WORLD,  MODNAME "/textures/world.png"  );
+  LOADTEX( TEX_AMIGO,  MODNAME "/textures/amigo.png"  );
   #undef LOADTEX
 }
 
