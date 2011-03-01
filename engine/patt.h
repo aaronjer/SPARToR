@@ -1,7 +1,7 @@
 #ifndef SPARTOR_PATT_H_
 #define SPARTOR_PATT_H_
 
-#include "mt19937ar.h"
+#include "mt19937ar/mt19937ar.h"
 #include "main.h"
 
 uint32_t patt();

@@ -18,22 +18,23 @@ OBJS = engine/main.o \
        engine/sjdl.o \
        engine/patt.o \
        engine/saveload.o \
-       mt19937ar/mt19937ar.o
+       engine/mt19937ar/mt19937ar.o
 FLAGS = --std=c99 -g -Wall -Wextra -Wno-unused-parameter -Wno-overlength-strings -pedantic -DGLEW_STATIC
-
-include $(MODNAME)/Makefile-include
+INC = -Iengine -I$(MODNAME)
 
 # Only useful on certain platforms
 OBJSRES =
 WINDRES =
 POSTCC =
 
+# Mod stuff
+include $(MODNAME)/Makefile-include
+
 
 ifeq ($(UNAME),Linux)
 	EXE_NAME = spartor_linux
 	FLAGS += `sdl-config --cflags`
 	LIBS = -lm -lSDL -lSDL_net -lSDL_image -lGL -lGLU -lGLEW
-	INC = -Iengine -I$(MODNAME) -Imt19937ar
 endif
 ifeq ($(UNAME),Darwin)
 	EXE_NAME = platforms/mac/spartor_mac.app/Contents/MacOS/spartor_mac
@@ -46,12 +47,11 @@ ifeq ($(UNAME),Darwin)
 	       -framework SDL_image \
 	       -framework Cocoa \
 	       -Fplatforms/mac/spartor_mac.app/Contents/Frameworks
-	INC = -Iengine -I$(MODNAME) -Imt19937ar \
-	      -I/opt/local/var/macports/software/glew/1.5.8_0/opt/local/include \
-	      -Iplatforms/mac/spartor_mac.app \
-	      -Iplatforms/mac/spartor_mac.app/Contents/Frameworks/SDL.framework/Headers \
-	      -Iplatforms/mac/spartor_mac.app/Contents/Frameworks/SDL_net.framework/Headers \
-	      -Iplatforms/mac/spartor_mac.app/Contents/Frameworks/SDL_image.framework/Headers
+	INC += -I/opt/local/var/macports/software/glew/1.5.8_0/opt/local/include \
+	       -Iplatforms/mac/spartor_mac.app \
+	       -Iplatforms/mac/spartor_mac.app/Contents/Frameworks/SDL.framework/Headers \
+	       -Iplatforms/mac/spartor_mac.app/Contents/Frameworks/SDL_net.framework/Headers \
+	       -Iplatforms/mac/spartor_mac.app/Contents/Frameworks/SDL_image.framework/Headers
 	POSTCC = cp -R -f platforms/mac/spartor_mac.app .
 endif
 ifneq (,$(findstring MINGW,$(UNAME)))
@@ -61,7 +61,7 @@ ifneq (,$(findstring MINGW,$(UNAME)))
 	FLAGS += -mwindows
 	LIBS = -L/local/lib -Lplatforms/win/glew-1.5.8/lib \
 	       -lmingw32 -lSDLmain -lSDL -lSDL_net -lSDL_image -lglew32s -lopengl32 -lglu32 -lm
-	INC = -Iengine -I$(MODNAME) -Imt19937ar -I/usr/local/include/SDL -Iplatforms/win/glew-1.5.8/include
+	INC += -I/usr/local/include/SDL -Iplatforms/win/glew-1.5.8/include
 	POSTCC = cp platforms/win/*.dll .
 endif
 
