@@ -51,7 +51,7 @@ void SJGL_SetTex(GLuint tex)
   if( prev==(GLuint)-1 ) return;
 
   glBindTexture(GL_TEXTURE_2D,0); //FIXME: hack 4 win
-  glBindTexture(GL_TEXTURE_2D,textures[tex]);
+  glBindTexture(GL_TEXTURE_2D,textures[ sys_tex[tex].num ]);
 }
 
 

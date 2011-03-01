@@ -79,7 +79,7 @@ void SJglobfree( SJGLOB_T *files )
 
 #else
 
-  glob_free( files );
+  globfree( files );
 
 #endif
 

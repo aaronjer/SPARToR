@@ -16,7 +16,16 @@
 #include "sjglob.h"
 
 
-GLuint textures[TEX_COUNT];
+int TEX_PLAYER = 0;
+int TEX_WORLD  = 1;
+int TEX_AMIGO  = 2;
+
+GLuint *textures;
+SYS_TEX_T sys_tex[] = {{"/player.png",0},
+                       {"/world.png" ,0},
+                       {"/amigo.png" ,0}};
+size_t num_sys_tex = (sizeof sys_tex) / (sizeof *sys_tex);
+
 
 INPUTNAME_t inputnames[] = {{"left"       ,CMDT_1LEFT ,CMDT_0LEFT },
                             {"right"      ,CMDT_1RIGHT,CMDT_0RIGHT},
@@ -272,37 +281,44 @@ else if( strcmp(q,"flykick")==0 ){ flykick = 1; return 0; }
 
 void mod_loadsurfs(int quit)
 {
-  SDL_Surface *surf;
+  static size_t tex_count;
 
   // free existing textures
-  glDeleteTextures(TEX_COUNT,textures);
+  glDeleteTextures(tex_count,textures);
+  if( textures ) free(textures);
 
   if( quit ) return;
 
   SJGLOB_T *files = SJglob( MODNAME "/textures", "*.png", SJGLOB_MARK|SJGLOB_NOESCAPE );
-
-  SJC_Write("Texture files found: %d",files->gl_pathc);
-  size_t i;
-  for( i=0; i<files->gl_pathc; i++ )
-    SJC_Write("glob found: %s",files->gl_pathv[i]);
-
-  SJglobfree( files );
+  tex_count = files->gl_pathc;
 
   glPixelStorei(GL_UNPACK_ALIGNMENT,4);
-  glGenTextures(TEX_COUNT,textures);
+  textures = malloc( tex_count * sizeof *textures );
+  glGenTextures(tex_count,textures);
 
-  #define LOADTEX(tex, file) {                                                                                            \
-    glBindTexture(GL_TEXTURE_2D,textures[tex]);                                                                           \
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);                                                      \
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);                                                      \
-    if( (surf = IMG_Load(file)) ) {                                                                                       \
-     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, surf->w, surf->h, 0, SJDL_GLFormatOf(surf), GL_UNSIGNED_BYTE, surf->pixels); \
-     SDL_FreeSurface(surf);                                                                                               \
-    }                                                                                                                     }
-  LOADTEX( TEX_PLAYER, MODNAME "/textures/player.png" );
-  LOADTEX( TEX_WORLD,  MODNAME "/textures/world.png"  );
-  LOADTEX( TEX_AMIGO,  MODNAME "/textures/amigo.png"  );
-  #undef LOADTEX
+  SJC_Write("Ready to load %d textures",tex_count);
+
+  size_t i;
+  for( i=0; i<files->gl_pathc; i++ ) {
+    SDL_Surface *surf;
+
+    SJC_Write("Loading texture %d from file %s",i,files->gl_pathv[i]);
+
+    size_t j;
+    for( j=0; j<num_sys_tex; j++ )
+      if( strstr( files->gl_pathv[i], sys_tex[j].name ) )
+        sys_tex[j].num = i;
+
+    glBindTexture(GL_TEXTURE_2D,textures[i]);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+    if( (surf = IMG_Load(files->gl_pathv[i])) ) {
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, surf->w, surf->h, 0, SJDL_GLFormatOf(surf), GL_UNSIGNED_BYTE, surf->pixels);
+      SDL_FreeSurface(surf);
+    }
+  }
+
+  SJglobfree( files );
 }
 
 

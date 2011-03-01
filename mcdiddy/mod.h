@@ -25,22 +25,32 @@
 
 
 typedef struct {
+  char   name[32];
+  int    num;
+} SYS_TEX_T;
+
+typedef struct {
   char   name[16];
   int    presscmd;
   int    releasecmd;
 } INPUTNAME_t;
 
 
-enum { TEX_PLAYER = 0,
-       TEX_WORLD,
-       TEX_AMIGO,
-       TEX_COUNT };
-extern GLuint textures[TEX_COUNT];
+extern int TEX_PLAYER;
+extern int TEX_WORLD;
+extern int TEX_AMIGO;
+
+extern GLuint *textures;
+extern SYS_TEX_T sys_tex[];
+extern size_t num_sys_tex;
 
 
-extern int numinputnames;
 extern INPUTNAME_t inputnames[];
+extern int numinputnames;
+
+
 extern char objectnames[][16];
+
 
 extern CB *hack_map; //FIXME REMOVE SOMEDAY
 extern CB *hack_dmap;
