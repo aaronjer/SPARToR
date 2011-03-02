@@ -280,9 +280,59 @@ else if( strcmp(q,"flykick")==0 ){ flykick = 1; return 0; }
 }
 
 
+int make_sure_texture_is_loaded( char *texfile )
+{
+  SDL_Surface *surf;
+  size_t j,k;
+
+  glPixelStorei(GL_UNPACK_ALIGNMENT,4);
+
+  for( j=0; ; j++ ) {
+    // need more space?
+    if( j >= tex_count ) {
+      size_t new_count = tex_count < 8 ? 8 : tex_count*2;
+      textures = realloc( textures, new_count * sizeof *textures );
+      memset( textures + tex_count, 0, (new_count - tex_count) * sizeof *textures );
+      tex_count = new_count;
+    }
+
+    // is slot j the one?
+    if( !textures[j].filename ) {
+      SJC_Write("Texture %s is new, using slot %d",texfile,j);
+      textures[j].filename = malloc( strlen(texfile) + 1 );
+      strcpy(textures[j].filename,texfile);
+    } else if( !strcmp(textures[j].filename,texfile) ) {
+      SJC_Write("Texture %s was loaded before, reusing slot %d",texfile,j);
+    } else
+      continue;
+
+    // alert GL to presence of new texture
+    glGenTextures(1,&textures[j].glname);
+    textures[j].generated = 1;
+
+    // load texture into GL
+    glBindTexture(GL_TEXTURE_2D,textures[j].glname);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+    if( (surf = IMG_Load(textures[j].filename)) ) {
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, surf->w, surf->h, 0, SJDL_GLFormatOf(surf), GL_UNSIGNED_BYTE, surf->pixels);
+      SDL_FreeSurface(surf);
+    } else
+      SJC_Write("Failed to read texture %s",textures[j].filename);
+
+    // map system texture if there is a match(es)
+    for( k=0; k<num_sys_tex; k++ )
+      if( strstr( textures[j].filename, sys_tex[k].name ) )
+        sys_tex[k].num = j;
+
+    return k;
+  }
+}
+
+
 void mod_loadsurfs(int quit)
 {
-  size_t i,j,k;
+  size_t i;
 
   // free existing textures
   for( i=0; i<tex_count; i++ )
@@ -295,52 +345,8 @@ void mod_loadsurfs(int quit)
 
   SJGLOB_T *files = SJglob( MODNAME "/textures", "*.png", SJGLOB_MARK|SJGLOB_NOESCAPE );
 
-  glPixelStorei(GL_UNPACK_ALIGNMENT,4);
-
-  for( i=0; i<files->gl_pathc; i++ ) {
-    SDL_Surface *surf;
-
-    for( j=0; ; j++ ) {
-      // need more space?
-      if( j >= tex_count ) {
-        size_t new_count = tex_count < 8 ? 8 : tex_count*2;
-        textures = realloc( textures, new_count * sizeof *textures );
-        memset( textures + tex_count, 0, (new_count - tex_count) * sizeof *textures );
-        tex_count = new_count;
-      }
-
-      // is slot j the one?
-      if( !textures[j].filename ) {
-        SJC_Write("Texture %s is new, using slot %d",files->gl_pathv[i],j);
-        textures[j].filename = malloc( strlen(files->gl_pathv[i]) + 1 );
-        strcpy(textures[j].filename,files->gl_pathv[i]);
-      } else if( !strcmp(textures[j].filename,files->gl_pathv[i]) ) {
-        SJC_Write("Texture %s was loaded before, reusing slot %d",files->gl_pathv[i],j);
-      } else
-        continue;
-
-      // alert GL to presence of new texture
-      glGenTextures(1,&textures[j].glname);
-      textures[j].generated = 1;
-
-      // load texture into GL
-      glBindTexture(GL_TEXTURE_2D,textures[j].glname);
-      glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
-      glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
-      if( (surf = IMG_Load(textures[j].filename)) ) {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, surf->w, surf->h, 0, SJDL_GLFormatOf(surf), GL_UNSIGNED_BYTE, surf->pixels);
-        SDL_FreeSurface(surf);
-      } else
-        SJC_Write("Failed to read texture %s",textures[j].filename);
-
-      // map sys tex if there is a match
-      for( k=0; k<num_sys_tex; k++ )
-        if( strstr( textures[j].filename, sys_tex[k].name ) )
-          sys_tex[k].num = j;
-
-      break;
-    }
-  }
+  for( i=0; i<files->gl_pathc; i++ )
+    make_sure_texture_is_loaded( files->gl_pathv[i] );
 
   SJglobfree( files );
 }

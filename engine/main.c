@@ -124,7 +124,6 @@ int main(int argc,char **argv) {
     render();
     idle_start = SDL_GetTicks();
   }
-  return 0;
 }
 
 
