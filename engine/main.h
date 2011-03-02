@@ -13,7 +13,6 @@
 //macros
 #define MIN(a,b) ((a)<(b)?(a):(b))
 #define MAX(a,b) ((a)>(b)?(a):(b))
-#define SWAP(a,b) {a ^= b;b ^= a;a ^= b;}
 #define TRY do{
 #define HARDER }while(0);
 #define HAS(v,flags) (((v)&(flags)) == (flags))
@@ -45,6 +44,12 @@
 
 
 typedef struct{
+  float     x,y,z;
+} V;
+
+
+// frame buffer structures //
+typedef struct{
   char      cmd;
   char      mousehi;
   char      mousex;
@@ -70,11 +75,6 @@ typedef struct{
 } FRAME_t;
 
 
-typedef struct{
-  float     x,y,z;
-} V;
-
-
 // map structures //
 typedef struct{
   short     flags;
@@ -87,6 +87,27 @@ typedef struct{
   CB       *map;
   CB       *dmap;
 } CONTEXT_t;
+
+
+// texture structures //
+typedef struct {
+  char   *filename;
+  int     generated;
+  GLuint  glname;
+} TEX_T;
+
+typedef struct {
+  char   name[100];
+  int    num;
+} SYS_TEX_T;
+
+
+// input structures //
+typedef struct {
+  char   name[16];
+  int    presscmd;
+  int    releasecmd;
+} INPUTNAME_t;
 
 
 //externs
@@ -117,6 +138,7 @@ extern Uint32 adv_game_time;
 extern Uint32 adv_frames;
 
 extern int    eng_realtime;
+
 
 //prototypes
 void toggleconsole();

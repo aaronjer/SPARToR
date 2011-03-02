@@ -24,33 +24,13 @@
 #include <math.h>
 
 
-typedef struct {
-  char   *filename;
-  int     generated;
-  GLuint  glname;
-} TEX_T;
-
-typedef struct {
-  char   name[100];
-  int    num;
-} SYS_TEX_T;
-
-typedef struct {
-  char   name[16];
-  int    presscmd;
-  int    releasecmd;
-} INPUTNAME_t;
+#define TEX_PLAYER 0
+#define TEX_WORLD  1
+#define TEX_AMIGO  2
 
 
-extern int TEX_PLAYER;
-extern int TEX_WORLD;
-extern int TEX_AMIGO;
-
-extern TEX_T     *textures;
-extern size_t     tex_count;
 extern SYS_TEX_T  sys_tex[];
 extern size_t     num_sys_tex;
-
 
 extern INPUTNAME_t inputnames[];
 extern int numinputnames;

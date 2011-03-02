@@ -16,12 +16,6 @@
 #include "sjglob.h"
 
 
-int TEX_PLAYER = 0;
-int TEX_WORLD  = 1;
-int TEX_AMIGO  = 2;
-
-TEX_T *textures;
-size_t tex_count;
 SYS_TEX_T sys_tex[] = {{"/player.png"     ,0},
                        {"/slugtunnel.png" ,0},
                        {"/amigo.png"      ,0}};
@@ -277,56 +271,6 @@ else if( strcmp(q,"flykick")==0 ){ flykick = 1; return 0; }
 //
   HARDER
   return 1;
-}
-
-
-int make_sure_texture_is_loaded( char *texfile )
-{
-  SDL_Surface *surf;
-  size_t j,k;
-
-  glPixelStorei(GL_UNPACK_ALIGNMENT,4);
-
-  for( j=0; ; j++ ) {
-    // need more space?
-    if( j >= tex_count ) {
-      size_t new_count = tex_count < 8 ? 8 : tex_count*2;
-      textures = realloc( textures, new_count * sizeof *textures );
-      memset( textures + tex_count, 0, (new_count - tex_count) * sizeof *textures );
-      tex_count = new_count;
-    }
-
-    // is slot j the one?
-    if( !textures[j].filename ) {
-      SJC_Write("Texture %s is new, using slot %d",texfile,j);
-      textures[j].filename = malloc( strlen(texfile) + 1 );
-      strcpy(textures[j].filename,texfile);
-    } else if( !strcmp(textures[j].filename,texfile) ) {
-      SJC_Write("Texture %s was loaded before, reusing slot %d",texfile,j);
-    } else
-      continue;
-
-    // alert GL to presence of new texture
-    glGenTextures(1,&textures[j].glname);
-    textures[j].generated = 1;
-
-    // load texture into GL
-    glBindTexture(GL_TEXTURE_2D,textures[j].glname);
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
-    if( (surf = IMG_Load(textures[j].filename)) ) {
-      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, surf->w, surf->h, 0, SJDL_GLFormatOf(surf), GL_UNSIGNED_BYTE, surf->pixels);
-      SDL_FreeSurface(surf);
-    } else
-      SJC_Write("Failed to read texture %s",textures[j].filename);
-
-    // map system texture if there is a match(es)
-    for( k=0; k<num_sys_tex; k++ )
-      if( strstr( textures[j].filename, sys_tex[k].name ) )
-        sys_tex[k].num = j;
-
-    return k;
-  }
 }
 
 
