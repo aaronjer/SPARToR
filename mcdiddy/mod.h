@@ -25,7 +25,13 @@
 
 
 typedef struct {
-  char   name[32];
+  char   *filename;
+  int     generated;
+  GLuint  glname;
+} TEX_T;
+
+typedef struct {
+  char   name[100];
   int    num;
 } SYS_TEX_T;
 
@@ -40,9 +46,10 @@ extern int TEX_PLAYER;
 extern int TEX_WORLD;
 extern int TEX_AMIGO;
 
-extern GLuint *textures;
-extern SYS_TEX_T sys_tex[];
-extern size_t num_sys_tex;
+extern TEX_T     *textures;
+extern size_t     tex_count;
+extern SYS_TEX_T  sys_tex[];
+extern size_t     num_sys_tex;
 
 
 extern INPUTNAME_t inputnames[];

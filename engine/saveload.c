@@ -64,7 +64,10 @@ int save_context(const char *name,int context,int savefr)
   CONTEXT_t *co = fr[savefr].objs[context].data;
   int x,y,z;
 
-  if(0>fprintf( f, "%s %i\n", MODNAME, MAPVERSION )) goto fail;
+  //                      v--- number of texture file names
+  if(0>fprintf( f, "%s %i 1\n", MODNAME, MAPVERSION )) goto fail;
+
+  if(0>fprintf( f, "faketexture.png\n" )) goto fail;
 
   if(0>fprintf( f, "%i %i %i %i\n", co->blocksize, co->x, co->y, co->z )) goto fail;
 
@@ -116,6 +119,7 @@ int fail(FILE *f,const char *msg)
 int load_context(const char *name,int context,int loadfr)
 {
   char path[256];
+  int i;
 
   snprintf( path, 256, "%s/maps/%s.txt", MODNAME, name );
 
@@ -127,22 +131,28 @@ int load_context(const char *name,int context,int loadfr)
 
   char modname[256];
   int version = 0;
-  if( 2 != fscanf(f,"%100s %d\n",modname,&version) )        return fail(f,"failed to read line 1");
-  if( 0 != strcmp(modname,MODNAME) )                        return fail(f,"MODNAME mismatch");
-  if( version != MAPVERSION )                               return fail(f,"MAPVERSION mismatch");
+  int ntex = 0;
+  if( 3 != fscanf(f,"%100s %d %d\n",modname,&version,&ntex) )     return fail(f,"failed to read line 1");
+  if( 0 != strcmp(modname,MODNAME) )                              return fail(f,"MODNAME mismatch");
+  if( version != MAPVERSION )                                     return fail(f,"MAPVERSION mismatch");
+  if( ntex<1 || ntex>255 )                                        return fail(f,"invalid texture count");
+
+  char texnames[ntex][100];
+  for( i=0; i<ntex; i++ ) {
+    if( 1 != fscanf(f,"%100s\n",texnames[i]) )                    return fail(f,"error reading texture name");
+  }
 
   int blocksize,x,y,z;
-  if( 4 != fscanf(f,"%d %d %d %d\n",&blocksize,&x,&y,&z) )  return fail(f,"failed to read line 2");
-  if( blocksize<1 || blocksize>1024 )                       return fail(f,"blocksize is out of range");
-  if( x<1 || x>9000 )                                       return fail(f,"x is out of range");
-  if( y<1 || y>9000 )                                       return fail(f,"y is out of range");
-  if( z<1 || z>9000 )                                       return fail(f,"z is out of range");
+  if( 4 != fscanf(f,"%d %d %d %d\n",&blocksize,&x,&y,&z) )        return fail(f,"failed to read line 2");
+  if( blocksize<1 || blocksize>1024 )                             return fail(f,"blocksize is out of range");
+  if( x<1 || x>9000 )                                             return fail(f,"x is out of range");
+  if( y<1 || y>9000 )                                             return fail(f,"y is out of range");
+  if( z<1 || z>9000 )                                             return fail(f,"z is out of range");
 
   int volume = x * y * z;
   CB *map  = malloc( (sizeof *map  ) * volume );
   CB *dmap = malloc( (sizeof *dmap ) * volume );
 
-  int i;
   for( i=0; i<volume; i++ ) {
     unsigned int tile, flags = 0;
     int numread;
