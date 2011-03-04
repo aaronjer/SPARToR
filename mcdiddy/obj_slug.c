@@ -15,7 +15,7 @@
 void obj_slug_draw( int objid, OBJ_t *o )
 {
   SLUG_t *sl = o->data;
-  SJGL_SetTex( TEX_PLAYER );
+  SJGL_SetTex( sys_tex[TEX_PLAYER].num );
   SJGL_Blit( &(SDL_Rect){(sl->vel.x>0?20:0)+(sl->dead?40:0),177,20,16}, sl->pos.x-10, sl->pos.y-8, sl->pos.y );
 }
 

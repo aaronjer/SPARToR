@@ -28,7 +28,7 @@ void obj_player_draw( int objid, OBJ_t *o )
   int z = y + pl->hull[1].y;
   int xshift = (pl->goingd>0 ? 40 : 0) + (pl->turning ? 80 : (pl->facingr ? 0 : 20 ));
 
-  SJGL_SetTex( TEX_PLAYER );
+  SJGL_SetTex( sys_tex[TEX_PLAYER].num );
 
   if( pl->facingr ) {
     if( pl->model==4 ) //girl hair

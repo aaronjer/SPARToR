@@ -15,7 +15,7 @@
 void obj_amigosword_draw( int objid, OBJ_t *o )
 {
   AMIGOSWORD_t *sw = o->data;
-  SJGL_SetTex( TEX_AMIGO );
+  SJGL_SetTex( sys_tex[TEX_AMIGO].num );
   SJGL_Blit( &(SDL_Rect){ 200, 50+50*(hotfr%3), 56, 50 }, sw->pos.x-25, sw->pos.y-28, sw->pos.y );
 }
 

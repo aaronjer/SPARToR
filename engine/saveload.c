@@ -154,12 +154,15 @@ int load_context(const char *name,int context,int loadfr)
   CB *dmap = malloc( (sizeof *dmap ) * volume );
 
   for( i=0; i<volume; i++ ) {
-    unsigned int tile, flags = 0;
+    unsigned int tile, ntex, flags = 0;
     int numread;
 
     if( 1 > (numread=fscanf(f,"%x,%x",&tile,&flags)) )  return fail(f,"failed to read block data");
 
+    ntex = 3; //FIXME: get actual texture number!
+
     map[ i].data[0] = (Uint8)tile;
+    map[ i].data[1] = (Uint8)ntex;
     map[ i].flags   = flags;
     dmap[i].flags   = CBF_NULL;
   }

@@ -30,7 +30,8 @@ INPUTNAME_t inputnames[] = {{"left"       ,CMDT_1LEFT ,CMDT_0LEFT },
                             {"jump"       ,CMDT_1JUMP ,CMDT_0JUMP },
                             {"edit-paint" ,CMDT_1EPANT,CMDT_0EPANT},
                             {"edit-prev"  ,CMDT_1EPREV,CMDT_0EPREV},
-                            {"edit-next"  ,CMDT_1ENEXT,CMDT_0ENEXT}};
+                            {"edit-next"  ,CMDT_1ENEXT,CMDT_0ENEXT},
+                            {"edit-texdn" ,CMDT_1EPGDN,CMDT_0EPGDN}};
 int numinputnames = (sizeof inputnames) / (sizeof *inputnames);
 
 char objectnames[][16] =
@@ -67,6 +68,7 @@ static struct {
 }            *binds;
 static int    editmode = 0;
 static int    mytile   = 0;
+static size_t mytex    = 2;
 
 
 void mod_setup(Uint32 setupfr)
@@ -75,21 +77,22 @@ void mod_setup(Uint32 setupfr)
   #define MAYBE_BIND(dev,sym,cmd)         \
     mod_keybind(dev,sym,0,CMDT_0 ## cmd); \
     mod_keybind(dev,sym,1,CMDT_1 ## cmd);
-  MAYBE_BIND(INP_KEYB,SDLK_LEFT ,LEFT );
-  MAYBE_BIND(INP_KEYB,SDLK_RIGHT,RIGHT);
-  MAYBE_BIND(INP_KEYB,SDLK_UP   ,UP   );
-  MAYBE_BIND(INP_KEYB,SDLK_DOWN ,DOWN );
-  MAYBE_BIND(INP_KEYB,SDLK_z    ,JUMP );
-  MAYBE_BIND(INP_KEYB,SDLK_x    ,FIRE );
-  MAYBE_BIND(INP_JAXN,0         ,LEFT ); MAYBE_BIND(INP_JAXN,3         ,LEFT );
-  MAYBE_BIND(INP_JAXP,0         ,RIGHT); MAYBE_BIND(INP_JAXP,3         ,RIGHT);
-  MAYBE_BIND(INP_JAXN,1         ,UP   ); MAYBE_BIND(INP_JAXN,4         ,UP   );
-  MAYBE_BIND(INP_JAXP,1         ,DOWN ); MAYBE_BIND(INP_JAXP,4         ,DOWN );
-  MAYBE_BIND(INP_JBUT,1         ,JUMP );
-  MAYBE_BIND(INP_JBUT,2         ,FIRE );
-  MAYBE_BIND(INP_MBUT,1         ,EPANT); //editing controls...
-  MAYBE_BIND(INP_MBUT,4         ,EPREV);
-  MAYBE_BIND(INP_MBUT,5         ,ENEXT);
+  MAYBE_BIND(INP_KEYB,SDLK_LEFT    ,LEFT );
+  MAYBE_BIND(INP_KEYB,SDLK_RIGHT   ,RIGHT);
+  MAYBE_BIND(INP_KEYB,SDLK_UP      ,UP   );
+  MAYBE_BIND(INP_KEYB,SDLK_DOWN    ,DOWN );
+  MAYBE_BIND(INP_KEYB,SDLK_z       ,JUMP );
+  MAYBE_BIND(INP_KEYB,SDLK_x       ,FIRE );
+  MAYBE_BIND(INP_JAXN,0            ,LEFT ); MAYBE_BIND(INP_JAXN,3         ,LEFT );
+  MAYBE_BIND(INP_JAXP,0            ,RIGHT); MAYBE_BIND(INP_JAXP,3         ,RIGHT);
+  MAYBE_BIND(INP_JAXN,1            ,UP   ); MAYBE_BIND(INP_JAXN,4         ,UP   );
+  MAYBE_BIND(INP_JAXP,1            ,DOWN ); MAYBE_BIND(INP_JAXP,4         ,DOWN );
+  MAYBE_BIND(INP_JBUT,1            ,JUMP );
+  MAYBE_BIND(INP_JBUT,2            ,FIRE );
+  MAYBE_BIND(INP_MBUT,1            ,EPANT); //editing controls...
+  MAYBE_BIND(INP_MBUT,4            ,EPREV);
+  MAYBE_BIND(INP_MBUT,5            ,ENEXT);
+  MAYBE_BIND(INP_KEYB,SDLK_PAGEDOWN,EPGDN);
   #undef MAYBE_BIND
 
   //make the mother object
@@ -111,6 +114,7 @@ void mod_setup(Uint32 setupfr)
   int i;
   for( i=0; i<volume; i++ ) {
     co->map[ i].data[0] = 255;
+    co->map[ i].data[1] = (char)TEX_WORLD;
     co->dmap[i].flags   = CBF_NULL;
   }
   load_context("donnie",1,setupfr); //load a default map
@@ -211,6 +215,11 @@ int mod_mkcmd(FCMD_t *c,int device,int sym,int press)
         return -1;
       }
 
+      if( c->cmd==CMDT_1EPGDN || c->cmd==CMDT_0EPGDN ) { //change current texture
+        if( c->cmd==CMDT_0EPGDN )
+          mytex = (mytex + 1) % tex_count;
+      }
+
       if( c->cmd==CMDT_1EPANT || c->cmd==CMDT_0EPANT ) { //edit-paint command
         int dnx = downx;
         int dny = downy;
@@ -243,7 +252,8 @@ int mod_mkcmd(FCMD_t *c,int device,int sym,int press)
         packbytes(c->data,   dny,&n,4);
         packbytes(c->data, tilex,&n,4);
         packbytes(c->data, tiley,&n,4);
-        packbytes(c->data,mytile,&n,4);
+        packbytes(c->data,mytile,&n,1);
+        packbytes(c->data, mytex,&n,1);
         c->datasz = n;
         c->flags |= CMDF_DATA; //indicate presence of extra cmd data
       }
@@ -300,8 +310,6 @@ void mod_predraw(Uint32 vidfr)
 {
   int i,j,k;
 
-  SJGL_SetTex( TEX_WORLD );
-
   //draw context
   CONTEXT_t *co = fr[vidfr%maxframes].objs[1].data; //FIXME: get correct context!
   for( k=0; k<co->z; k++ )
@@ -309,11 +317,16 @@ void mod_predraw(Uint32 vidfr)
       for( i=0; i<co->x; i++ ) {
         int pos = co->x*co->y*k + co->x*j + i;
         int tile;
-        if( co->dmap[ pos ].flags & CBF_NULL )
+        size_t ntex;
+        if( co->dmap[ pos ].flags & CBF_NULL ) {
           tile = co->map[  pos ].data[0];
-        else
-          tile = co->dmap[ pos ].data[0];
+          ntex = co->map[  pos ].data[1];
+        } else {
+          tile = co->dmap[ pos ].data[0]; 
+          ntex = co->dmap[ pos ].data[1];
+        }
 
+        SJGL_SetTex( ntex );
         SJGL_Blit( &(SDL_Rect){(tile%16)*16,(tile/16)*16,16,16}, i*16, j*16, 0 );
       }
 }
@@ -352,7 +365,7 @@ void mod_postdraw(Uint32 vidfr)
 
   glPushAttrib(GL_CURRENT_BIT);
   glColor4f(1.0f,1.0f,1.0f,fabsf((float)(vidfr%30)-15.0f)/15.0f);
-  SJGL_SetTex( TEX_WORLD );
+  SJGL_SetTex( mytex );
 
   int tile = mytile;
   GHOST_t *gh = myghost ? fr[vidfr%maxframes].objs[myghost].data : NULL;
@@ -373,7 +386,7 @@ void mod_outerdraw(Uint32 vidfr,int w,int h)
 
   glPushAttrib(GL_CURRENT_BIT);
 
-  SJGL_SetTex( TEX_WORLD );
+  SJGL_SetTex( mytex );
   SJGL_Blit( &(SDL_Rect){0,0,256,256}, w-256, 0, 0 );
 
   glBindTexture(GL_TEXTURE_2D,0);
@@ -384,6 +397,8 @@ void mod_outerdraw(Uint32 vidfr,int w,int h)
   SJGL_Blit( &(SDL_Rect){0,0,20, 2}, x- 2, y+16, 0 );
   SJGL_Blit( &(SDL_Rect){0,0, 2,16}, x- 2, y   , 0 );
   SJGL_Blit( &(SDL_Rect){0,0, 2,16}, x+16, y   , 0 );
+
+  SJF_DrawText( w-256, 260, mytex < tex_count ? textures[mytex].filename : "ERROR! mytex > tex_count" );
 
   glPopAttrib();
 }
