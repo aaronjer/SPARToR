@@ -19,7 +19,7 @@ void obj_dummy_draw( int objid, OBJ_t *o )
                               du->hull[1].x-du->hull[0].x, du->hull[1].y-du->hull[0].y};
   Sint16 offs = drect.w==drect.h ? 48 : 0;
 
-  SJGL_SetTex( TEX_WORLD );
+  SJGL_SetTex( sys_tex[TEX_WORLD].num );
 
   if( drect.w > drect.h ) while( drect.w>0 && drect.w<400 ) {
     SJGL_Blit( &(SDL_Rect){0+offs,16,16,16}, drect.x, drect.y, 0 );

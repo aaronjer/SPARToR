@@ -193,6 +193,8 @@ void SJF_DrawText(int x, int y, const char *str)
   SDL_Rect s = (SDL_Rect){ 0, 0, 0, 12 };
   SDL_Rect d = (SDL_Rect){ x, y, 0, 12 };
 
+  if( !str ) str = "(null)";
+
   glBindTexture(GL_TEXTURE_2D,0); //FIXME: hack 4 win
   glBindTexture(GL_TEXTURE_2D,SJF.tex);
   glBegin(GL_QUADS);

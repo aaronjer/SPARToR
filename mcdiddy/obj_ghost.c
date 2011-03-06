@@ -18,7 +18,7 @@ void obj_ghost_draw( int objid, OBJ_t *o )
 
   if( !v_drawhulls ) return;
 
-  SJGL_SetTex( TEX_PLAYER );
+  SJGL_SetTex( sys_tex[TEX_PLAYER].num );
   SJGL_Blit( &(SDL_Rect){80,177,16,16}, gh->pos.x, gh->pos.y, NATIVEH );
 }
 
@@ -45,7 +45,8 @@ void obj_ghost_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob )
       int  dny    = (int) unpackbytes(c->data,MAXCMDDATA,&n,4);
       int  upx    = (int) unpackbytes(c->data,MAXCMDDATA,&n,4);
       int  upy    = (int) unpackbytes(c->data,MAXCMDDATA,&n,4);
-      int  value  = (int) unpackbytes(c->data,MAXCMDDATA,&n,4);
+      int  value  = (int) unpackbytes(c->data,MAXCMDDATA,&n,1);
+      int  ntex   = (int) unpackbytes(c->data,MAXCMDDATA,&n,1);
 
       if( letter!='p' ) { SJC_Write("Unknown edit command!"); break; }
 
@@ -75,19 +76,19 @@ void obj_ghost_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob )
               break;
 
             case 0x1F: //SOL
-              if( co->dmap[pos].flags & CBF_NULL ) co->dmap[pos].data[0] = co->map[pos].data[0];
+              if( co->dmap[pos].flags & CBF_NULL ) memcpy( co->dmap[pos].data, co->map[pos].data, 2 );
               co->dmap[pos].flags &= ~(CBF_NULL|CBF_PLAT);
               co->dmap[pos].flags |=  CBF_SOLID;
               break;
 
             case 0x2F: //PLAT
-              if( co->dmap[pos].flags & CBF_NULL ) co->dmap[pos].data[0] = co->map[pos].data[0];
+              if( co->dmap[pos].flags & CBF_NULL ) memcpy( co->dmap[pos].data, co->map[pos].data, 2 );
               co->dmap[pos].flags &= ~(CBF_NULL|CBF_SOLID);
               co->dmap[pos].flags |=  CBF_PLAT;
               break;
 
             case 0x3F: //OPN
-              if( co->dmap[pos].flags & CBF_NULL ) co->dmap[pos].data[0] = co->map[pos].data[0];
+              if( co->dmap[pos].flags & CBF_NULL ) memcpy( co->dmap[pos].data, co->map[pos].data, 2 );
               co->dmap[pos].flags &= ~(CBF_NULL|CBF_SOLID|CBF_PLAT);
               break;
 
@@ -108,6 +109,7 @@ void obj_ghost_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob )
               if( co->dmap[pos].flags & CBF_NULL ) co->dmap[pos].flags = co->map[pos].flags;
               co->dmap[pos].flags   &= ~CBF_NULL;
               co->dmap[pos].data[0]  = (char)value;
+              co->dmap[pos].data[1]  = (char)ntex;
           }
           // END LAME HACK
         }

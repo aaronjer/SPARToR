@@ -64,7 +64,7 @@ void obj_amigo_draw( int objid, OBJ_t *o )
       y = 50;
       break;
   }
-  SJGL_SetTex(TEX_AMIGO);
+  SJGL_SetTex( sys_tex[TEX_AMIGO].num );
   SJGL_Blit(&(SDL_Rect){     x,     y,     w,     h }, am->pos.x-34,        am->pos.y-32,        z);
   SJGL_Blit(&(SDL_Rect){ tip.x, tip.y, tip.w, tip.h }, am->pos.x-34+tip.dx, am->pos.y-32+tip.dy, z);
 }

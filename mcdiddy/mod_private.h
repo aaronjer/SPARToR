@@ -37,7 +37,9 @@ enum { CMDT_1LEFT = 1,
        CMDT_1EPREV,
        CMDT_0EPREV,
        CMDT_1ENEXT,
-       CMDT_0ENEXT };
+       CMDT_0ENEXT,
+       CMDT_1EPGDN,
+       CMDT_0EPGDN };
 
 
 extern int    myghost;

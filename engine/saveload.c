@@ -6,6 +6,31 @@
 #include <stdio.h>
 #include <errno.h>
 #include <stdlib.h>
+#include <string.h>
+
+
+#define B85_1(x) (b85alphabet[((x)              )%85])
+#define B85_2(x) (b85alphabet[((x)/(         85))%85])
+#define B85_3(x) (b85alphabet[((x)/(      85*85))%85])
+#define B85_4(x) (b85alphabet[((x)/(   85*85*85))%85])
+#define B85_5(x) (b85alphabet[((x)/(85*85*85*85))%85])
+
+
+static char b85alphabet[] = "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstu";
+
+Uint32 from_b85( const char *s )
+{
+  int i;
+  char *p;
+  Uint32 sum = 0;
+
+  for( i=0; i<5; i++ ) {
+    if( !s[i] || !( p = strchr(b85alphabet,s[i]) ) )
+      break;
+    sum = sum*85 + (p-b85alphabet);
+  }
+  return sum;
+}
 
 
 char *sjtempnam(const char *dir, const char *pfx, const char *ext)
@@ -44,7 +69,7 @@ int save_context(const char *name,int context,int savefr)
   // fail if any error occurs other than that the file does not already exist
   if( -1 == rename(path,bakfile) ) {
     if( errno != ENOENT ) {
-      SJC_Write("Failed to backup old map file");
+      SJC_Write("Failed to backup old file %s",path);
       free( bakfile );
       return -1;
     }
@@ -64,10 +89,30 @@ int save_context(const char *name,int context,int savefr)
   CONTEXT_t *co = fr[savefr].objs[context].data;
   int x,y,z;
 
-  //                      v--- number of texture file names
-  if(0>fprintf( f, "%s %i 1\n", MODNAME, MAPVERSION )) goto fail;
+  // find textures in use
+  int i;
+  int in_use[ tex_count ];
+  memset( in_use, 0, tex_count * sizeof *in_use );
+  for( i=0; i<co->x*co->y*co->z; i++ ) {
+    size_t texn = (co->dmap[i].flags & CBF_NULL) ? co->map[i].data[1] : co->dmap[i].data[1];
 
-  if(0>fprintf( f, "faketexture.png\n" )) goto fail;
+    if( texn < tex_count )
+      in_use[texn] = 1;
+    else
+      SJC_Write("Warning: texture %d is in use but is out of bounds (tex_count=%d)",texn,tex_count);
+  }
+
+  // get count of used textures, and number each one sequentially in in_use[]
+  int use_count = 0;
+  for( i=0; i<(int)tex_count; i++ )
+    if( in_use[i] )
+      in_use[i] = ++use_count; // inflates in_use values by 1
+
+  // start writing the file
+  if(0>fprintf( f, "%s %i %i\n", MODNAME, MAPVERSION, use_count )) goto fail;
+
+  for( i=0; i<(int)tex_count; i++ )
+    if( in_use[i] && 0>fprintf( f, "%s\n", textures[i].filename ) ) goto fail;
 
   if(0>fprintf( f, "%i %i %i %i\n", co->blocksize, co->x, co->y, co->z )) goto fail;
 
@@ -85,11 +130,13 @@ int save_context(const char *name,int context,int savefr)
           data  = co->dmap[ pos ].data;
           flags = co->dmap[ pos ].flags;
         }
+        //                                         v--- in_use values were inflated by 1
+        size_t val = data[0] + ((in_use[data[1]] - 1)<<8);
 
         if( flags ) {
-          if(0>fprintf( f, " %.2x,%.2x", data[0], flags )) goto fail;
+          if(0>fprintf( f, " %c%c%c%c~%.2x", B85_4(val), B85_3(val), B85_2(val), B85_1(val), flags )) goto fail;
         } else {
-          if(0>fprintf( f, " %.2x   "  , data[0]        )) goto fail;
+          if(0>fprintf( f, " %c%c%c%c   "  , B85_4(val), B85_3(val), B85_2(val), B85_1(val)        )) goto fail;
         }
       }
       if(0>fprintf( f, "\n" )) goto fail;
@@ -138,12 +185,15 @@ int load_context(const char *name,int context,int loadfr)
   if( ntex<1 || ntex>255 )                                        return fail(f,"invalid texture count");
 
   char texnames[ntex][100];
+  int texnumbers[ntex];
+  memset( texnumbers, 0, ntex * sizeof *texnumbers );
   for( i=0; i<ntex; i++ ) {
     if( 1 != fscanf(f,"%100s\n",texnames[i]) )                    return fail(f,"error reading texture name");
+    texnumbers[i] = make_sure_texture_is_loaded(texnames[i]);
   }
 
   int blocksize,x,y,z;
-  if( 4 != fscanf(f,"%d %d %d %d\n",&blocksize,&x,&y,&z) )        return fail(f,"failed to read line 2");
+  if( 4 != fscanf(f,"%d %d %d %d\n",&blocksize,&x,&y,&z) )        return fail(f,"failed to read context size");
   if( blocksize<1 || blocksize>1024 )                             return fail(f,"blocksize is out of range");
   if( x<1 || x>9000 )                                             return fail(f,"x is out of range");
   if( y<1 || y>9000 )                                             return fail(f,"y is out of range");
@@ -154,12 +204,21 @@ int load_context(const char *name,int context,int loadfr)
   CB *dmap = malloc( (sizeof *dmap ) * volume );
 
   for( i=0; i<volume; i++ ) {
-    unsigned int tile, flags = 0;
-    int numread;
+    Uint32  tile, flags = 0;
+    int     tex;
+    Uint32  b85num;
+    char    b85str[6] = {0};
 
-    if( 1 > (numread=fscanf(f,"%x,%x",&tile,&flags)) )  return fail(f,"failed to read block data");
+    if( 1 > fscanf(f," %5[^ vwxyz{|}~]~%x ",b85str,&flags) )        return fail(f,"failed to read block data");
 
-    map[ i].data[0] = (Uint8)tile;
+    b85num = from_b85(b85str);
+
+    tile = (Uint8)b85num;
+    tex  = (Uint8)(b85num>>8);
+    if( tex >= ntex ) SJC_Write("tex is too high! (%d/%d)",tex,ntex);
+
+    map[ i].data[0] = tile;
+    map[ i].data[1] = (tex < ntex ? texnumbers[tex] : 0); // avoid overread if tex is too high
     map[ i].flags   = flags;
     dmap[i].flags   = CBF_NULL;
   }

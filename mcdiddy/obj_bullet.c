@@ -15,7 +15,7 @@
 void obj_bullet_draw( int objid, OBJ_t *o )
 {
   BULLET_t *bu = o->data;
-  SJGL_SetTex( TEX_PLAYER );
+  SJGL_SetTex( sys_tex[TEX_PLAYER].num );
   SJGL_Blit( &(SDL_Rect){144,150,4,4}, bu->pos.x-2, bu->pos.y-2, NATIVEH );
 }
 

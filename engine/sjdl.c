@@ -50,8 +50,11 @@ void SJGL_SetTex(GLuint tex)
   prev = tex;
   if( prev==(GLuint)-1 ) return;
 
-  glBindTexture(GL_TEXTURE_2D,0); //FIXME: hack 4 win
-  glBindTexture(GL_TEXTURE_2D,textures[ sys_tex[tex].num ].glname);
+  glBindTexture(GL_TEXTURE_2D,0); //FIXME: hack 4 win, suddenly also useful for handling an invalid tex
+
+  if( tex >= tex_count ) { SJC_Write("Attempted to set invalid texture (%d/%d)",tex,tex_count); return; }
+
+  glBindTexture( GL_TEXTURE_2D, textures[tex].glname );
 }
 
 
