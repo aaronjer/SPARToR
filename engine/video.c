@@ -405,6 +405,8 @@ int make_sure_texture_is_loaded(const char *texfile)
       strcpy(textures[j].filename,texfile);
     } else if( !strcmp(textures[j].filename,texfile) ) {
       SJC_Write("Texture %s was loaded before, reusing slot %d",texfile,j);
+      if( textures[j].generated )
+        return j; // nothing to do!
     } else
       continue;
 
@@ -427,7 +429,7 @@ int make_sure_texture_is_loaded(const char *texfile)
       if( strstr( textures[j].filename, sys_tex[k].name ) )
         sys_tex[k].num = j;
 
-    return k;
+    return j;
   }
 }
 
