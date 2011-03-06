@@ -20,6 +20,8 @@ extern int i_hasmouse;
 extern int i_hasfocus;
 extern int i_minimized;
 
+extern int i_watch;
+
 void inputinit();
 void setactive(Uint8 gain,Uint8 state);
 void kbinput(int press,SDL_keysym keysym);

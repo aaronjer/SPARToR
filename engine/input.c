@@ -28,6 +28,8 @@ int i_hasmouse = 1;
 int i_hasfocus = 1;
 int i_minimized = 0;
 
+int i_watch = 0;
+
 
 static int  kwik = 0;
 static char kwik_presscmd;
@@ -92,6 +94,9 @@ void kbinput(int press,SDL_keysym keysym)
   SDLMod mod = keysym.mod;
   Uint16 unicode = keysym.unicode;
 
+  if( i_watch && press )
+    SJC_Write("key #%d, mod #%d, unicode #%d",sym,mod,unicode);
+
   if( (sym==SDLK_q && mod&(KMOD_CTRL|KMOD_META)) || (sym==SDLK_F4 && mod&KMOD_ALT) )
     command("exit");
   else if( press && (sym==SDLK_F11 || (sym==SDLK_f && mod&KMOD_META)) ) {
@@ -123,6 +128,9 @@ void kbinput(int press,SDL_keysym keysym)
 
 void joyinput(int press,SDL_JoyButtonEvent jbutton)
 {
+  if( i_watch && press )
+    SJC_Write("jbutton #%d",jbutton.button);
+
   if( kwik && press )
     kwikbind( INP_JBUT, jbutton.button );
   else
@@ -149,6 +157,9 @@ void axisinput(SDL_JoyAxisEvent jaxis)
   int val = jaxis.value;
   int ax = jaxis.axis;
 
+  if( i_watch )
+    SJC_Write("joystick #%d, axis #%d, stat %d, value %d",jaxis.which,ax,*stat,val);
+
   if( val> 3400 && !(*stat&POS_ON) ) { *stat|= POS_ON; kwik ? kwikbind(INP_JAXP,ax) : putcmd( INP_JAXP,ax,1 ); }
   if( val< 3000 &&  (*stat&POS_ON) ) { *stat&=~POS_ON;                                putcmd( INP_JAXP,ax,0 ); }
   if( val<-3400 && !(*stat&NEG_ON) ) { *stat|= NEG_ON; kwik ? kwikbind(INP_JAXN,ax) : putcmd( INP_JAXN,ax,1 ); }
@@ -158,6 +169,9 @@ void axisinput(SDL_JoyAxisEvent jaxis)
 
 void mouseinput(int press,SDL_MouseButtonEvent mbutton)
 {
+  if( i_watch && press )
+    SJC_Write("mbutton #%d, x %d, y %d",mbutton.button,i_mousex,i_mousey);
+
   i_mousex = mbutton.x;
   i_mousey = mbutton.y;
   if( kwik )
