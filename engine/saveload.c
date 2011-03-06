@@ -8,6 +8,30 @@
 #include <stdlib.h>
 
 
+#define B85_1(x) (b85alphabet[((x)              )%85])
+#define B85_2(x) (b85alphabet[((x)/(         85))%85])
+#define B85_3(x) (b85alphabet[((x)/(      85*85))%85])
+#define B85_4(x) (b85alphabet[((x)/(   85*85*85))%85])
+#define B85_5(x) (b85alphabet[((x)/(85*85*85*85))%85])
+
+
+static char b85alphabet[] = "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstu";
+
+Uint32 from_b85( const char *s )
+{
+  int i;
+  char *p;
+  Uint32 sum;
+
+  for( i=0; i<5; i++ ) {
+    if( !s[i] || !( p = strchr(b85alphabet,s[i]) ) )
+      break;
+    sum = sum*85 + (p-b85alphabet);
+  }
+  return sum;
+}
+
+
 char *sjtempnam(const char *dir, const char *pfx, const char *ext)
 {
   FILE *f;
@@ -44,7 +68,7 @@ int save_context(const char *name,int context,int savefr)
   // fail if any error occurs other than that the file does not already exist
   if( -1 == rename(path,bakfile) ) {
     if( errno != ENOENT ) {
-      SJC_Write("Failed to backup old map file");
+      SJC_Write("Failed to backup old file %s",path);
       free( bakfile );
       return -1;
     }
@@ -64,10 +88,30 @@ int save_context(const char *name,int context,int savefr)
   CONTEXT_t *co = fr[savefr].objs[context].data;
   int x,y,z;
 
-  //                      v--- number of texture file names
-  if(0>fprintf( f, "%s %i 1\n", MODNAME, MAPVERSION )) goto fail;
+  // find textures in use
+  int i;
+  int in_use[ tex_count ];
+  memset( in_use, 0, tex_count * sizeof *in_use );
+  for( i=0; i<co->x*co->y*co->z; i++ ) {
+    size_t texn = (co->dmap[i].flags & CBF_NULL) ? co->map[i].data[1] : co->dmap[i].data[1];
 
-  if(0>fprintf( f, "faketexture.png\n" )) goto fail;
+    if( texn < tex_count )
+      in_use[texn] = 1;
+    else
+      SJC_Write("Warning: texture %d is in use but is out of bounds (tex_count=%d)",texn,tex_count);
+  }
+
+  // get count of used textures, and number each one sequentially in in_use[]
+  int use_count = 0;
+  for( i=0; i<(int)tex_count; i++ )
+    if( in_use[i] )
+      in_use[i] = ++use_count;
+
+  // start writing the file
+  if(0>fprintf( f, "%s %i %i\n", MODNAME, MAPVERSION, use_count )) goto fail;
+
+  for( i=0; i<(int)tex_count; i++ )
+    if( in_use[i] && 0>fprintf( f, "%d %s\n", in_use[i], textures[i].filename ) ) goto fail;
 
   if(0>fprintf( f, "%i %i %i %i\n", co->blocksize, co->x, co->y, co->z )) goto fail;
 
@@ -86,10 +130,12 @@ int save_context(const char *name,int context,int savefr)
           flags = co->dmap[ pos ].flags;
         }
 
+        size_t val = data[0] + (in_use[ data[1] ]<<8);
+
         if( flags ) {
-          if(0>fprintf( f, " %.2x,%.2x", data[0], flags )) goto fail;
+          if(0>fprintf( f, " %c%c%c%c~%.2x", B85_4(val), B85_3(val), B85_2(val), B85_1(val), flags )) goto fail;
         } else {
-          if(0>fprintf( f, " %.2x   "  , data[0]        )) goto fail;
+          if(0>fprintf( f, " %c%c%c%c   "  , B85_4(val), B85_3(val), B85_2(val), B85_1(val)        )) goto fail;
         }
       }
       if(0>fprintf( f, "\n" )) goto fail;
