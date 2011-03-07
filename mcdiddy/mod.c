@@ -77,18 +77,20 @@ void mod_setup(Uint32 setupfr)
   #define MAYBE_BIND(dev,sym,cmd)         \
     mod_keybind(dev,sym,0,CMDT_0 ## cmd); \
     mod_keybind(dev,sym,1,CMDT_1 ## cmd);
-  MAYBE_BIND(INP_KEYB,SDLK_LEFT    ,LEFT );
-  MAYBE_BIND(INP_KEYB,SDLK_RIGHT   ,RIGHT);
-  MAYBE_BIND(INP_KEYB,SDLK_UP      ,UP   );
-  MAYBE_BIND(INP_KEYB,SDLK_DOWN    ,DOWN );
-  MAYBE_BIND(INP_KEYB,SDLK_z       ,JUMP );
-  MAYBE_BIND(INP_KEYB,SDLK_x       ,FIRE );
-  MAYBE_BIND(INP_JAXN,0            ,LEFT ); MAYBE_BIND(INP_JAXN,3         ,LEFT );
-  MAYBE_BIND(INP_JAXP,0            ,RIGHT); MAYBE_BIND(INP_JAXP,3         ,RIGHT);
-  MAYBE_BIND(INP_JAXN,1            ,UP   ); MAYBE_BIND(INP_JAXN,4         ,UP   );
-  MAYBE_BIND(INP_JAXP,1            ,DOWN ); MAYBE_BIND(INP_JAXP,4         ,DOWN );
+  MAYBE_BIND(INP_KEYB,SDLK_LEFT    ,LEFT ); MAYBE_BIND(INP_KEYB,SDLK_a       ,LEFT ); //keyboard
+  MAYBE_BIND(INP_KEYB,SDLK_RIGHT   ,RIGHT); MAYBE_BIND(INP_KEYB,SDLK_d       ,RIGHT);
+  MAYBE_BIND(INP_KEYB,SDLK_UP      ,UP   ); MAYBE_BIND(INP_KEYB,SDLK_w       ,UP   );
+  MAYBE_BIND(INP_KEYB,SDLK_DOWN    ,DOWN ); MAYBE_BIND(INP_KEYB,SDLK_s       ,DOWN );
+  MAYBE_BIND(INP_KEYB,SDLK_z       ,JUMP ); MAYBE_BIND(INP_KEYB,SDLK_SPACE   ,JUMP );
+  MAYBE_BIND(INP_KEYB,SDLK_x       ,FIRE ); MAYBE_BIND(INP_KEYB,SDLK_LSHIFT  ,FIRE );
+
+  MAYBE_BIND(INP_JAXN,0            ,LEFT ); MAYBE_BIND(INP_JAXN,3            ,LEFT ); //joystick or gamepad
+  MAYBE_BIND(INP_JAXP,0            ,RIGHT); MAYBE_BIND(INP_JAXP,3            ,RIGHT);
+  MAYBE_BIND(INP_JAXN,1            ,UP   ); MAYBE_BIND(INP_JAXN,4            ,UP   );
+  MAYBE_BIND(INP_JAXP,1            ,DOWN ); MAYBE_BIND(INP_JAXP,4            ,DOWN );
   MAYBE_BIND(INP_JBUT,1            ,JUMP );
   MAYBE_BIND(INP_JBUT,2            ,FIRE );
+
   MAYBE_BIND(INP_MBUT,1            ,EPANT); //editing controls...
   MAYBE_BIND(INP_MBUT,4            ,EPREV);
   MAYBE_BIND(INP_MBUT,5            ,ENEXT);
