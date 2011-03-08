@@ -1,19 +1,19 @@
 mcdiddy 1 1
-slugtunnel.png
+mcdiddy/textures/slugtunnel.png
 16 24 15 1
- ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff   
- ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff   
- ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff   
- ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff   
- ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff   
- ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff   
- ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff   
- ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff   
- ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff   
- ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff   
- ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff   
- ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff   
- ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff   
- ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff   
- ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff    ff   
+ !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g   
+ !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g   
+ !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g   
+ !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g   
+ !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g   
+ !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g   
+ !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g   
+ !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g   
+ !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g   
+ !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g   
+ !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g   
+ !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g   
+ !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g   
+ !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g   
+ !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g    !!#g   
 
