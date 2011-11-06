@@ -1,11 +1,11 @@
 
-#ifndef MCDIDDY_MOD_H_
-#define MCDIDDY_MOD_H_
+#ifndef DEADKING_MOD_H_
+#define DEADKING_MOD_H_
 
 
-#define NATIVEW    384
-#define NATIVEH    240
-#define MODNAME    "mcdiddy"
+#define NATIVEW    480
+#define NATIVEH    300
+#define MODNAME    "deadking"
 #define CBDATASIZE 4     //context block (CB) payload size
 #define MAXCMDDATA 64    //maximum size of extra command data
 

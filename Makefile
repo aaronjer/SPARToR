@@ -5,7 +5,7 @@ UNAME := $(shell sh -c 'uname -s 2>/dev/null || echo not')
 
 # Same for all platforms, probably
 CC = gcc
-MODNAME = mcdiddy
+MODNAME = deadking
 OBJS = engine/main.o \
        engine/font.o \
        engine/console.o \

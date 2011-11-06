@@ -3,8 +3,8 @@
 //
 
 
-#ifndef MCDIDDY_OBJ_H_
-#define MCDIDDY_OBJ_H_
+#ifndef DEADKING_OBJ_H_
+#define DEADKING_OBJ_H_
 
 
 #include "mod.h"

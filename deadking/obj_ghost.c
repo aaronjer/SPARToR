@@ -1,6 +1,6 @@
 /**
- **  McDiddy's Game
- **  Implementation example for the SPARToR Network Game Engine
+ **  Dead Kings' Quest
+ **  A special game for the SPARToR Network Game Engine
  **  Copyright (c) 2010-2011  Jer Wilson
  **
  **  See COPYING for details.
