@@ -73,10 +73,10 @@ void obj_player_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob )
     case CMDT_0UP:    newme->goingu  = 0;                      break;
     case CMDT_1DOWN:  newme->goingd  = 1;                      break;
     case CMDT_0DOWN:  newme->goingd  = 0;                      break;
-    case CMDT_1JUMP:  newme->jumping = 1;                      break;
-    case CMDT_0JUMP:  newme->jumping = 0;                      break;
-    case CMDT_1FIRE:  newme->firing  = 1;                      break;
-    case CMDT_0FIRE:  newme->firing  = 0; newme->cooldown = 0; break;
+    case CMDT_1SEL:   newme->jumping = 1;                      break;
+    case CMDT_0SEL:   newme->jumping = 0;                      break;
+    case CMDT_1BACK:  newme->firing  = 1;                      break;
+    case CMDT_0BACK:  newme->firing  = 0; newme->cooldown = 0; break;
   }
 
   if( !oldme ) { //FIXME why's this null?

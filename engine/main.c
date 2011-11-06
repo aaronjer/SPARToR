@@ -178,21 +178,13 @@ void advance() {
         if( (ob->flags & OBJF_BNDX) && ob->context )
         {
           CONTEXT_t *co = fr[b].objs[ob->context].data;
-          if( pos->x + (hull?hull[0].x:0.0f) <                0.0f ) {  //context edges left & right
-            pos->x =                0.0f - (hull?hull[0].x:0.0f);
-            vel->x = 0.0f;
-          }
           if( pos->x + (hull?hull[1].x:0.0f) > co->x*co->blocksize ) {
             pos->x = co->x*co->blocksize - (hull?hull[1].x:0.0f);
             vel->x = 0.0f;
           }
-        }
-
-        if( (ob->flags & OBJF_BNDT) && ob->context )
-        {
-          if( pos->y + (hull?hull[0].y:0.0f) <                0.0f ) {  //context edge top
-            pos->y =                0.0f - (hull?hull[0].y:0.0f);
-            vel->y = 0.0f;
+          if( pos->x + (hull?hull[0].x:0.0f) <                0.0f ) {  //context edges left & right
+            pos->x =                0.0f - (hull?hull[0].x:0.0f);
+            vel->x = 0.0f;
           }
         }
 
@@ -201,6 +193,14 @@ void advance() {
           CONTEXT_t *co = fr[b].objs[ob->context].data;
           if( pos->y + (hull?hull[1].y:0.0f) > co->y*co->blocksize ) {  //context edge bottom
             pos->y = co->y*co->blocksize - (hull?hull[1].y:0.0f);
+            vel->y = 0.0f;
+          }
+        }
+
+        if( (ob->flags & OBJF_BNDT) && ob->context )
+        {
+          if( pos->y + (hull?hull[0].y:0.0f) <                0.0f ) {  //context edge top
+            pos->y =                0.0f - (hull?hull[0].y:0.0f);
             vel->y = 0.0f;
           }
         }

@@ -17,9 +17,34 @@
 
 #define COUNTOF(ident) ((sizeof (ident)) / (sizeof *(ident)))
 
+#define TILEX 8  // number of tiles across per tex
+#define TILEY 16 //   "        "    down
+#define TILEW 30 // width of tiles
+#define TILEH 16 // height of tiles
+#define TILEUW 32 // "used width" distance between tiles
+#define TILEUH 16 // "used height"
+#define TILE2NATIVE_X(x,y) (((x)-(y))*TILEUW/2 + 225)
+#define TILE2NATIVE_Y(x,y) (((x)+(y))*TILEUH/2      )
+#define SHIFTX(x) ((x)-TILEUW/2-225)
+#define SHIFTY(y) ((y)             )
+
+int native2tile_x(int x,int y)
+{
+  x = SHIFTX(x);
+  y = SHIFTY(y);
+  return (x+y*2)/TILEUW;
+}
+
+int native2tile_y(int x,int y)
+{
+  x = SHIFTX(x);
+  y = SHIFTY(y);
+  return (y-x/2)/TILEUH;
+}
+
 
 SYS_TEX_T sys_tex[] = {{"/player.png"     ,0},
-                       {"/slugtunnel.png" ,0},
+                       {"/tiles.png"      ,0},
                        {"/amigo.png"      ,0}};
 size_t num_sys_tex = COUNTOF(sys_tex);
 
@@ -28,8 +53,8 @@ INPUTNAME_t inputnames[] = {{"left"       ,CMDT_1LEFT ,CMDT_0LEFT },
                             {"right"      ,CMDT_1RIGHT,CMDT_0RIGHT},
                             {"up"         ,CMDT_1UP   ,CMDT_0UP   },
                             {"down"       ,CMDT_1DOWN ,CMDT_0DOWN },
-                            {"fire"       ,CMDT_1FIRE ,CMDT_0FIRE },
-                            {"jump"       ,CMDT_1JUMP ,CMDT_0JUMP },
+                            {"select"     ,CMDT_1SEL  ,CMDT_0SEL  },
+                            {"back"       ,CMDT_1BACK ,CMDT_0BACK },
                             {"edit-paint" ,CMDT_1EPANT,CMDT_0EPANT},
                             {"edit-prev"  ,CMDT_1EPREV,CMDT_0EPREV},
                             {"edit-next"  ,CMDT_1ENEXT,CMDT_0ENEXT},
@@ -83,15 +108,15 @@ void mod_setup(Uint32 setupfr)
   MAYBE_BIND(INP_KEYB,SDLK_RIGHT   ,RIGHT); MAYBE_BIND(INP_KEYB,SDLK_d       ,RIGHT);
   MAYBE_BIND(INP_KEYB,SDLK_UP      ,UP   ); MAYBE_BIND(INP_KEYB,SDLK_w       ,UP   );
   MAYBE_BIND(INP_KEYB,SDLK_DOWN    ,DOWN ); MAYBE_BIND(INP_KEYB,SDLK_s       ,DOWN );
-  MAYBE_BIND(INP_KEYB,SDLK_z       ,JUMP ); MAYBE_BIND(INP_KEYB,SDLK_SPACE   ,JUMP );
-  MAYBE_BIND(INP_KEYB,SDLK_x       ,FIRE ); MAYBE_BIND(INP_KEYB,SDLK_LSHIFT  ,FIRE );
+  MAYBE_BIND(INP_KEYB,SDLK_a       ,SEL  ); MAYBE_BIND(INP_KEYB,SDLK_SPACE   ,SEL  );
+  MAYBE_BIND(INP_KEYB,SDLK_s       ,BACK );
 
   MAYBE_BIND(INP_JAXN,0            ,LEFT ); MAYBE_BIND(INP_JAXN,3            ,LEFT ); //joystick or gamepad
   MAYBE_BIND(INP_JAXP,0            ,RIGHT); MAYBE_BIND(INP_JAXP,3            ,RIGHT);
   MAYBE_BIND(INP_JAXN,1            ,UP   ); MAYBE_BIND(INP_JAXN,4            ,UP   );
   MAYBE_BIND(INP_JAXP,1            ,DOWN ); MAYBE_BIND(INP_JAXP,4            ,DOWN );
-  MAYBE_BIND(INP_JBUT,1            ,JUMP );
-  MAYBE_BIND(INP_JBUT,2            ,FIRE );
+  MAYBE_BIND(INP_JBUT,1            ,SEL  );
+  MAYBE_BIND(INP_JBUT,2            ,BACK );
 
   MAYBE_BIND(INP_MBUT,1            ,EPANT); //editing controls...
   MAYBE_BIND(INP_MBUT,4            ,EPREV);
@@ -121,7 +146,7 @@ void mod_setup(Uint32 setupfr)
     co->map[ i].data[1] = (char)TEX_WORLD;
     co->dmap[i].flags   = CBF_NULL;
   }
-  load_context("donnie",1,setupfr); //load a default map
+  load_context("dirtfarm",1,setupfr); //load a default map
 
   //make some dummys
   #define MAYBE_A_DUMMY(i,x,y,w,h) {                                                                             \
@@ -234,15 +259,21 @@ int mod_mkcmd(FCMD_t *c,int device,int sym,int press)
         if( !editmode )
           return -1;
         if( i_mousex >= v_w-256 && i_mousey < 256 ) { //click in texture selector
-          mytile = (i_mousex-(v_w-256))/16 + (i_mousey/16)*16;
+          mytile = (i_mousex-(v_w-256))/TILEW + (i_mousey/TILEH)*TILEX;
           return -1;
         }
-        int tilex = screen2native_x(i_mousex);
-        int tiley = screen2native_y(i_mousey);
-        if( !i_hasmouse || tilex<0 || tiley<0 || tilex>=NATIVEW || tiley>=NATIVEH )
+        int posx = screen2native_x(i_mousex);
+        int posy = screen2native_y(i_mousey);
+        if( !i_hasmouse || posx<0 || posy<0 || posx>=NATIVEW || posy>=NATIVEH )
           return -1;
-        tilex = (myghostleft + tilex) / 16;
-        tiley = (myghosttop  + tiley) / 16;
+
+        //tilex = (myghostleft + tilex) / 16;
+        //tiley = (myghosttop  + tiley) / 16;
+
+        //map to game coordinates
+        int tilex = native2tile_x(myghostleft + posx,myghosttop + posy);
+        int tiley = native2tile_y(myghostleft + posx,myghosttop + posy);
+
         if( c->cmd==CMDT_1EPANT ) {
           downx = tilex;
           downy = tiley;
@@ -311,6 +342,8 @@ void mod_predraw(Uint32 vidfr)
 {
   int i,j,k;
 
+  glClear(GL_COLOR_BUFFER_BIT);
+
   //draw context
   CONTEXT_t *co = fr[vidfr%maxframes].objs[1].data; //FIXME: get correct context!
   for( k=0; k<co->z; k++ )
@@ -328,7 +361,10 @@ void mod_predraw(Uint32 vidfr)
         }
 
         SJGL_SetTex( ntex );
-        SJGL_Blit( &(SDL_Rect){(tile%16)*16,(tile/16)*16,16,16}, i*16, j*16, 0 );
+        SJGL_Blit( &(SDL_Rect){(tile%TILEX)*TILEW,(tile/TILEX)*TILEH,TILEW,TILEH},
+                   TILE2NATIVE_X(i,j),
+                   TILE2NATIVE_Y(i,j),
+                   0 );
       }
 }
 
@@ -350,13 +386,14 @@ void mod_draw(int objid,OBJ_t *o)
 void mod_postdraw(Uint32 vidfr)
 {
   int i,j;
-  int upx = screen2native_x(i_mousex);
-  int upy = screen2native_y(i_mousey);
+  int posx = screen2native_x(i_mousex);
+  int posy = screen2native_y(i_mousey);
 
-  if( !editmode || !i_hasmouse || upx<0 || upy<0 || upx>=NATIVEW || upy>=NATIVEH ) return;
+  if( !editmode || !i_hasmouse || posx<0 || posy<0 || posx>=NATIVEW || posy>=NATIVEH ) return;
 
-  upx = (myghostleft + upx) / 16;
-  upy = (myghosttop  + upy) / 16;
+  //map to game coordinates
+  int upx = native2tile_x(myghostleft + posx,myghosttop + posy);
+  int upy = native2tile_y(myghostleft + posx,myghosttop + posy);
 
   int dnx = downx>=0 ? downx : upx;
   int dny = downy>=0 ? downy : upy;
@@ -374,7 +411,10 @@ void mod_postdraw(Uint32 vidfr)
     for( i=dnx; i<=upx; i++ ) {
       if( mytile==0x5F && gh && gh->clipboard_data && (upy-dny||upx-dnx) ) // PSTE tool texture
         tile = gh->clipboard_data[ ((j-dny)%gh->clipboard_y)*gh->clipboard_x + ((i-dnx)%gh->clipboard_x) ].data[0];
-      SJGL_Blit( &(SDL_Rect){(tile%16)*16,(tile/16)*16,16,16}, i*16, j*16, NATIVEH );
+        SJGL_Blit( &(SDL_Rect){(tile%TILEX)*TILEW,(tile/TILEX)*TILEH,TILEW,TILEH},
+                   TILE2NATIVE_X(i,j),
+                   TILE2NATIVE_Y(i,j),
+                   NATIVEH );
     }
 
   glPopAttrib();
@@ -392,12 +432,12 @@ void mod_outerdraw(Uint32 vidfr,int w,int h)
 
   glBindTexture(GL_TEXTURE_2D,0);
   glColor4f(1,1,0,0.8f);
-  int x = w-256+(mytile%16)*16;
-  int y = (mytile/16)*16;
-  SJGL_Blit( &(SDL_Rect){0,0,20, 2}, x- 2, y- 2, 0 );
-  SJGL_Blit( &(SDL_Rect){0,0,20, 2}, x- 2, y+16, 0 );
-  SJGL_Blit( &(SDL_Rect){0,0, 2,16}, x- 2, y   , 0 );
-  SJGL_Blit( &(SDL_Rect){0,0, 2,16}, x+16, y   , 0 );
+  int x = w-256+(mytile%TILEX)*TILEW;
+  int y = (mytile/TILEX)*TILEH;
+  SJGL_Blit( &(SDL_Rect){0,0,TILEW+4,    2}, x-    2, y-    2, 0 );
+  SJGL_Blit( &(SDL_Rect){0,0,TILEW+4,    2}, x-    2, y+TILEH, 0 );
+  SJGL_Blit( &(SDL_Rect){0,0,      2,TILEH}, x-    2, y      , 0 );
+  SJGL_Blit( &(SDL_Rect){0,0,      2,TILEH}, x+TILEW, y      , 0 );
 
   SJF_DrawText( w-256, 260, mytex < tex_count ? textures[mytex].filename : "ERROR! mytex > tex_count" );
 
@@ -443,4 +483,5 @@ void mod_adv(int objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob)
       break;
   } //end switch ob->type
 }
+
 
