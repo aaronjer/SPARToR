@@ -82,7 +82,7 @@ if( am->pos.x <        -20.0f ) am->pos.x += cowidth+39.0f;
 if( am->pos.x > cowidth+20.0f ) am->pos.x -= cowidth+39.0f;
 //
 
-  spatt(hotfr);
+  spatt(hotfr); // FIXME: probably a BUG
   switch( am->state ) {
     case AMIGO_HELLO:
       if( am->statetime>120 ) {
@@ -97,9 +97,6 @@ if( am->pos.x > cowidth+20.0f ) am->pos.x -= cowidth+39.0f;
       if( am->statetime>30 ) { // decide which attack to do!
         am->statetime = 0;
         switch( patt()%8 ) {
-//FIXME REMOVE! force amigo to flykick
-} unsigned pattval = patt()%8; if( flykick ) { flykick = 0; pattval = 7; } switch( pattval ) {
-//
           case 0: am->state = AMIGO_JUMP;    am->vel.y -= 10.0f;                                        break;
           case 1: am->state = AMIGO_JUMP;    am->vel.y -= 10.0f; am->vel.x =  4.0f;                     break;
           case 2: am->state = AMIGO_JUMP;    am->vel.y -= 10.0f; am->vel.x = -4.0f;                     break;

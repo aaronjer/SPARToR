@@ -15,11 +15,13 @@
 #include "saveload.h"
 #include "sjglob.h"
 
+#define COUNTOF(ident) ((sizeof (ident)) / (sizeof *(ident)))
+
 
 SYS_TEX_T sys_tex[] = {{"/player.png"     ,0},
                        {"/slugtunnel.png" ,0},
                        {"/amigo.png"      ,0}};
-size_t num_sys_tex = (sizeof sys_tex) / (sizeof *sys_tex);
+size_t num_sys_tex = COUNTOF(sys_tex);
 
 
 INPUTNAME_t inputnames[] = {{"left"       ,CMDT_1LEFT ,CMDT_0LEFT },
@@ -32,7 +34,8 @@ INPUTNAME_t inputnames[] = {{"left"       ,CMDT_1LEFT ,CMDT_0LEFT },
                             {"edit-prev"  ,CMDT_1EPREV,CMDT_0EPREV},
                             {"edit-next"  ,CMDT_1ENEXT,CMDT_0ENEXT},
                             {"edit-texdn" ,CMDT_1EPGDN,CMDT_0EPGDN}};
-int numinputnames = (sizeof inputnames) / (sizeof *inputnames);
+int numinputnames = COUNTOF(inputnames);
+
 
 char objectnames[][16] =
      { "empty",
@@ -55,7 +58,6 @@ int    downx = -1; //position of mousedown at beginning of edit cmd
 int    downy = -1;
 
 int    setmodel; //FIXME REMOVE! change local player model
-int    flykick; //FIXME REMOVE! force amigo to flykick
 CB    *hack_map; //FIXME remove hack_map and _dmap someday
 CB    *hack_dmap;
 
@@ -278,9 +280,6 @@ int mod_command(char *q)
       setmodel = atoi(strtok(NULL," ")); // FIXME: lame hack
       return 0;
     }
-//FIXME REMOVE: force amigo to flykick
-else if( strcmp(q,"flykick")==0 ){ flykick = 1; return 0; }
-//
   HARDER
   return 1;
 }

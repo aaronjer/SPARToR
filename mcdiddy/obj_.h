@@ -108,6 +108,7 @@ typedef struct{
   V hull[2];
   int model;
   int dead;
+  int spawner;
 } SLUG_t;
 
 void obj_slug_draw( int objid, OBJ_t *o );
