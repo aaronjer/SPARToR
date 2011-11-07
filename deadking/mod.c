@@ -27,20 +27,8 @@
 #define TILE2NATIVE_Y(x,y) (((x)+(y))*TILEUH/2      )
 #define SHIFTX(x) ((x)-TILEUW/2-225)
 #define SHIFTY(y) ((y)             )
-
-int native2tile_x(int x,int y)
-{
-  x = SHIFTX(x);
-  y = SHIFTY(y);
-  return (x+y*2)/TILEUW;
-}
-
-int native2tile_y(int x,int y)
-{
-  x = SHIFTX(x);
-  y = SHIFTY(y);
-  return (y-x/2)/TILEUH;
-}
+#define NATIVE2TILE_X(x,y) ((SHIFTX(x)+SHIFTY(y)*2)/TILEUW) // times 2 b/c tiles are twice as wide as tall
+#define NATIVE2TILE_Y(x,y) ((SHIFTY(y)-SHIFTX(x)/2)/TILEUH)
 
 
 SYS_TEX_T sys_tex[] = {{"/player.png"     ,0},
@@ -271,8 +259,8 @@ int mod_mkcmd(FCMD_t *c,int device,int sym,int press)
         //tiley = (myghosttop  + tiley) / 16;
 
         //map to game coordinates
-        int tilex = native2tile_x(myghostleft + posx,myghosttop + posy);
-        int tiley = native2tile_y(myghostleft + posx,myghosttop + posy);
+        int tilex = NATIVE2TILE_X(myghostleft + posx,myghosttop + posy);
+        int tiley = NATIVE2TILE_Y(myghostleft + posx,myghosttop + posy);
 
         if( c->cmd==CMDT_1EPANT ) {
           downx = tilex;
@@ -392,8 +380,8 @@ void mod_postdraw(Uint32 vidfr)
   if( !editmode || !i_hasmouse || posx<0 || posy<0 || posx>=NATIVEW || posy>=NATIVEH ) return;
 
   //map to game coordinates
-  int upx = native2tile_x(myghostleft + posx,myghosttop + posy);
-  int upy = native2tile_y(myghostleft + posx,myghosttop + posy);
+  int upx = NATIVE2TILE_X(myghostleft + posx,myghosttop + posy);
+  int upy = NATIVE2TILE_Y(myghostleft + posx,myghosttop + posy);
 
   int dnx = downx>=0 ? downx : upx;
   int dny = downy>=0 ? downy : upy;
