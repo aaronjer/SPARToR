@@ -24,6 +24,21 @@
 #include <math.h>
 
 
+#define COUNTOF(ident) ((sizeof (ident)) / (sizeof *(ident)))
+
+#define TILEX 8  // number of tiles across per tex
+#define TILEY 16 //   "        "    down
+#define TILEW 30 // width of tiles
+#define TILEH 16 // height of tiles
+#define TILEUW 32 // "used width" distance between tiles
+#define TILEUH 16 // "used height"
+#define TILE2NATIVE_X(x,y) (((x)-(y))*TILEUW/2 + 225)
+#define TILE2NATIVE_Y(x,y) (((x)+(y))*TILEUH/2      )
+#define SHIFTX(x) ((x)-TILEUW/2-225)
+#define SHIFTY(y) ((y)             )
+#define NATIVE2TILE_X(x,y) ((SHIFTX(x)+SHIFTY(y)*2)/TILEUW) // times 2 b/c tiles are twice as wide as tall
+#define NATIVE2TILE_Y(x,y) ((SHIFTY(y)-SHIFTX(x)/2)/TILEUH)
+
 #define TEX_PLAYER 0
 #define TEX_WORLD  1
 #define TEX_AMIGO  2

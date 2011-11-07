@@ -15,8 +15,10 @@
 void obj_bullet_draw( int objid, OBJ_t *o )
 {
   BULLET_t *bu = o->data;
+  int posx = TILE2NATIVE_X(bu->pos.x/16,bu->pos.y/16);
+  int posy = TILE2NATIVE_Y(bu->pos.x/16,bu->pos.y/16);
   SJGL_SetTex( sys_tex[TEX_PLAYER].num );
-  SJGL_Blit( &(SDL_Rect){144,150,4,4}, bu->pos.x-2, bu->pos.y-2, NATIVEH );
+  SJGL_Blit( &(SDL_Rect){144,150,4,4}, posx-2, posy-2, NATIVEH );
 }
 
 void obj_bullet_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob )

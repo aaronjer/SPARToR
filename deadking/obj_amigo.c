@@ -65,8 +65,10 @@ void obj_amigo_draw( int objid, OBJ_t *o )
       break;
   }
   SJGL_SetTex( sys_tex[TEX_AMIGO].num );
-  SJGL_Blit(&(SDL_Rect){     x,     y,     w,     h }, am->pos.x-34,        am->pos.y-32,        z);
-  SJGL_Blit(&(SDL_Rect){ tip.x, tip.y, tip.w, tip.h }, am->pos.x-34+tip.dx, am->pos.y-32+tip.dy, z);
+  int posx = TILE2NATIVE_X(am->pos.x/16,am->pos.y/16);
+  int posy = TILE2NATIVE_Y(am->pos.x/16,am->pos.y/16);
+  SJGL_Blit(&(SDL_Rect){     x,     y,     w,     h }, posx-34,        posy-32,        z);
+  SJGL_Blit(&(SDL_Rect){ tip.x, tip.y, tip.w, tip.h }, posx-34+tip.dx, posy-32+tip.dy, z);
 }
 
 void obj_amigo_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob )

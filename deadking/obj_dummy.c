@@ -15,22 +15,25 @@
 void obj_dummy_draw( int objid, OBJ_t *o )
 {
   DUMMY_t *du = o->data;
-  SDL_Rect drect = (SDL_Rect){du->pos.x    +du->hull[0].x, du->pos.y    +du->hull[0].y,
-                              du->hull[1].x-du->hull[0].x, du->hull[1].y-du->hull[0].y};
-  Sint16 offs = drect.w==drect.h ? 48 : 0;
+  int x = TILE2NATIVE_X((du->pos.x+du->hull[0].x)/16,(du->pos.y+du->hull[0].y)/16);
+  int y = TILE2NATIVE_Y((du->pos.x+du->hull[0].x)/16,(du->pos.y+du->hull[0].y)/16);
+  int w = du->hull[1].x-du->hull[0].x;
+  int h = du->hull[1].y-du->hull[0].y;
+
+  Sint16 offs = w==h ? 48 : 0;
 
   SJGL_SetTex( sys_tex[TEX_WORLD].num );
 
-  if( drect.w > drect.h ) while( drect.w>0 && drect.w<400 ) {
-    SJGL_Blit( &(SDL_Rect){0+offs,16,16,16}, drect.x, drect.y, 0 );
-    drect.x += 16;
-    drect.w -= 16;
-    offs = drect.w==16 ? 32 : 16;
-  } else                  while( drect.h>0 && drect.h<400 ) {
-    SJGL_Blit( &(SDL_Rect){48,0+offs,16,16}, drect.x, drect.y, 0 );
-    drect.y += 16;
-    drect.h -= 16;
-    offs = drect.h==16 ? 32 : 16;
+  if( w > h ) while( w>0 && w<400 ) {
+    SJGL_Blit( &(SDL_Rect){0+offs,16,16,16}, x, y, 0 );
+    x += 16;
+    w -= 16;
+    offs = w==16 ? 32 : 16;
+  } else                  while( h>0 && h<400 ) {
+    SJGL_Blit( &(SDL_Rect){48,0+offs,16,16}, x, y, 0 );
+    y += 16;
+    h -= 16;
+    offs = h==16 ? 32 : 16;
   }
 }
 
