@@ -41,10 +41,11 @@ typedef struct{
   int avatar;
   int clipboard_x;
   int clipboard_y;
+  int clipboard_z;
   CB *clipboard_data;
 } GHOST_t;
 
-void obj_ghost_draw( int objid, OBJ_t *o );
+void obj_ghost_draw( int objid, Uint32 vidfr, OBJ_t *o, CONTEXT_t *co );
 void obj_ghost_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob );
 
 
@@ -56,7 +57,7 @@ typedef struct{
   int model;
 } DUMMY_t;
 
-void obj_dummy_draw( int objid, OBJ_t *o );
+void obj_dummy_draw( int objid, Uint32 vidfr, OBJ_t *o, CONTEXT_t *co );
 void obj_dummy_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob );
 
 
@@ -84,7 +85,7 @@ typedef struct{
   char hovertime;
 } PLAYER_t;
 
-void obj_player_draw( int objid, OBJ_t *o );
+void obj_player_draw( int objid, Uint32 vidfr, OBJ_t *o, CONTEXT_t *co );
 void obj_player_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob );
 
 
@@ -97,7 +98,7 @@ typedef struct{
   Uint8 ttl;
 } BULLET_t;
 
-void obj_bullet_draw( int objid, OBJ_t *o );
+void obj_bullet_draw( int objid, Uint32 vidfr, OBJ_t *o, CONTEXT_t *co );
 void obj_bullet_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob );
 
 
@@ -111,7 +112,7 @@ typedef struct{
   int spawner;
 } SLUG_t;
 
-void obj_slug_draw( int objid, OBJ_t *o );
+void obj_slug_draw( int objid, Uint32 vidfr, OBJ_t *o, CONTEXT_t *co );
 void obj_slug_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob );
 
 
@@ -135,7 +136,7 @@ typedef struct{
   V sword_dist;
 } AMIGO_t;
 
-void obj_amigo_draw( int objid, OBJ_t *o );
+void obj_amigo_draw( int objid, Uint32 vidfr, OBJ_t *o, CONTEXT_t *co );
 void obj_amigo_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob );
 
 
@@ -149,7 +150,7 @@ typedef struct{
   int spincounter;
 } AMIGOSWORD_t;
 
-void obj_amigosword_draw( int objid, OBJ_t *o );
+void obj_amigosword_draw( int objid, Uint32 vidfr, OBJ_t *o, CONTEXT_t *co );
 void obj_amigosword_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob );
 
 #endif

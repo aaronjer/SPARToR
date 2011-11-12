@@ -12,11 +12,11 @@
 
 #include "obj_.h"
 
-void obj_bullet_draw( int objid, OBJ_t *o )
+void obj_bullet_draw( int objid, Uint32 vidfr, OBJ_t *o, CONTEXT_t *co )
 {
   BULLET_t *bu = o->data;
-  int posx = TILE2NATIVE_X(bu->pos.x/16,bu->pos.y/16);
-  int posy = TILE2NATIVE_Y(bu->pos.x/16,bu->pos.y/16);
+  int posx = TILE2NATIVE_X(co,bu->pos.x/16,0,bu->pos.y/16);
+  int posy = TILE2NATIVE_Y(co,bu->pos.x/16,0,bu->pos.y/16);
   SJGL_SetTex( sys_tex[TEX_PLAYER].num );
   SJGL_Blit( &(SDL_Rect){144,150,4,4}, posx-2, posy-2, NATIVEH );
 }
@@ -41,7 +41,7 @@ void obj_bullet_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob )
       bu->ttl = 0; //delete bullet
     }
 
-  if(bu->pos.x<=-10.0f || bu->pos.x>=co->x*co->blocksize+10.0f || bu->ttl==0) {
+  if(bu->pos.x<=-10.0f || bu->pos.x>=co->x*co->bsx+10.0f || bu->ttl==0) {
     if( fr[b].objs[bu->owner].type==OBJT_PLAYER )
       ((PLAYER_t *)fr[b].objs[bu->owner].data)->projectiles--;
     ob->flags |= OBJF_DEL;

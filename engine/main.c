@@ -167,19 +167,20 @@ void advance() {
         memcpy(ob->data,oa->data,oa->size);
       }
 
-      if( HAS(ob->flags,OBJF_POS|OBJF_VEL) ) {
+      if( HAS(ob->flags,OBJF_POS|OBJF_VEL) && ob->context ) {
+        CONTEXT_t *co = fr[b].objs[ob->context].data;
         V *pos  = flex(ob,OBJF_POS);
         V *vel  = flex(ob,OBJF_VEL);
         V *pvel = (ob->flags & OBJF_PVEL) ? flex(ob,OBJF_PVEL) : NULL;
         V *hull = (ob->flags & OBJF_HULL) ? flex(ob,OBJF_HULL) : NULL;
         pos->x += vel->x + (pvel?pvel->x:0.0f);  //apply velocity
         pos->y += vel->y + (pvel?pvel->y:0.0f);
+        pos->z += vel->z + (pvel?pvel->z:0.0f);
 
-        if( (ob->flags & OBJF_BNDX) && ob->context )
+        if( ob->flags & OBJF_BNDX )
         {
-          CONTEXT_t *co = fr[b].objs[ob->context].data;
-          if( pos->x + (hull?hull[1].x:0.0f) > co->x*co->blocksize ) {
-            pos->x = co->x*co->blocksize - (hull?hull[1].x:0.0f);
+          if( pos->x + (hull?hull[1].x:0.0f) > co->x*co->bsx ) {
+            pos->x = co->x*co->bsx - (hull?hull[1].x:0.0f);
             vel->x = 0.0f;
           }
           if( pos->x + (hull?hull[0].x:0.0f) <                0.0f ) {  //context edges left & right
@@ -188,16 +189,27 @@ void advance() {
           }
         }
 
-        if( (ob->flags & OBJF_BNDB) && ob->context )
+        if( ob->flags & OBJF_BNDZ )
         {
-          CONTEXT_t *co = fr[b].objs[ob->context].data;
-          if( pos->y + (hull?hull[1].y:0.0f) > co->y*co->blocksize ) {  //context edge bottom
-            pos->y = co->y*co->blocksize - (hull?hull[1].y:0.0f);
+          if( pos->z + (hull?hull[1].z:0.0f) > co->z*co->bsz ) {
+            pos->z = co->z*co->bsz - (hull?hull[1].z:0.0f);
+            vel->z = 0.0f;
+          }
+          if( pos->z + (hull?hull[0].z:0.0f) <                0.0f ) {  //context edges back and front
+            pos->z =                0.0f - (hull?hull[0].z:0.0f);
+            vel->z = 0.0f;
+          }
+        }
+
+        if( ob->flags & OBJF_BNDB )
+        {
+          if( pos->y + (hull?hull[1].y:0.0f) > co->y*co->bsy ) {  //context edge bottom
+            pos->y = co->y*co->bsy - (hull?hull[1].y:0.0f);
             vel->y = 0.0f;
           }
         }
 
-        if( (ob->flags & OBJF_BNDT) && ob->context )
+        if( ob->flags & OBJF_BNDT )
         {
           if( pos->y + (hull?hull[0].y:0.0f) <                0.0f ) {  //context edge top
             pos->y =                0.0f - (hull?hull[0].y:0.0f);

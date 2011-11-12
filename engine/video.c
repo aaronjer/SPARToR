@@ -149,7 +149,7 @@ void render()
   for(i=0;i<maxobjs;i++) {
     OBJ_t *o = fr[vidfrmod].objs+i;
     if( o->flags&OBJF_VIS )
-      mod_draw(i,o); // have the mod draw the actual thing
+      mod_draw(i,vidfrmod,o); // have the mod draw the actual thing
   }
 
   mod_postdraw(vidfr);

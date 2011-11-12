@@ -29,8 +29,9 @@
 #define OBJF_PVEL (1<< 6) //has player-controlled velocity
 #define OBJF_DEL  (1<< 7) //object is marked for deletion
 #define OBJF_BNDX (1<< 8) //clips against context edge X-wise
-#define OBJF_BNDT (1<< 9) //clips against context top edge
-#define OBJF_BNDB (1<<10) //clips against context bottom edge
+#define OBJF_BNDZ (1<< 9) //clips against context edge Z-wise
+#define OBJF_BNDT (1<<10) //clips against context top edge
+#define OBJF_BNDB (1<<11) //clips against context bottom edge
 
 //CoMmanD Flags
 #define CMDF_NEW  (1<< 0) //new client connect
@@ -78,14 +79,18 @@ typedef struct{
 // map structures //
 typedef struct{
   short     flags;
-  Uint8      data[CBDATASIZE];
+  Uint8     data[CBDATASIZE];
 } CB;
 
 typedef struct{
-  int       blocksize;
-  int       x,y,z;
-  CB       *map;
-  CB       *dmap;
+  int       bsx,bsy,bsz;   // block size
+  int       x,y,z;         // context dimensions
+  int       tilex,tiley;   // tile textures' pitch
+  int       tilew,tileh;   // tile graphics width/height
+  int       tileuw,tileuh; // tile graphics "used" width/height; includes spacing or overlap
+  int       isometric;     // whether to be displayed isometric
+  CB       *map;           // block data
+  CB       *dmap;          // delta block data
 } CONTEXT_t;
 
 

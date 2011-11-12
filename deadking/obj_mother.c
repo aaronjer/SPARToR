@@ -26,16 +26,18 @@ void obj_mother_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob )
         SJC_Write( "%d: Client %i already has a ghost at obj#%d!", hotfr, i, j );
 
     //FIXME context is hardcoded as 1 for GHOST and PLAYER:
-    MKOBJ( gh, GHOST,  1, OBJF_POS|OBJF_VEL|OBJF_HULL|OBJF_VIS|OBJF_BNDX|OBJF_BNDT|OBJF_BNDB );
+    MKOBJ( gh, GHOST,  1, OBJF_POS|OBJF_VEL|OBJF_HULL|OBJF_VIS|OBJF_BNDX|OBJF_BNDZ|OBJF_BNDT|OBJF_BNDB );
     int ghostslot = slot0;
-    MKOBJ( pl, PLAYER, 1, OBJF_POS|OBJF_VEL|OBJF_HULL|OBJF_PVEL|OBJF_VIS|OBJF_PLAT|OBJF_CLIP|OBJF_BNDX|OBJF_BNDB );
+    MKOBJ( pl, PLAYER, 1, OBJF_POS|OBJF_VEL|OBJF_HULL|OBJF_PVEL|OBJF_VIS|OBJF_PLAT|OBJF_CLIP|OBJF_BNDX|OBJF_BNDZ|OBJF_BNDB );
 
     SJC_Write( "%d: New client %i created ghost is obj#%d player is obj#%d", hotfr, i, ghostslot, slot0 );
 
     gh->pos = (V){0.0f,0.0f,0.0f};
     gh->vel = (V){0.0f,0.0f,0.0f};
-    gh->hull[0] = (V){-NATIVEW/2,-NATIVEH/2, 0};
-    gh->hull[1] = (V){ NATIVEW/2, NATIVEH/2, 0};
+    //gh->hull[0] = (V){-NATIVEW/2,-NATIVEH/2, 0};
+    //gh->hull[1] = (V){ NATIVEW/2, NATIVEH/2, 0};
+    gh->hull[0] = (V){-64,-64,-64};
+    gh->hull[1] = (V){ 64, 64, 64};
     gh->model = 0;
     gh->client = i;
     gh->avatar = slot0;
@@ -45,8 +47,8 @@ void obj_mother_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob )
 
     pl->pos  = (V){160,-50.0f,0.0f};
     pl->vel  = (V){0.0f,0.0f,0.0f};
-    pl->hull[0] = (V){-6.0f,-15.0f,0.0f};
-    pl->hull[1] = (V){ 6.0f, 15.0f,0.0f};
+    pl->hull[0] = (V){-6.0f,-15.0f,-6.0f};
+    pl->hull[1] = (V){ 6.0f, 15.0f, 6.0f};
     pl->pvel = (V){0.0f,0.0f,0.0f};
     pl->model = i%5;
     pl->ghost = ghostslot;

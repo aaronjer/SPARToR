@@ -12,11 +12,11 @@
 
 #include "obj_.h"
 
-void obj_dummy_draw( int objid, OBJ_t *o )
+void obj_dummy_draw( int objid, Uint32 vidfr, OBJ_t *o, CONTEXT_t *co )
 {
   DUMMY_t *du = o->data;
-  int x = TILE2NATIVE_X((du->pos.x+du->hull[0].x)/16,(du->pos.y+du->hull[0].y)/16);
-  int y = TILE2NATIVE_Y((du->pos.x+du->hull[0].x)/16,(du->pos.y+du->hull[0].y)/16);
+  int x = TILE2NATIVE_X(co,(du->pos.x+du->hull[0].x)/16,0,(du->pos.y+du->hull[0].y)/16);
+  int y = TILE2NATIVE_Y(co,(du->pos.x+du->hull[0].x)/16,0,(du->pos.y+du->hull[0].y)/16);
   int w = du->hull[1].x-du->hull[0].x;
   int h = du->hull[1].y-du->hull[0].y;
 

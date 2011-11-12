@@ -1,4 +1,12 @@
-
+//
+// map header format:
+//  modname mapversion texturefilecount
+//  texturefilepath
+//  texturefilepath
+//  ...
+//  blocksizeX blocksizeY blocksizeZ
+//  dimensionX dimensionY dimensionZ
+//  [blockdata...]
 
 #include "mod.h"
 #include "main.h"
@@ -114,7 +122,9 @@ int save_context(const char *name,int context,int savefr)
   for( i=0; i<(int)tex_count; i++ )
     if( in_use[i] && 0>fprintf( f, "%s\n", textures[i].filename ) ) goto fail;
 
-  if(0>fprintf( f, "%i %i %i %i\n", co->blocksize, co->x, co->y, co->z )) goto fail;
+  if(0>fprintf( f, "%i %i %i\n", co->bsx, co->bsy, co->bsz )) goto fail;
+
+  if(0>fprintf( f, "%i %i %i\n", co->x, co->y, co->z )) goto fail;
 
   for( z=0; z<co->z; z++ ) {
     for( y=0; y<co->y; y++ ) {
@@ -192,16 +202,21 @@ int load_context(const char *name,int context,int loadfr)
     texnumbers[i] = make_sure_texture_is_loaded(texnames[i]);
   }
 
-  int blocksize,x,y,z;
-  if( 4 != fscanf(f,"%d %d %d %d\n",&blocksize,&x,&y,&z) )        return fail(f,"failed to read context size");
-  if( blocksize<1 || blocksize>1024 )                             return fail(f,"blocksize is out of range");
+  int bsx,bsy,bsz;
+  if( 3 != fscanf(f,"%d %d %d\n",&bsx,&bsy,&bsz) )                return fail(f,"failed to read context size"); 
+  if( bsx<1 || bsx>1024 )                                         return fail(f,"bsx is out of range");
+  if( bsy<1 || bsy>1024 )                                         return fail(f,"bsy is out of range");
+  if( bsz<1 || bsz>1024 )                                         return fail(f,"bsz is out of range");
+
+  int x,y,z;
+  if( 3 != fscanf(f,"%d %d %d\n",&x,&y,&z) )                      return fail(f,"failed to read dimensions");
   if( x<1 || x>9000 )                                             return fail(f,"x is out of range");
   if( y<1 || y>9000 )                                             return fail(f,"y is out of range");
   if( z<1 || z>9000 )                                             return fail(f,"z is out of range");
 
   int volume = x * y * z;
-  CB *map  = malloc( (sizeof *map  ) * volume );
-  CB *dmap = malloc( (sizeof *dmap ) * volume );
+  CB *map  = malloc( (sizeof *map ) * volume );
+  CB *dmap = malloc( (sizeof *dmap) * volume );
 
   for( i=0; i<volume; i++ ) {
     Uint32  tile, flags = 0;
@@ -209,9 +224,10 @@ int load_context(const char *name,int context,int loadfr)
     Uint32  b85num;
     char    b85str[6] = {0};
 
-    if( 1 > fscanf(f," %5[^ vwxyz{|}~]~%x ",b85str,&flags) )        return fail(f,"failed to read block data");
-
-    b85num = from_b85(b85str);
+    if( 1 > fscanf(f," %5[^ vwxyz{|}~]~%x ",b85str,&flags) ) //   return fail(f,"failed to read block data");
+      b85num = 0;
+    else
+      b85num = from_b85(b85str);
 
     tile = (Uint8)b85num;
     tex  = (Uint8)(b85num>>8);
@@ -226,7 +242,9 @@ int load_context(const char *name,int context,int loadfr)
   // everything ok? swap it in
   loadfr = loadfr%maxframes;
   CONTEXT_t *co = fr[loadfr].objs[context].data;
-  co->blocksize = blocksize;
+  co->bsx = bsx;
+  co->bsy = bsy;
+  co->bsz = bsz;
   co->x = x;
   co->y = y;
   co->z = z;
@@ -239,5 +257,4 @@ int load_context(const char *name,int context,int loadfr)
 
   return 0;
 }
-
 

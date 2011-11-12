@@ -12,11 +12,11 @@
 
 #include "obj_.h"
 
-void obj_amigosword_draw( int objid, OBJ_t *o )
+void obj_amigosword_draw( int objid, Uint32 vidfr, OBJ_t *o, CONTEXT_t *co )
 {
   AMIGOSWORD_t *sw = o->data;
-  int posx = TILE2NATIVE_X(sw->pos.x/16,sw->pos.y/16);
-  int posy = TILE2NATIVE_Y(sw->pos.x/16,sw->pos.y/16);
+  int posx = TILE2NATIVE_X(co,sw->pos.x/16,0,sw->pos.y/16);
+  int posy = TILE2NATIVE_Y(co,sw->pos.x/16,0,sw->pos.y/16);
   SJGL_SetTex( sys_tex[TEX_AMIGO].num );
   SJGL_Blit( &(SDL_Rect){ 200, 50+50*(hotfr%3), 56, 50 }, posx-25, posy-28, sw->pos.y );
 }

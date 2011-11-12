@@ -12,11 +12,11 @@
 
 #include "obj_.h"
 
-void obj_slug_draw( int objid, OBJ_t *o )
+void obj_slug_draw( int objid, Uint32 vidfr, OBJ_t *o, CONTEXT_t *co )
 {
   SLUG_t *sl = o->data;
-  int posx = TILE2NATIVE_X(sl->pos.x/16,sl->pos.y/16);
-  int posy = TILE2NATIVE_Y(sl->pos.x/16,sl->pos.y/16);
+  int posx = TILE2NATIVE_X(co,sl->pos.x/16,0,sl->pos.y/16);
+  int posy = TILE2NATIVE_Y(co,sl->pos.x/16,0,sl->pos.y/16);
   SJGL_SetTex( sys_tex[TEX_PLAYER].num );
   SJGL_Blit( &(SDL_Rect){(sl->vel.x>0?20:0)+(sl->dead?40:0),177,20,16}, posx-10, posy-8, sl->pos.y );
 }
@@ -70,8 +70,8 @@ void obj_slug_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob )
     ob->flags &= ~(OBJF_CLIP|OBJF_BNDB);
 
   if(    sl->dead > 100 || sl->vel.x == 0 || sl->pos.x < -10.0f
-      || sl->pos.x > co->x*co->blocksize+10.0f
-      || sl->pos.y > co->y*co->blocksize+10.0f )
+      || sl->pos.x > co->x*co->bsx+10.0f
+      || sl->pos.y > co->y*co->bsy+10.0f )
     ob->flags |= OBJF_DEL;
 }
 

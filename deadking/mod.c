@@ -54,6 +54,7 @@ int    myghosttop;
 int    mycontext;
 int    downx = -1; //position of mousedown at beginning of edit cmd
 int    downy = -1;
+int    downz = -1;
 
 int    setmodel; //FIXME REMOVE! change local player model
 CB    *hack_map; //FIXME remove hack_map and _dmap someday
@@ -104,10 +105,15 @@ void mod_setup(Uint32 setupfr)
   //make default context object (map)
   fr[setupfr].objs[1] = (OBJ_t){ OBJT_CONTEXT, 0, 0, sizeof(CONTEXT_t), malloc(sizeof(CONTEXT_t)) };
   CONTEXT_t *co = fr[setupfr].objs[1].data;
-  co->blocksize = 16;
-  co->x = 100;
-  co->y =  15;
-  co->z =   1;
+  co->bsx = co->bsy = co->bsz = 16;
+  co->x   = co->y   = co->z   = 15;
+  co->tilex = 8;
+  co->tiley = 16;
+  co->tilew = 30;
+  co->tileh = 16;
+  co->tileuw = 32;
+  co->tileuh = 16;
+  co->isometric = 1;
   int volume = co->x * co->y * co->z;
   co->map  = hack_map  = malloc( (sizeof *co->map ) * volume ); //FIXME remove hack
   co->dmap = hack_dmap = malloc( (sizeof *co->dmap) * volume );
@@ -200,6 +206,7 @@ int mod_mkcmd(FCMD_t *c,int device,int sym,int press)
 {
   int i;
   short hash = press<<15 | device<<8 | sym;
+  CONTEXT_t *co = fr[hotfr%maxframes].objs[mycontext].data;
 
   for(i=0; i<binds_size; i++)
     if( binds[i].hash==hash ) {
@@ -225,14 +232,13 @@ int mod_mkcmd(FCMD_t *c,int device,int sym,int press)
       if( c->cmd==CMDT_1EPANT || c->cmd==CMDT_0EPANT ) { //edit-paint command
         int dnx = downx;
         int dny = downy;
-        if( c->cmd==CMDT_0EPANT ) { //always clear mousedown pos on mouseup
-          downx = -1;
-          downy = -1;
-        }
+        int dnz = downz;
+        if( c->cmd==CMDT_0EPANT ) //always clear mousedown pos on mouseup
+          downx = downy = downz = -1;
         if( !editmode )
           return -1;
         if( i_mousex >= v_w-256 && i_mousey < 256 ) { //click in texture selector
-          mytile = (i_mousex-(v_w-256))/TILEW + (i_mousey/TILEH)*TILEX;
+          mytile = (i_mousex-(v_w-256))/co->tilew + (i_mousey/co->tileh)*co->tilex;
           return -1;
         }
         int posx = screen2native_x(i_mousex);
@@ -244,22 +250,26 @@ int mod_mkcmd(FCMD_t *c,int device,int sym,int press)
         //tiley = (myghosttop  + tiley) / 16;
 
         //map to game coordinates
-        int tilex = NATIVE2TILE_X(myghostleft + posx,myghosttop + posy);
-        int tiley = NATIVE2TILE_Y(myghostleft + posx,myghosttop + posy);
+        int tilex = NATIVE2TILE_X(co,myghostleft + posx,myghosttop + posy);
+        int tiley = NATIVE2TILE_Y(co,myghostleft + posx,myghosttop + posy);
+        int tilez = NATIVE2TILE_Z(co,myghostleft + posx,myghosttop + posy);
 
         if( c->cmd==CMDT_1EPANT ) {
           downx = tilex;
           downy = tiley;
+          downz = tilez;
           return -1; //finish cmd later...
         }
-        if( dnx<0 || dny<0 )
+        if( dnx<0 || dny<0 || dnz<0 )
           return -1; //no mousedown? no cmd
         size_t n = 0;
         packbytes(c->data,   'p',&n,1);
         packbytes(c->data,   dnx,&n,4);
         packbytes(c->data,   dny,&n,4);
+        packbytes(c->data,   dnz,&n,4);
         packbytes(c->data, tilex,&n,4);
         packbytes(c->data, tiley,&n,4);
+        packbytes(c->data, tilez,&n,4);
         packbytes(c->data,mytile,&n,1);
         packbytes(c->data, mytex,&n,1);
         c->datasz = n;
@@ -334,61 +344,82 @@ void mod_predraw(Uint32 vidfr)
         }
 
         SJGL_SetTex( ntex );
-        SJGL_Blit( &(SDL_Rect){(tile%TILEX)*TILEW,(tile/TILEX)*TILEH,TILEW,TILEH},
-                   TILE2NATIVE_X(i,j),
-                   TILE2NATIVE_Y(i,j),
+        SJGL_Blit( &(SDL_Rect){(tile%co->tilex)*co->tilew,
+                               (tile/co->tilex)*co->tileh,
+                               co->tilew,
+                               co->tileh
+                              },
+                   TILE2NATIVE_X(co,i,j,k),
+                   TILE2NATIVE_Y(co,i,j,k),
                    0 );
       }
 }
 
 
-void mod_draw(int objid,OBJ_t *o)
+void mod_draw(int objid,Uint32 vidfrmod,OBJ_t *o)
 {
+  if( !fr[vidfrmod].objs[o->context].type ) {
+    SJC_Write("No context: can not draw");
+    return;
+  }
+
+  CONTEXT_t *co = fr[vidfrmod].objs[o->context].data;
   switch(o->type) {
-    case OBJT_PLAYER:         obj_player_draw(     objid, o );     break;
-    case OBJT_GHOST:          obj_ghost_draw(      objid, o );     break;
-    case OBJT_BULLET:         obj_bullet_draw(     objid, o );     break;
-    case OBJT_SLUG:           obj_slug_draw(       objid, o );     break;
-    case OBJT_DUMMY:          obj_dummy_draw(      objid, o );     break;
-    case OBJT_AMIGO:          obj_amigo_draw(      objid, o );     break;
-    case OBJT_AMIGOSWORD:     obj_amigosword_draw( objid, o );     break;
+    case OBJT_PLAYER:         obj_player_draw(     objid, vidfrmod, o, co );     break;
+    case OBJT_GHOST:          obj_ghost_draw(      objid, vidfrmod, o, co );     break;
+    case OBJT_BULLET:         obj_bullet_draw(     objid, vidfrmod, o, co );     break;
+    case OBJT_SLUG:           obj_slug_draw(       objid, vidfrmod, o, co );     break;
+    case OBJT_DUMMY:          obj_dummy_draw(      objid, vidfrmod, o, co );     break;
+    case OBJT_AMIGO:          obj_amigo_draw(      objid, vidfrmod, o, co );     break;
+    case OBJT_AMIGOSWORD:     obj_amigosword_draw( objid, vidfrmod, o, co );     break;
   }
 }
 
 
 void mod_postdraw(Uint32 vidfr)
 {
-  int i,j;
+  int i,j,k;
   int posx = screen2native_x(i_mousex);
   int posy = screen2native_y(i_mousey);
 
   if( !editmode || !i_hasmouse || posx<0 || posy<0 || posx>=NATIVEW || posy>=NATIVEH ) return;
 
+  GHOST_t   *gh = fr[vidfr%maxframes].objs[myghost].data; // FIXME is myghost/mycontext always set here?
+  CONTEXT_t *co = fr[vidfr%maxframes].objs[mycontext].data;
+
   //map to game coordinates
-  int upx = NATIVE2TILE_X(myghostleft + posx,myghosttop + posy);
-  int upy = NATIVE2TILE_Y(myghostleft + posx,myghosttop + posy);
+  int upx = NATIVE2TILE_X(co,myghostleft + posx,myghosttop + posy);
+  int upy = NATIVE2TILE_Y(co,myghostleft + posx,myghosttop + posy);
+  int upz = NATIVE2TILE_Z(co,myghostleft + posx,myghosttop + posy);
 
   int dnx = downx>=0 ? downx : upx;
   int dny = downy>=0 ? downy : upy;
+  int dnz = downz>=0 ? downz : upz;
 
   if( dnx > upx )  { int tmp = upx; upx = dnx; dnx = tmp; } //make so dn is less than up
   if( dny > upy )  { int tmp = upy; upy = dny; dny = tmp; }
+  if( dnz > upz )  { int tmp = upz; upz = dnz; dnz = tmp; }
 
   glPushAttrib(GL_CURRENT_BIT);
   glColor4f(1.0f,1.0f,1.0f,fabsf((float)(vidfr%30)-15.0f)/15.0f);
   SJGL_SetTex( mytex );
 
   int tile = mytile;
-  GHOST_t *gh = myghost ? fr[vidfr%maxframes].objs[myghost].data : NULL;
-  for( j=dny; j<=upy; j++ )
-    for( i=dnx; i<=upx; i++ ) {
-      if( mytile==0x5F && gh && gh->clipboard_data && (upy-dny||upx-dnx) ) // PSTE tool texture
-        tile = gh->clipboard_data[ ((j-dny)%gh->clipboard_y)*gh->clipboard_x + ((i-dnx)%gh->clipboard_x) ].data[0];
-        SJGL_Blit( &(SDL_Rect){(tile%TILEX)*TILEW,(tile/TILEX)*TILEH,TILEW,TILEH},
-                   TILE2NATIVE_X(i,j),
-                   TILE2NATIVE_Y(i,j),
-                   NATIVEH );
-    }
+
+  for( k=dnz; k<=upz; k++ ) for( j=dny; j<=upy; j++ ) for( i=dnx; i<=upx; i++ ) {
+    if( mytile==0x5F && gh && gh->clipboard_data && (upy-dny||upx-dnx) ) // PSTE tool texture
+      tile = gh->clipboard_data[  ((k-dnz)%gh->clipboard_z)*gh->clipboard_y*gh->clipboard_x
+                                + ((j-dny)%gh->clipboard_y)*gh->clipboard_x
+                                + ((i-dnx)%gh->clipboard_x)
+                               ].data[0];
+    SJGL_Blit( &(SDL_Rect){(tile%co->tilex)*co->tilew,
+                           (tile/co->tilex)*co->tileh,
+                           co->tilew,
+                           co->tileh},
+               TILE2NATIVE_X(co,i,0,j),
+               TILE2NATIVE_Y(co,i,0,j),
+               NATIVEH );
+  }
 
   glPopAttrib();
 }
@@ -403,14 +434,16 @@ void mod_outerdraw(Uint32 vidfr,int w,int h)
   SJGL_SetTex( mytex );
   SJGL_Blit( &(SDL_Rect){0,0,256,256}, w-256, 0, 0 );
 
+  CONTEXT_t *co = fr[vidfr%maxframes].objs[mycontext].data;
+
   glBindTexture(GL_TEXTURE_2D,0);
   glColor4f(1,1,0,0.8f);
-  int x = w-256+(mytile%TILEX)*TILEW;
-  int y = (mytile/TILEX)*TILEH;
-  SJGL_Blit( &(SDL_Rect){0,0,TILEW+4,    2}, x-    2, y-    2, 0 );
-  SJGL_Blit( &(SDL_Rect){0,0,TILEW+4,    2}, x-    2, y+TILEH, 0 );
-  SJGL_Blit( &(SDL_Rect){0,0,      2,TILEH}, x-    2, y      , 0 );
-  SJGL_Blit( &(SDL_Rect){0,0,      2,TILEH}, x+TILEW, y      , 0 );
+  int x = w-256+(mytile%co->tilex)*co->tilew;
+  int y =       (mytile/co->tilex)*co->tileh;
+  SJGL_Blit( &(SDL_Rect){0,0,co->tilew+4,        2}, x-        2, y-        2, 0 );
+  SJGL_Blit( &(SDL_Rect){0,0,co->tilew+4,        2}, x-        2, y+co->tileh, 0 );
+  SJGL_Blit( &(SDL_Rect){0,0,          2,co->tileh}, x-        2, y          , 0 );
+  SJGL_Blit( &(SDL_Rect){0,0,          2,co->tileh}, x+co->tilew, y          , 0 );
 
   SJF_DrawText( w-256, 260, mytex < tex_count ? textures[mytex].filename : "ERROR! mytex > tex_count" );
 
