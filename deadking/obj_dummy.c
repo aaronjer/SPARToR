@@ -15,8 +15,8 @@
 void obj_dummy_draw( int objid, Uint32 vidfr, OBJ_t *o, CONTEXT_t *co )
 {
   DUMMY_t *du = o->data;
-  int x = TILE2NATIVE_X(co,(du->pos.x+du->hull[0].x)/16,0,(du->pos.y+du->hull[0].y)/16);
-  int y = TILE2NATIVE_Y(co,(du->pos.x+du->hull[0].x)/16,0,(du->pos.y+du->hull[0].y)/16);
+  int c = POINT2NATIVE_X(du->pos) + du->hull[0].x;
+  int d = POINT2NATIVE_Y(du->pos) + du->hull[0].y;
   int w = du->hull[1].x-du->hull[0].x;
   int h = du->hull[1].y-du->hull[0].y;
 
@@ -25,13 +25,13 @@ void obj_dummy_draw( int objid, Uint32 vidfr, OBJ_t *o, CONTEXT_t *co )
   SJGL_SetTex( sys_tex[TEX_WORLD].num );
 
   if( w > h ) while( w>0 && w<400 ) {
-    SJGL_Blit( &(SDL_Rect){0+offs,16,16,16}, x, y, 0 );
-    x += 16;
+    SJGL_Blit( &(SDL_Rect){offs,  16,16,16}, c, d, 0 );
+    c += 16;
     w -= 16;
     offs = w==16 ? 32 : 16;
-  } else                  while( h>0 && h<400 ) {
-    SJGL_Blit( &(SDL_Rect){48,0+offs,16,16}, x, y, 0 );
-    y += 16;
+  } else      while( h>0 && h<400 ) {
+    SJGL_Blit( &(SDL_Rect){  48,offs,16,16}, c, d, 0 );
+    d += 16;
     h -= 16;
     offs = h==16 ? 32 : 16;
   }

@@ -139,7 +139,8 @@ void render()
   glOrtho(0,NATIVEW,NATIVEH,0,-NATIVEH*3-1,NATIVEH*3+1);
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
-  int camx = NATIVEW/2-(int)v_camx, camy = NATIVEH/2-(int)v_camy;
+  int camx = NATIVEW/2-(int)v_camx;
+  int camy = NATIVEH/2-(int)v_camy;
   glTranslatef(camx,camy,0);
 
   SJGL_SetTex( (GLuint)-1 ); //forget previous texture name

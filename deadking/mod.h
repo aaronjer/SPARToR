@@ -28,12 +28,11 @@
 
 
 // macros for translating to/from isometric:
-#define ISO_XOFF(co)            ((NATIVEW-(co)->tilew)/2)
-#define TILE2NATIVE_X(co,x,y,z) (((x)-(z))*(co)->tileuw/2 + ISO_XOFF(co))
-#define TILE2NATIVE_Y(co,x,y,z) (((x)+(z))*(co)->tileuh/2 + (y)         )
-#define POINT2NATIVE_X(x,y,z)   (((x)-(z))        )
-#define POINT2NATIVE_Y(x,y,z)   (((x)+(z))/2 + (y))
-#define ISO_SHIFTX(co,x)        ((x) - (co)->tileuw/2 - ISO_XOFF(co))
+#define TILE2NATIVE_X(co,x,y,z) (((x)-(z))*(co)->tileuw/2      )
+#define TILE2NATIVE_Y(co,x,y,z) (((x)+(z))*(co)->tileuh/2 + (y))
+#define POINT2NATIVE_X(o)       (((o).x-(o).z)          )
+#define POINT2NATIVE_Y(o)       (((o).x+(o).z)/2 + (o).y)
+#define ISO_SHIFTX(co,x)        ((x) - (co)->tileuw/2)
 #define ISO_SHIFTY(co,y)        ((y)                                )
 #define NATIVE2TILE_X(co,x,y)   ((ISO_SHIFTX(co,x)+ISO_SHIFTY(co,y)*2)/(co)->tileuw) // times 2 b/c tiles are twice as wide as tall
 #define NATIVE2TILE_Y(co,x,y)   0

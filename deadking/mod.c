@@ -17,7 +17,7 @@
 
 
 SYS_TEX_T sys_tex[] = {{"/player.png"     ,0},
-                       {"/tiles.png"      ,0},
+                       {"/world.png"      ,0},
                        {"/amigo.png"      ,0}};
 size_t num_sys_tex = COUNTOF(sys_tex);
 
@@ -128,18 +128,19 @@ void mod_setup(Uint32 setupfr)
   load_context("dirtfarm",1,setupfr); //load a default map
 
   //make some dummys
-  #define MAYBE_A_DUMMY(i,x,y,w,h) {                                                                             \
-    DUMMY_t *du;                                                                                                 \
-    fr[setupfr].objs[i+20].type = OBJT_DUMMY;                                                                    \
-    fr[setupfr].objs[i+20].flags = OBJF_POS|OBJF_VEL|OBJF_HULL|OBJF_VIS|OBJF_PLAT|OBJF_CLIP|OBJF_BNDX|OBJF_BNDB; \
-    fr[setupfr].objs[i+20].context = 1;                                                                          \
-    fr[setupfr].objs[i+20].size = sizeof *du;                                                                    \
-    du = fr[setupfr].objs[i+20].data = malloc(sizeof *du);                                                       \
-    du->pos = (V){x*8,y*8,0.0f};                                                                                 \
-    du->vel = (V){0.0f,0.0f,0.0f};                                                                               \
-    du->hull[0] = (V){-w*8,-h*8,0.0f};                                                                           \
-    du->hull[1] = (V){ w*8, h*8,0.0f};                                                                           \
-    du->model = 0;                                                                                               }
+  #define MAYBE_A_DUMMY(i,x,y,w,h) {                                                         \
+    DUMMY_t *du;                                                                             \
+    fr[setupfr].objs[i+20].type = OBJT_DUMMY;                                                \
+    fr[setupfr].objs[i+20].flags = OBJF_POS|OBJF_VEL|OBJF_HULL|OBJF_VIS|OBJF_PLAT|OBJF_CLIP| \
+                                   OBJF_BNDX|OBJF_BNDZ|OBJF_BNDB;                            \
+    fr[setupfr].objs[i+20].context = 1;                                                      \
+    fr[setupfr].objs[i+20].size = sizeof *du;                                                \
+    du = fr[setupfr].objs[i+20].data = malloc(sizeof *du);                                   \
+    du->pos = (V){x*8,y*8,0};                                                                \
+    du->vel = (V){0,0,0};                                                                    \
+    du->hull[0] = (V){-w*8,-h*8,-8};                                                         \
+    du->hull[1] = (V){ w*8, h*8, 8};                                                         \
+    du->model = 0;                                                                           }
   MAYBE_A_DUMMY(20,  3,-25,1,1);
   MAYBE_A_DUMMY(21,  3,-20,1,1);
   MAYBE_A_DUMMY(22,  3,-15,1,1);
@@ -250,9 +251,9 @@ int mod_mkcmd(FCMD_t *c,int device,int sym,int press)
         //tiley = (myghosttop  + tiley) / 16;
 
         //map to game coordinates
-        int tilex = NATIVE2TILE_X(co,myghostleft + posx,myghosttop + posy);
-        int tiley = NATIVE2TILE_Y(co,myghostleft + posx,myghosttop + posy);
-        int tilez = NATIVE2TILE_Z(co,myghostleft + posx,myghosttop + posy);
+        int tilex = NATIVE2TILE_X(co,posx,posy);
+        int tiley = NATIVE2TILE_Y(co,posx,posy);
+        int tilez = NATIVE2TILE_Z(co,posx,posy);
 
         if( c->cmd==CMDT_1EPANT ) {
           downx = tilex;
@@ -329,37 +330,35 @@ void mod_predraw(Uint32 vidfr)
 
   //draw context
   CONTEXT_t *co = fr[vidfr%maxframes].objs[1].data; //FIXME: get correct context!
-  for( k=0; k<co->z; k++ )
-    for( j=0; j<co->y; j++ )
-      for( i=0; i<co->x; i++ ) {
-        int pos = co->x*co->y*k + co->x*j + i;
-        int tile;
-        size_t ntex;
-        if( co->dmap[ pos ].flags & CBF_NULL ) {
-          tile = co->map[  pos ].data[0];
-          ntex = co->map[  pos ].data[1];
-        } else {
-          tile = co->dmap[ pos ].data[0]; 
-          ntex = co->dmap[ pos ].data[1];
-        }
+  for( k=0; k<co->z; k++ ) for( j=0; j<co->y; j++ ) for( i=0; i<co->x; i++ ) {
+    int pos = co->x*co->y*k + co->x*j + i;
+    int tile;
+    size_t ntex;
+    if( co->dmap[ pos ].flags & CBF_NULL ) {
+      tile = co->map[  pos ].data[0];
+      ntex = co->map[  pos ].data[1];
+    } else {
+      tile = co->dmap[ pos ].data[0]; 
+      ntex = co->dmap[ pos ].data[1];
+    }
 
-        SJGL_SetTex( ntex );
-        SJGL_Blit( &(SDL_Rect){(tile%co->tilex)*co->tilew,
-                               (tile/co->tilex)*co->tileh,
-                               co->tilew,
-                               co->tileh
-                              },
-                   TILE2NATIVE_X(co,i,j,k),
-                   TILE2NATIVE_Y(co,i,j,k),
-                   0 );
-      }
+    SJGL_SetTex( ntex );
+    SJGL_Blit( &(SDL_Rect){(tile%co->tilex)*co->tilew,
+                           (tile/co->tilex)*co->tileh,
+                           co->tilew,
+                           co->tileh
+                          },
+               TILE2NATIVE_X(co,i,j,k) - co->tileuw/2,
+               TILE2NATIVE_Y(co,i,j,k) + co->bsy,      // right now, drawing tiles at the bottom of the cube
+               0 );
+  }
 }
 
 
 void mod_draw(int objid,Uint32 vidfrmod,OBJ_t *o)
 {
   if( !fr[vidfrmod].objs[o->context].type ) {
-    SJC_Write("No context: can not draw");
+    SJC_Write("No context: can not draw object %d",objid);
     return;
   }
 
@@ -388,9 +387,9 @@ void mod_postdraw(Uint32 vidfr)
   CONTEXT_t *co = fr[vidfr%maxframes].objs[mycontext].data;
 
   //map to game coordinates
-  int upx = NATIVE2TILE_X(co,myghostleft + posx,myghosttop + posy);
-  int upy = NATIVE2TILE_Y(co,myghostleft + posx,myghosttop + posy);
-  int upz = NATIVE2TILE_Z(co,myghostleft + posx,myghosttop + posy);
+  int upx = NATIVE2TILE_X(co,posx,posy);
+  int upy = NATIVE2TILE_Y(co,posx,posy);
+  int upz = NATIVE2TILE_Z(co,posx,posy);
 
   int dnx = downx>=0 ? downx : upx;
   int dny = downy>=0 ? downy : upy;
@@ -416,8 +415,8 @@ void mod_postdraw(Uint32 vidfr)
                            (tile/co->tilex)*co->tileh,
                            co->tilew,
                            co->tileh},
-               TILE2NATIVE_X(co,i,0,j),
-               TILE2NATIVE_Y(co,i,0,j),
+               TILE2NATIVE_X(co,i,j,k),
+               TILE2NATIVE_Y(co,i,j,k),
                NATIVEH );
   }
 

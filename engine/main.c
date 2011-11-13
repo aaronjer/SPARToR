@@ -171,50 +171,37 @@ void advance() {
         CONTEXT_t *co = fr[b].objs[ob->context].data;
         V *pos  = flex(ob,OBJF_POS);
         V *vel  = flex(ob,OBJF_VEL);
-        V *pvel = (ob->flags & OBJF_PVEL) ? flex(ob,OBJF_PVEL) : NULL;
-        V *hull = (ob->flags & OBJF_HULL) ? flex(ob,OBJF_HULL) : NULL;
-        pos->x += vel->x + (pvel?pvel->x:0.0f);  //apply velocity
-        pos->y += vel->y + (pvel?pvel->y:0.0f);
-        pos->z += vel->z + (pvel?pvel->z:0.0f);
+        V *pvel = (ob->flags & OBJF_PVEL) ? flex(ob,OBJF_PVEL) : &(V[2]){{0,0,0},{0,0,0}};
+        V *hull = (ob->flags & OBJF_HULL) ? flex(ob,OBJF_HULL) : &(V[2]){{0,0,0},{0,0,0}};
 
+        pos->x += vel->x + pvel->x;  //apply velocity
+        pos->y += vel->y + pvel->y;
+        pos->z += vel->z + pvel->z;
+
+        //context edges left & right
         if( ob->flags & OBJF_BNDX )
         {
-          if( pos->x + (hull?hull[1].x:0.0f) > co->x*co->bsx ) {
-            pos->x = co->x*co->bsx - (hull?hull[1].x:0.0f);
-            vel->x = 0.0f;
-          }
-          if( pos->x + (hull?hull[0].x:0.0f) <                0.0f ) {  //context edges left & right
-            pos->x =                0.0f - (hull?hull[0].x:0.0f);
-            vel->x = 0.0f;
-          }
+          if( pos->x + hull[1].x > co->x*co->bsx ) { pos->x = co->x*co->bsx - hull[1].x; vel->x = 0; }
+          if( pos->x + hull[0].x <             0 ) { pos->x =             0 - hull[0].x; vel->x = 0; }
         }
 
+        //context edges back and front
         if( ob->flags & OBJF_BNDZ )
         {
-          if( pos->z + (hull?hull[1].z:0.0f) > co->z*co->bsz ) {
-            pos->z = co->z*co->bsz - (hull?hull[1].z:0.0f);
-            vel->z = 0.0f;
-          }
-          if( pos->z + (hull?hull[0].z:0.0f) <                0.0f ) {  //context edges back and front
-            pos->z =                0.0f - (hull?hull[0].z:0.0f);
-            vel->z = 0.0f;
-          }
+          if( pos->z + hull[1].z > co->z*co->bsz ) { pos->z = co->z*co->bsz - hull[1].z; vel->z = 0; }
+          if( pos->z + hull[0].z <             0 ) { pos->z =             0 - hull[0].z; vel->z = 0; }
         }
 
+        //context edge bottom
         if( ob->flags & OBJF_BNDB )
         {
-          if( pos->y + (hull?hull[1].y:0.0f) > co->y*co->bsy ) {  //context edge bottom
-            pos->y = co->y*co->bsy - (hull?hull[1].y:0.0f);
-            vel->y = 0.0f;
-          }
+          if( pos->y + hull[1].y > co->y*co->bsy ) { pos->y = co->y*co->bsy - hull[1].y; vel->y = 0; }
         }
 
+        //context edge top
         if( ob->flags & OBJF_BNDT )
         {
-          if( pos->y + (hull?hull[0].y:0.0f) <                0.0f ) {  //context edge top
-            pos->y =                0.0f - (hull?hull[0].y:0.0f);
-            vel->y = 0.0f;
-          }
+          if( pos->y + hull[0].y <             0 ) { pos->y =             0 - hull[0].y; vel->y = 0; }
         }
       }
     }

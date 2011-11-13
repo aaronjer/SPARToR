@@ -21,10 +21,10 @@ void obj_player_draw( int objid, Uint32 vidfr, OBJ_t *o, CONTEXT_t *co )
   PLAYER_t *pl = o->data;
   int gunshift = pl->goingu ? 96 : pl->goingd ? 48 : 0;
   if( pl->goingu==pl->goingd ) gunshift = 0;
-  int g = POINT2NATIVE_X(pl->pos.x,pl->pos.y,pl->pos.z) - 10;
-  int h = POINT2NATIVE_Y(pl->pos.x,pl->pos.y,pl->pos.z) - 15;
+  int g = POINT2NATIVE_X(pl->pos) - 10;
+  int h = POINT2NATIVE_Y(pl->pos) - 15;
   int r = h + pl->hull[1].y;
-  int xshift = (pl->goingd>0 ? 40 : 0) + (pl->turning ? 80 : (pl->facingr ? 0 : 20 ));
+  int ushift = (pl->goingd>0 ? 40 : 0) + (pl->turning ? 80 : (pl->facingr ? 0 : 20 ));
 
   SJGL_SetTex( sys_tex[TEX_PLAYER].num );
 
@@ -32,7 +32,7 @@ void obj_player_draw( int objid, Uint32 vidfr, OBJ_t *o, CONTEXT_t *co )
     if( pl->model==4 ) //girl hair
       SJGL_Blit( &(SDL_Rect){80,120,20,15}, g-4, h+(pl->goingd?4:0)+pl->gundown/7, r );
 
-    SJGL_Blit( &(SDL_Rect){xshift,pl->model*30,20,30}, g, h, r);
+    SJGL_Blit( &(SDL_Rect){ushift,pl->model*30,20,30}, g, h, r);
 
     if( !pl->stabbing ) //gun
       SJGL_Blit( &(SDL_Rect){ 0+gunshift,150,24,27}, g+5-pl->gunback, h+5+pl->gundown/5, r );
@@ -40,7 +40,7 @@ void obj_player_draw( int objid, Uint32 vidfr, OBJ_t *o, CONTEXT_t *co )
     if( pl->model==4 ) //girl hair
       SJGL_Blit( &(SDL_Rect){100,120,20,15}, g+4, h+(pl->goingd?4:0)+pl->gundown/7, r );
 
-    SJGL_Blit( &(SDL_Rect){xshift,pl->model*30,20,30}, g, h, r);
+    SJGL_Blit( &(SDL_Rect){ushift,pl->model*30,20,30}, g, h, r);
 
     if( !pl->stabbing ) //gun
       SJGL_Blit( &(SDL_Rect){24+gunshift,150,24,27}, g-9+pl->gunback, h+5+pl->gundown/5, r );
@@ -86,8 +86,8 @@ void obj_player_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob )
   gh->vel.z = newme->pos.z - gh->pos.z;
 
   if( ((GHOST_t *)fr[b].objs[newme->ghost].data)->client==me ) { //local client match
-    v_camx = gh->pos.x;
-    v_camy = gh->pos.z;
+    v_camx = POINT2NATIVE_X(gh->pos);
+    v_camy = POINT2NATIVE_Y(gh->pos);
     if( setmodel>-1 ) { //FIXME -- just for fun, will not sync!
       newme->model = setmodel;
       setmodel = -1;
@@ -111,14 +111,14 @@ void obj_player_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob )
     newme->stabbing += (newme->stabbing>0 ? -1 : 1);
   }
   if(        newme->stabbing && newme->goingu ) {          //expand hull for stabbing
-    newme->hull[0] = (V){-6.0f,-29.0f,0.0f};
-    newme->hull[1] = (V){ 6.0f, 15.0f,0.0f};
+    newme->hull[0].y = -29;
+    newme->hull[1].y =  15;
   } else if( newme->stabbing && newme->goingd ) {
-    newme->hull[0] = (V){-6.0f,-15.0f,0.0f};
-    newme->hull[1] = (V){ 6.0f, 25.0f,0.0f};
+    newme->hull[0].y = -15;
+    newme->hull[1].y =  25;
   } else {
-    newme->hull[0] = (V){-6.0f,-15.0f,0.0f};
-    newme->hull[1] = (V){ 6.0f, 15.0f,0.0f};
+    newme->hull[0].y = -15;
+    newme->hull[1].y =  15;
   }
 
   newme->gunback = 0; //reset gun position
@@ -182,27 +182,27 @@ void obj_player_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob )
   if( newme->firing && newme->cooldown==0 && newme->projectiles<5 ) { // create bullet
     MKOBJ( bu, BULLET, ob->context, OBJF_POS|OBJF_VEL|OBJF_VIS );
     if( newme->facingr ) {
-      bu->pos = (V){newme->pos.x+19.0f,newme->pos.y-3.0f,0.0f};
-      bu->vel = (V){ 8.0f,0.0f,0.0f};
+      bu->pos = (V){newme->pos.x+19,newme->pos.y-3,newme->pos.z};
+      bu->vel = (V){ 8,0,0};
     } else {
-      bu->pos = (V){newme->pos.x-19.0f,newme->pos.y-3.0f,0.0f};
-      bu->vel = (V){-8.0f,0.0f,0.0f};
+      bu->pos = (V){newme->pos.x-19,newme->pos.y-3,newme->pos.z};
+      bu->vel = (V){-8,0,0};
     }
     if( newme->goingu ) { // aiming
-      bu->vel.y += -8.0f;
-      bu->pos.x += -2.0f;
-      bu->pos.y += -7.0f;
+      bu->vel.y += -8;
+      bu->pos.x += -2;
+      bu->pos.y += -7;
     }
     if( newme->goingd ) {
-      bu->vel.y +=  8.0f;
-      bu->pos.y += 16.0f;
+      bu->vel.y +=  8;
+      bu->pos.y += 16;
     }
-    bu->model = 1;
-    bu->owner = objid;
-    bu->ttl = 50;
+    bu->model       = 1;
+    bu->owner       = objid;
+    bu->ttl         = 50;
     newme->cooldown = 5;
+    newme->gunback  = 2;
     newme->projectiles++;
-    newme->gunback = 2;
   }
 
   for(i=0;i<objid;i++)  //find other players to interact with -- who've already MOVED
