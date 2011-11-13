@@ -234,21 +234,23 @@ int mod_mkcmd(FCMD_t *c,int device,int sym,int press)
         int dnx = downx;
         int dny = downy;
         int dnz = downz;
+
         if( c->cmd==CMDT_0EPANT ) //always clear mousedown pos on mouseup
           downx = downy = downz = -1;
-        if( !editmode )
+
+        if( !editmode || !i_hasmouse )
           return -1;
+
         if( i_mousex >= v_w-256 && i_mousey < 256 ) { //click in texture selector
           mytile = (i_mousex-(v_w-256))/co->tilew + (i_mousey/co->tileh)*co->tilex;
           return -1;
         }
+
         int posx = screen2native_x(i_mousex);
         int posy = screen2native_y(i_mousey);
-        if( !i_hasmouse || posx<0 || posy<0 || posx>=NATIVEW || posy>=NATIVEH )
-          return -1;
 
-        //tilex = (myghostleft + tilex) / 16;
-        //tiley = (myghosttop  + tiley) / 16;
+        posx += co->tileuw/2; // tiles are centered in width
+        posy -= co->bsy;      // tiles are drawn at the bottom of the cube
 
         //map to game coordinates
         int tilex = NATIVE2TILE_X(co,posx,posy);
@@ -381,10 +383,13 @@ void mod_postdraw(Uint32 vidfr)
   int posx = screen2native_x(i_mousex);
   int posy = screen2native_y(i_mousey);
 
-  if( !editmode || !i_hasmouse || posx<0 || posy<0 || posx>=NATIVEW || posy>=NATIVEH ) return;
+  if( !editmode || !i_hasmouse ) return;
 
   GHOST_t   *gh = fr[vidfr%maxframes].objs[myghost].data; // FIXME is myghost/mycontext always set here?
   CONTEXT_t *co = fr[vidfr%maxframes].objs[mycontext].data;
+
+  posx += co->tileuw/2; // tiles are centered in width
+  posy -= co->bsy;      // tiles are drawn at the bottom of the cube
 
   //map to game coordinates
   int upx = NATIVE2TILE_X(co,posx,posy);
@@ -415,8 +420,8 @@ void mod_postdraw(Uint32 vidfr)
                            (tile/co->tilex)*co->tileh,
                            co->tilew,
                            co->tileh},
-               TILE2NATIVE_X(co,i,j,k),
-               TILE2NATIVE_Y(co,i,j,k),
+               TILE2NATIVE_X(co,i,j,k) - co->tileuw/2,
+               TILE2NATIVE_Y(co,i,j,k) + co->bsy,      // right now, drawing tiles at the bottom of the cube
                NATIVEH );
   }
 

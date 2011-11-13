@@ -143,6 +143,8 @@ void render()
   int camy = NATIVEH/2-(int)v_camy;
   glTranslatef(camx,camy,0);
 
+SJC_Write("v_cam: %d %d",v_camx,v_camy);
+
   SJGL_SetTex( (GLuint)-1 ); //forget previous texture name
   mod_predraw(vidfr);
 
@@ -373,13 +375,13 @@ void setvideosoon(int w,int h,int go_full,int delay)
 
 int screen2native_x(int x)
 {
-  return (x - pad_left)/scale;
+  return (x - pad_left)/scale + v_camx - NATIVEW/2;
 }
 
 
 int screen2native_y(int y)
 {
-  return (y - pad_top)/scale;
+  return (y - pad_top )/scale + v_camy - NATIVEH/2;
 }
 
 
