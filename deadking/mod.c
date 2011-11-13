@@ -17,7 +17,7 @@
 
 
 SYS_TEX_T sys_tex[] = {{"/player.png"     ,0},
-                       {"/world.png"      ,0},
+                       {"/slugtunnel.png" ,0},
                        {"/amigo.png"      ,0}};
 size_t num_sys_tex = COUNTOF(sys_tex);
 
