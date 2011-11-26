@@ -87,5 +87,15 @@ void obj_mother_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob )
     am->state     = AMIGO_HELLO;
     am->statetime = 0;
   }
+
+  //create PERSON!
+  if(hotfr==5) {
+    MKOBJ( pe, PERSON, 1, OBJF_POS|OBJF_VEL|OBJF_HULL|OBJF_VIS|OBJF_PLAT|OBJF_CLIP|OBJF_BNDB|OBJF_BNDX|OBJF_BNDZ );
+    pe->pos       = (V){250,0,250};
+    pe->vel       = (V){0,0,0};
+    pe->hull[0]   = (V){-10,-17,-10};
+    pe->hull[1]   = (V){ 10, 17, 10};
+    pe->model     = 0;
+  }
 }
 

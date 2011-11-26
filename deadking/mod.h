@@ -42,6 +42,7 @@
 #define TEX_PLAYER 0
 #define TEX_WORLD  1
 #define TEX_AMIGO  2
+#define TEX_PERSON 3 
 
 
 extern SYS_TEX_T  sys_tex[];

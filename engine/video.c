@@ -143,8 +143,6 @@ void render()
   int camy = NATIVEH/2-(int)v_camy;
   glTranslatef(camx,camy,0);
 
-SJC_Write("v_cam: %d %d",v_camx,v_camy);
-
   SJGL_SetTex( (GLuint)-1 ); //forget previous texture name
   mod_predraw(vidfr);
 

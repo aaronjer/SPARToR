@@ -17,6 +17,7 @@ enum { OBJT_EMPTY = 0,
        OBJT_GHOST,
        OBJT_DUMMY,
        OBJT_PLAYER,
+       OBJT_PERSON,
        OBJT_BULLET,
        OBJT_SLUG,
        OBJT_AMIGO,
@@ -87,6 +88,19 @@ typedef struct{
 
 void obj_player_draw( int objid, Uint32 vidfr, OBJ_t *o, CONTEXT_t *co );
 void obj_player_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob );
+
+
+// PERSON //
+typedef struct{
+  V pos;
+  V vel;
+  V hull[2];
+  V pvel;
+  int model;
+} PERSON_t;
+
+void obj_person_draw( int objid, Uint32 vidfr, OBJ_t *o, CONTEXT_t *co );
+void obj_person_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob );
 
 
 // BULLET //

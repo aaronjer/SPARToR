@@ -18,7 +18,8 @@
 
 SYS_TEX_T sys_tex[] = {{"/player.png"     ,0},
                        {"/slugtunnel.png" ,0},
-                       {"/amigo.png"      ,0}};
+                       {"/amigo.png"      ,0},
+                       {"/persons.png"    ,0}};
 size_t num_sys_tex = COUNTOF(sys_tex);
 
 
@@ -42,6 +43,7 @@ char objectnames[][16] =
        "ghost",
        "dummy",
        "player",
+       "person",
        "bullet",
        "slug",
        "amigo",
@@ -370,6 +372,7 @@ void mod_draw(int objid,Uint32 vidfrmod,OBJ_t *o)
     case OBJT_GHOST:          obj_ghost_draw(      objid, vidfrmod, o, co );     break;
     case OBJT_BULLET:         obj_bullet_draw(     objid, vidfrmod, o, co );     break;
     case OBJT_SLUG:           obj_slug_draw(       objid, vidfrmod, o, co );     break;
+    case OBJT_PERSON:         obj_person_draw(     objid, vidfrmod, o, co );     break;
     case OBJT_DUMMY:          obj_dummy_draw(      objid, vidfrmod, o, co );     break;
     case OBJT_AMIGO:          obj_amigo_draw(      objid, vidfrmod, o, co );     break;
     case OBJT_AMIGOSWORD:     obj_amigosword_draw( objid, vidfrmod, o, co );     break;
@@ -482,6 +485,10 @@ void mod_adv(int objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob)
     case OBJT_SLUG:
       assert(ob->size==sizeof(SLUG_t));
       obj_slug_adv(       objid, a, b, oa, ob );
+      break;
+    case OBJT_PERSON:
+      assert(ob->size==sizeof(PERSON_t));
+      obj_person_adv(       objid, a, b, oa, ob );
       break;
     case OBJT_AMIGO:
       assert(ob->size==sizeof(AMIGO_t));

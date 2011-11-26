@@ -7,4 +7,5 @@ OBJS += $(MODNAME)/obj_ghost.o
 OBJS += $(MODNAME)/obj_mother.o
 OBJS += $(MODNAME)/obj_player.o
 OBJS += $(MODNAME)/obj_slug.o
+OBJS += $(MODNAME)/obj_person.o
 
