@@ -107,10 +107,10 @@ void mod_setup(Uint32 setupfr)
   CONTEXT_t *co = fr[setupfr].objs[1].data;
   co->bsx = co->bsy = co->bsz = 16;
   co->x   = co->y   = co->z   = 15;
-  co->tilex = 8;
-  co->tiley = 16;
-  co->tilew = 30;
-  co->tileh = 16;
+  co->tilex = 5;
+  co->tiley = 24;
+  co->tilew = 46;
+  co->tileh = 24;
   co->tileuw = 48;
   co->tileuh = 24;
   co->isometric = 1;
