@@ -128,38 +128,32 @@ void obj_player_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob )
     newme->gundown = 0;
 
   // friction
-  if(      newme->vel.x> 0.2f ) newme->vel.x -= 0.2f;   \
-  else if( newme->vel.x>-0.2f ) newme->vel.x  = 0.0f;   \
-  else                          newme->vel.x += 0.2f;   \
-  if(      newme->pvel.x> 0.5f ) newme->pvel.x -= 0.5f; \
-  else if( newme->pvel.x>-0.5f ) newme->pvel.x  = 0.0f; \
-  else                           newme->pvel.x += 0.5f; \
-  if(      newme->vel.z> 0.2f ) newme->vel.z -= 0.2f;   \
-  else if( newme->vel.z>-0.2f ) newme->vel.z  = 0.0f;   \
-  else                          newme->vel.z += 0.2f;   \
-  if(      newme->pvel.z> 0.5f ) newme->pvel.z -= 0.5f; \
-  else if( newme->pvel.z>-0.5f ) newme->pvel.z  = 0.0f; \
-  else                           newme->pvel.z += 0.5f; \
+  #define P_FRIC(velxz,amt)                            \
+    if(      newme->velxz> amt ) newme->velxz -= amt;  \
+    else if( newme->velxz>-amt ) newme->velxz  = 0.0f; \
+    else                         newme->velxz += amt;
+  P_FRIC( vel.x,0.2f)
+  P_FRIC(pvel.x,0.5f)
+  P_FRIC( vel.z,0.2f)
+  P_FRIC(pvel.z,0.5f)
+  #undef P_FRIC
 
   // -- WALK --
+  int keys;
   if( newme->turning )
     newme->turning--;
-  if( newme->goingl ) {
-    if(      newme->pvel.x>-2.0f ) newme->pvel.x += -1.0f;
-    else if( newme->pvel.x>-3.0f ) newme->pvel.x  = -3.0f;
-  }
-  if( newme->goingr ) {
-    if(      newme->pvel.x< 2.0f ) newme->pvel.x +=  1.0f;
-    else if( newme->pvel.x< 3.0f ) newme->pvel.x  =  3.0f;
-  }
-  if( newme->goingu ) {
-    if(      newme->pvel.z>-2.0f ) newme->pvel.z += -1.0f;
-    else if( newme->pvel.z>-3.0f ) newme->pvel.z  = -3.0f;
-  }
-  if( newme->goingd ) {
-    if(      newme->pvel.z< 2.0f ) newme->pvel.z +=  1.0f;
-    else if( newme->pvel.z< 3.0f ) newme->pvel.z  =  3.0f;
-  }
+  #define P_MOVE(dir1, dir2, xz, plus, gt)                \
+    if( (keys = newme->dir1 + newme->dir2) ) {            \
+      newme->pvel.xz plus ## = (keys==1 ? 0.707f : 1.0f); \
+      float max = 0 plus (keys==1 ? 2.121f : 3.0f);       \
+      if( newme->pvel.xz gt max )                         \
+        newme->pvel.xz = max;                             \
+    }
+  P_MOVE(goingl,goingu,x,-,<)
+  P_MOVE(goingr,goingd,x,+,>)
+  P_MOVE(goingu,goingr,z,-,<)
+  P_MOVE(goingd,goingl,z,+,>)
+  #undef P_MOVE
 
   // -- JUMP --
   if( newme->pvel.y <= -2.0f ) {     //jumping in progress
@@ -174,7 +168,7 @@ void obj_player_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob )
   if( !newme->jumping )              //low-jump, cancel jump velocity early
     newme->pvel.y   = 0.0f;
   if( (newme->vel.y==0.0f || oldme->vel.y==0.0f) && newme->jumping ) //FIXME 0 velocity means grounded? not really
-    newme->pvel.y  = -9.1f;         //initiate jump!
+    newme->pvel.y  = -9.1f;          //initiate jump!
 
   // -- FIRE --
   if( newme->cooldown>0 )
@@ -183,10 +177,10 @@ void obj_player_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob )
     MKOBJ( bu, BULLET, ob->context, OBJF_POS|OBJF_VEL|OBJF_VIS );
     if( newme->facingr ) {
       bu->pos = (V){newme->pos.x+19,newme->pos.y-3,newme->pos.z};
-      bu->vel = (V){ 8,0,0};
+      bu->vel = (V){ 6,0,-6};
     } else {
       bu->pos = (V){newme->pos.x-19,newme->pos.y-3,newme->pos.z};
-      bu->vel = (V){-8,0,0};
+      bu->vel = (V){-6,0, 6};
     }
     if( newme->goingu ) { // aiming
       bu->vel.y += -8;

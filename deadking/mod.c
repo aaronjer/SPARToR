@@ -111,8 +111,8 @@ void mod_setup(Uint32 setupfr)
   co->tiley = 16;
   co->tilew = 30;
   co->tileh = 16;
-  co->tileuw = 32;
-  co->tileuh = 16;
+  co->tileuw = 48;
+  co->tileuh = 24;
   co->isometric = 1;
   int volume = co->x * co->y * co->z;
   co->map  = hack_map  = malloc( (sizeof *co->map ) * volume ); //FIXME remove hack

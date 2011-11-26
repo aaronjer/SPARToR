@@ -124,7 +124,7 @@ int save_context(const char *name,int context,int savefr)
 
   if(0>fprintf( f, "%i %i %i\n", co->bsx, co->bsy, co->bsz )) goto fail;
 
-  if(0>fprintf( f, "%i %i %i\n", co->x, co->y, co->z )) goto fail;
+  if(0>fprintf( f, "%i %i %i\n", co->x,   co->y,   co->z   )) goto fail;
 
   for( z=0; z<co->z; z++ ) {
     for( y=0; y<co->y; y++ ) {
