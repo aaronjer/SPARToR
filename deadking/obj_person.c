@@ -18,7 +18,7 @@ void obj_person_draw( int objid, Uint32 vidfr, OBJ_t *o, CONTEXT_t *co )
   int c = POINT2NATIVE_X(pe->pos);
   int d = POINT2NATIVE_Y(pe->pos);
   SJGL_SetTex( sys_tex[TEX_PERSON].num );
-  SJGL_Blit( &(SDL_Rect){0,0,20,34}, c-10, d-17, pe->pos.y );
+  SJGL_Blit( &(SDL_Rect){20,0,20,34}, c-10, d-17, pe->pos.y );
 }
 
 void obj_person_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob )
