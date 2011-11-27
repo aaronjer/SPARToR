@@ -19,7 +19,8 @@
 SYS_TEX_T sys_tex[] = {{"/player.png"     ,0},
                        {"/slugtunnel.png" ,0},
                        {"/amigo.png"      ,0},
-                       {"/persons.png"    ,0}};
+                       {"/persons.png"    ,0},
+                       {"/blankhud.png"   ,0}};
 size_t num_sys_tex = COUNTOF(sys_tex);
 
 
@@ -377,6 +378,15 @@ void mod_draw(int objid,Uint32 vidfrmod,OBJ_t *o)
     case OBJT_AMIGO:          obj_amigo_draw(      objid, vidfrmod, o, co );     break;
     case OBJT_AMIGOSWORD:     obj_amigosword_draw( objid, vidfrmod, o, co );     break;
   }
+}
+
+
+void mod_huddraw(Uint32 vidfr)
+{
+  SJGL_SetTex( sys_tex[TEX_HUD].num  );
+  SJGL_Blit( &(SDL_Rect){0,0,160,50},   0, NATIVEH-50, 0 );
+  SJGL_Blit( &(SDL_Rect){0,0,160,50}, 160, NATIVEH-50, 0 );
+  SJGL_Blit( &(SDL_Rect){0,0,160,50}, 320, NATIVEH-50, 0 );
 }
 
 

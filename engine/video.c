@@ -210,7 +210,11 @@ void render()
     }
   }
 
-  // viewport and matrixes for HUD
+  // translate back for HUD
+  glTranslatef(-camx,-camy,0);
+  mod_huddraw(vidfr);
+
+  // viewport and matrixes for outerdraw
   glViewport(0,0,w,h);
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();

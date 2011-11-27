@@ -42,7 +42,8 @@
 #define TEX_PLAYER 0
 #define TEX_WORLD  1
 #define TEX_AMIGO  2
-#define TEX_PERSON 3 
+#define TEX_PERSON 3
+#define TEX_HUD    4
 
 
 extern SYS_TEX_T  sys_tex[];
@@ -70,6 +71,7 @@ void mod_loadsurfs(int quit);
 void mod_predraw(Uint32 vidfr);
 void mod_draw(int objid,Uint32 vidfr,OBJ_t *o);
 void mod_postdraw(Uint32 vidfr);
+void mod_huddraw(Uint32 vidfr);
 void mod_outerdraw(Uint32 vidfr,int w,int h);
 void mod_adv(int objid,Uint32 a,Uint32 b,OBJ_t *oa,OBJ_t *ob);
 
