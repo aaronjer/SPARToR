@@ -21,33 +21,40 @@ void obj_player_draw( int objid, Uint32 vidfr, OBJ_t *o, CONTEXT_t *co )
   PLAYER_t *pl = o->data;
   int gunshift = pl->goingu ? 96 : pl->goingd ? 48 : 0;
   if( pl->goingu==pl->goingd ) gunshift = 0;
-  int g = POINT2NATIVE_X(pl->pos) - 10;
-  int h = POINT2NATIVE_Y(pl->pos) - 15;
-  int r = h + pl->hull[1].y;
+  int c = POINT2NATIVE_X(pl->pos) - 10;
+  int d = POINT2NATIVE_Y(pl->pos) - 15;
+  int r = d + 30;
   int ushift = (pl->goingd>0 ? 40 : 0) + (pl->turning ? 80 : (pl->facingr ? 0 : 20 ));
 
   SJGL_SetTex( sys_tex[TEX_PLAYER].num );
 
   if( pl->facingr ) {
     if( pl->model==4 ) //girl hair
-      SJGL_Blit( &(SDL_Rect){80,120,20,15}, g-4, h+(pl->goingd?4:0)+pl->gundown/7, r );
+      SJGL_Blit( &(SDL_Rect){80,120,20,15}, c-4, d+(pl->goingd?4:0)+pl->gundown/7, r );
 
-    SJGL_Blit( &(SDL_Rect){ushift,pl->model*30,20,30}, g, h, r);
+    SJGL_Blit( &(SDL_Rect){ushift,pl->model*30,20,30}, c, d, r);
 
     if( !pl->stabbing ) //gun
-      SJGL_Blit( &(SDL_Rect){ 0+gunshift,150,24,27}, g+5-pl->gunback, h+5+pl->gundown/5, r );
+      SJGL_Blit( &(SDL_Rect){ 0+gunshift,150,24,27}, c+5-pl->gunback, d+5+pl->gundown/5, r );
   } else {
     if( pl->model==4 ) //girl hair
-      SJGL_Blit( &(SDL_Rect){100,120,20,15}, g+4, h+(pl->goingd?4:0)+pl->gundown/7, r );
+      SJGL_Blit( &(SDL_Rect){100,120,20,15}, c+4, d+(pl->goingd?4:0)+pl->gundown/7, r );
 
-    SJGL_Blit( &(SDL_Rect){ushift,pl->model*30,20,30}, g, h, r);
+    SJGL_Blit( &(SDL_Rect){ushift,pl->model*30,20,30}, c, d, r);
 
     if( !pl->stabbing ) //gun
-      SJGL_Blit( &(SDL_Rect){24+gunshift,150,24,27}, g-9+pl->gunback, h+5+pl->gundown/5, r );
+      SJGL_Blit( &(SDL_Rect){24+gunshift,150,24,27}, c-9+pl->gunback, d+5+pl->gundown/5, r );
   }
 
   if( pl->stabbing ) //up/down stabbing
-    SJGL_Blit( &(SDL_Rect){148+(pl->stabbing<0?5:0),150,5,27}, g+8, h-(pl->stabbing<0?15:-15), r );
+    SJGL_Blit( &(SDL_Rect){148+(pl->stabbing<0?5:0),150,5,27}, c+8, d-(pl->stabbing<0?15:-15), r );
+
+  // draw shadow
+  V shadow = (V){pl->pos.x, co->bsy*co->y, pl->pos.z};
+  int sc = POINT2NATIVE_X(shadow) - 10;
+  int sd = POINT2NATIVE_Y(shadow) - 5;
+  SJGL_SetTex( sys_tex[TEX_PERSON].num );
+  SJGL_Blit( &(SDL_Rect){0,246,20,10}, sc, sd, r-1 );
 }
 
 void obj_player_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob )

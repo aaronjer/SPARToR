@@ -89,9 +89,9 @@ void obj_mother_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob )
   }
 
   //create PERSON!
-  if(hotfr==5) {
+  if(hotfr>=5 && hotfr<=7) {
     MKOBJ( pe, PERSON, 1, OBJF_POS|OBJF_VEL|OBJF_HULL|OBJF_VIS|OBJF_PLAT|OBJF_CLIP|OBJF_BNDB|OBJF_BNDX|OBJF_BNDZ );
-    pe->pos       = (V){150,0,150};
+    pe->pos       = (V){150-hotfr*5,0,150-hotfr*4};
     pe->vel       = (V){0,0,0};
     pe->hull[0]   = (V){-10,-17,-10};
     pe->hull[1]   = (V){ 10, 17, 10};
