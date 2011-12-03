@@ -32,6 +32,7 @@ void obj_person_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob )
   int w  = 0,e  = 0,n  = 0,s  = 0;
   int nw = 0,ne = 0,sw = 0,se = 0;
 
+  // check for input
   if( newpe->ghost )
   {
     GHOST_t *gh = fr[b].objs[newpe->ghost].data;
@@ -55,21 +56,18 @@ void obj_person_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob )
     return;
   }
 
+  // determine desired movement
   int newx, newz;
-  if( w ) {
-    newx = newpe->tilex-1;
-    newz = newpe->tilez+1;
-  } else if( e ) {
-    newx = newpe->tilex+1;
-    newz = newpe->tilez-1;
-  } else if( n ) {
-    newx = newpe->tilex-1;
-    newz = newpe->tilez-1;
-  } else if( s ) {
-    newx = newpe->tilex+1;
-    newz = newpe->tilez+1;
-  }
+  if     ( w  ) { newx = newpe->tilex-1; newz = newpe->tilez+1; }
+  else if( e  ) { newx = newpe->tilex+1; newz = newpe->tilez-1; }
+  else if( n  ) { newx = newpe->tilex-1; newz = newpe->tilez-1; }
+  else if( s  ) { newx = newpe->tilex+1; newz = newpe->tilez+1; }
+  else if( nw ) { newx = newpe->tilex-1; newz = newpe->tilez  ; }
+  else if( ne ) { newx = newpe->tilex  ; newz = newpe->tilez-1; }
+  else if( sw ) { newx = newpe->tilex  ; newz = newpe->tilez+1; }
+  else if( se ) { newx = newpe->tilex+1; newz = newpe->tilez  ; }
 
+  // move only if in-bounds
   if( newx>=0 && newz>=0 && newx<co->x && newz<co->z ) {
     newpe->tilex = newx;
     newpe->tilez = newz;
