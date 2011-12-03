@@ -20,7 +20,9 @@
 
 
 //cmd types
-enum { CMDT_1LEFT = 1,
+enum { CMDT_NONE = 0,
+
+       CMDT_1LEFT,
        CMDT_0LEFT,
        CMDT_1RIGHT,
        CMDT_0RIGHT,
@@ -28,10 +30,21 @@ enum { CMDT_1LEFT = 1,
        CMDT_0UP,
        CMDT_1DOWN,
        CMDT_0DOWN,
+
+       CMDT_1NW,
+       CMDT_0NW,
+       CMDT_1NE,
+       CMDT_0NE,
+       CMDT_1SW,
+       CMDT_0SW,
+       CMDT_1SE,
+       CMDT_0SE,
+
        CMDT_1SEL,
        CMDT_0SEL,
        CMDT_1BACK,
        CMDT_0BACK,
+
        CMDT_1EPANT, //editing controls...
        CMDT_0EPANT,
        CMDT_1EPREV,
@@ -43,8 +56,6 @@ enum { CMDT_1LEFT = 1,
 
 
 extern int    myghost;
-extern int    myghostleft;
-extern int    myghosttop;
 extern int    mycontext;
 extern int    downx;
 extern int    downy;

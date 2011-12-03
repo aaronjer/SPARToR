@@ -33,8 +33,6 @@ void obj_ghost_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob )
   if( gh->client==me )
   {
     myghost     = objid;
-    myghostleft = gh->pos.x + gh->hull[0].x;
-    myghosttop  = gh->pos.y + gh->hull[0].y;
     mycontext   = ob->context;
   }
 

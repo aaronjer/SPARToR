@@ -27,6 +27,7 @@ enum { OBJT_EMPTY = 0,
 // MOTHER //
 typedef struct{
   char edit;
+  int party[6];
 } MOTHER_t;
 
 void obj_mother_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob );
@@ -97,6 +98,25 @@ typedef struct{
   V hull[2];
   V pvel;
   int model;
+  int ghost;
+  int tilex;
+  int tilez;
+  int hp;
+  int mp;
+  int st;
+  int ap;
+  int pn;
+  int ml;
+  int to;
+  int xp;
+  int max_hp;
+  int max_mp;
+  int max_st;
+  int max_ap;
+  int max_pn;
+  int max_ml;
+  int max_to;
+  int max_xp;
 } PERSON_t;
 
 void obj_person_draw( int objid, Uint32 vidfr, OBJ_t *o, CONTEXT_t *co );

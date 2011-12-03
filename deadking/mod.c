@@ -28,6 +28,10 @@ INPUTNAME_t inputnames[] = {{"left"       ,CMDT_1LEFT ,CMDT_0LEFT },
                             {"right"      ,CMDT_1RIGHT,CMDT_0RIGHT},
                             {"up"         ,CMDT_1UP   ,CMDT_0UP   },
                             {"down"       ,CMDT_1DOWN ,CMDT_0DOWN },
+                            {"nw"         ,CMDT_1NW   ,CMDT_0NW   },
+                            {"ne"         ,CMDT_1NE   ,CMDT_0NE   },
+                            {"sw"         ,CMDT_1SW   ,CMDT_0SW   },
+                            {"se"         ,CMDT_1SE   ,CMDT_0SE   },
                             {"select"     ,CMDT_1SEL  ,CMDT_0SEL  },
                             {"back"       ,CMDT_1BACK ,CMDT_0BACK },
                             {"edit-paint" ,CMDT_1EPANT,CMDT_0EPANT},
@@ -52,8 +56,6 @@ char objectnames[][16] =
 
 
 int    myghost;     //obj number of local player ghost
-int    myghostleft; //top left of visible area for local player
-int    myghosttop;
 int    mycontext;
 int    downx = -1; //position of mousedown at beginning of edit cmd
 int    downy = -1;
@@ -88,6 +90,11 @@ void mod_setup(Uint32 setupfr)
   MAYBE_BIND(INP_KEYB,SDLK_a       ,SEL  ); MAYBE_BIND(INP_KEYB,SDLK_SPACE   ,SEL  );
   MAYBE_BIND(INP_KEYB,SDLK_s       ,BACK );
 
+  // keypad directions!
+  MAYBE_BIND(INP_KEYB,SDLK_KP7     ,NW   ); MAYBE_BIND(INP_KEYB,SDLK_KP8     ,UP   ); MAYBE_BIND(INP_KEYB,SDLK_KP9     ,NE   );
+  MAYBE_BIND(INP_KEYB,SDLK_KP4     ,LEFT );                                           MAYBE_BIND(INP_KEYB,SDLK_KP6     ,RIGHT);
+  MAYBE_BIND(INP_KEYB,SDLK_KP1     ,SW   ); MAYBE_BIND(INP_KEYB,SDLK_KP2     ,DOWN ); MAYBE_BIND(INP_KEYB,SDLK_KP3     ,SE   );
+
   MAYBE_BIND(INP_JAXN,0            ,LEFT ); MAYBE_BIND(INP_JAXN,3            ,LEFT ); //joystick or gamepad
   MAYBE_BIND(INP_JAXP,0            ,RIGHT); MAYBE_BIND(INP_JAXP,3            ,RIGHT);
   MAYBE_BIND(INP_JAXN,1            ,UP   ); MAYBE_BIND(INP_JAXN,4            ,UP   );
@@ -103,7 +110,7 @@ void mod_setup(Uint32 setupfr)
 
   //make the mother object
   fr[setupfr].objs[0] = (OBJ_t){ OBJT_MOTHER, 0, 0, sizeof(MOTHER_t), malloc(sizeof(MOTHER_t)) };
-  *(MOTHER_t *)fr[setupfr].objs[0].data = (MOTHER_t){0};
+  *(MOTHER_t *)fr[setupfr].objs[0].data = (MOTHER_t){0,{0,0,0,0,0,0}};
 
   //make default context object (map)
   fr[setupfr].objs[1] = (OBJ_t){ OBJT_CONTEXT, 0, 0, sizeof(CONTEXT_t), malloc(sizeof(CONTEXT_t)) };
@@ -387,6 +394,27 @@ void mod_huddraw(Uint32 vidfr)
   SJGL_Blit( &(SDL_Rect){0,0,160,50},   0, NATIVEH-50, 0 );
   SJGL_Blit( &(SDL_Rect){0,0,160,50}, 160, NATIVEH-50, 0 );
   SJGL_Blit( &(SDL_Rect){0,0,160,50}, 320, NATIVEH-50, 0 );
+
+  MOTHER_t *mo = fr[vidfr%maxframes].objs[0].data;
+
+  int i;
+  for( i=0; i<6; i++ ) {
+    if( !mo->party[i] )
+      continue;
+
+    PERSON_t *pe = fr[vidfr%maxframes].objs[mo->party[i]].data;
+
+    #define BAR_W(stat) (pe->stat>0 ? 15+32*pe->stat/pe->max_##stat : 0)
+    SJGL_Blit( &(SDL_Rect){0,50+6*0,BAR_W(hp),6}, 57   , NATIVEH-50+13+9*0, 0 );
+    SJGL_Blit( &(SDL_Rect){0,50+6*1,BAR_W(mp),6}, 57+51, NATIVEH-50+13+9*0, 0 );
+    SJGL_Blit( &(SDL_Rect){0,50+6*2,BAR_W(st),6}, 57   , NATIVEH-50+13+9*1, 0 );
+    SJGL_Blit( &(SDL_Rect){0,50+6*3,BAR_W(ap),6}, 57+51, NATIVEH-50+13+9*1, 0 );
+    SJGL_Blit( &(SDL_Rect){0,50+6*4,BAR_W(pn),6}, 57   , NATIVEH-50+13+9*2, 0 );
+    SJGL_Blit( &(SDL_Rect){0,50+6*5,BAR_W(ml),6}, 57+51, NATIVEH-50+13+9*2, 0 );
+    SJGL_Blit( &(SDL_Rect){0,50+6*6,BAR_W(to),6}, 57   , NATIVEH-50+13+9*3, 0 );
+    SJGL_Blit( &(SDL_Rect){0,50+6*7,BAR_W(xp),6}, 57+51, NATIVEH-50+13+9*3, 0 );
+    #undef BAR_W
+  }
 }
 
 

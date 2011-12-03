@@ -114,7 +114,7 @@ void render()
 
   glMatrixMode(GL_TEXTURE);
   glLoadIdentity();
-  glScalef(1.0f/256.0f, 1.0f/256.0f, 1);
+  glScalef(1.0f/512.0f, 1.0f/512.0f, 1);
 
   glColor4f(1.0f,1.0f,1.0f,1.0f);
   glEnable(GL_TEXTURE_2D);
