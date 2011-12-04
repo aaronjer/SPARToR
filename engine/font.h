@@ -12,6 +12,8 @@
 #include "SDL.h"
 #include "sjdl.h"
 
+#define NATIVE_TEX_SZ 512
+
 typedef struct
 {
   GLuint tex;

@@ -63,11 +63,14 @@ int SJGL_Blit(RECT *s, int x, int y, int z)
 {
   if( z<0 ) z = (y+s->h)*-z;
 
+  int x2 = ( s->w > 0 ? x+s->w : x-s->w );
+  int y2 = ( s->h > 0 ? y+s->h : y-s->h );
+
   glBegin(GL_QUADS);
-  glTexCoord3i(s->x     ,s->y     ,z); glVertex3i(x     ,y     ,z);
-  glTexCoord3i(s->x+s->w,s->y     ,z); glVertex3i(x+s->w,y     ,z);
-  glTexCoord3i(s->x+s->w,s->y+s->h,z); glVertex3i(x+s->w,y+s->h,z);
-  glTexCoord3i(s->x     ,s->y+s->h,z); glVertex3i(x     ,y+s->h,z);
+  glTexCoord3i(s->x     , s->y     , z); glVertex3i(x , y , z);
+  glTexCoord3i(s->x+s->w, s->y     , z); glVertex3i(x2, y , z);
+  glTexCoord3i(s->x+s->w, s->y+s->h, z); glVertex3i(x2, y2, z);
+  glTexCoord3i(s->x     , s->y+s->h, z); glVertex3i(x , y2, z);
   glEnd();
 
   return 0;

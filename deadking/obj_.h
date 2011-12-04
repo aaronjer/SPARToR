@@ -23,6 +23,7 @@ enum { OBJT_EMPTY = 0,
        OBJT_AMIGO,
        OBJT_AMIGOSWORD };
 
+enum DIR8 { NODIR=0, E, NE, N, NW, W, SW, S, SE };
 
 // MOTHER //
 typedef struct{
@@ -101,6 +102,8 @@ typedef struct{
   int ghost;
   int tilex;
   int tilez;
+  enum DIR8 dir;
+  int walkcounter;
   int hp;
   int mp;
   int st;

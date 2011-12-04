@@ -136,7 +136,7 @@ SJF_t SJF = {0,8,12,128,
 //initializes the SuperJer Font library
 void SJF_Init()
 {
-  Uint32 pixels[256*256];
+  Uint32 pixels[NATIVE_TEX_SZ*NATIVE_TEX_SZ];
   Uint32 u;
   Uint32 v;
 
@@ -149,14 +149,14 @@ void SJF_Init()
   for(u=0; u<128; u++)
     for(v=0; v<128; v++)
       if( SJF.raw[u+v*128]!=' ' )
-        pixels[u+v*256] = white;
+        pixels[u+v*NATIVE_TEX_SZ] = white;
       else if( (u<127 && SJF.raw[(u+1)+(v  )*128]!=' ')
             || (u>0   && SJF.raw[(u-1)+(v  )*128]!=' ')
             || (v<127 && SJF.raw[(u  )+(v+1)*128]!=' ')
             || (v>0   && SJF.raw[(u  )+(v-1)*128]!=' ') )
-        pixels[u+v*256] = black;
+        pixels[u+v*NATIVE_TEX_SZ] = black;
       else
-        pixels[u+v*256] = clear;
+        pixels[u+v*NATIVE_TEX_SZ] = clear;
 
   //make into a GL texture
   glPixelStorei(GL_UNPACK_ALIGNMENT,4);
@@ -166,7 +166,7 @@ void SJF_Init()
   glBindTexture(GL_TEXTURE_2D,SJF.tex);
   glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, NATIVE_TEX_SZ, NATIVE_TEX_SZ, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 }
 
 
