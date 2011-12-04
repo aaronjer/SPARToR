@@ -178,11 +178,11 @@ void render()
 
             if( flags & CBF_SOLID ) {
               glColor4f(1,0,0,1);
-              SJGL_Blit( &(RECT){0,0,16,16}, x*16,   y*16,   z );
-              SJGL_Blit( &(RECT){0,0,12,12}, x*16+2, y*16+2, z );
+              SJGL_Blit( &(REC){0,0,16,16}, x*16,   y*16,   z );
+              SJGL_Blit( &(REC){0,0,12,12}, x*16+2, y*16+2, z );
             } else if( flags & CBF_PLAT ) {
               glColor4f(0,1,0,1);
-              SJGL_Blit( &(RECT){0,0,16, 2}, x*16,   y*16,   z );
+              SJGL_Blit( &(REC){0,0,16, 2}, x*16,   y*16,   z );
             }
           }
     }
@@ -193,7 +193,7 @@ void render()
       V *pos  = flex(o,OBJF_POS);
       V *hull = flex(o,OBJF_HULL);
       if( pos && hull ) {
-        RECT rect = (RECT){0, 0, hull[1].x-hull[0].x, hull[1].y-hull[0].y};
+        REC rect = (REC){0, 0, hull[1].x-hull[0].x, hull[1].y-hull[0].y};
         SJGL_Blit( &rect, pos->x+hull[0].x, pos->y+hull[0].y, 0 );
       }
     }

@@ -25,12 +25,12 @@ void obj_dummy_draw( int objid, Uint32 vidfr, OBJ_t *o, CONTEXT_t *co )
   SJGL_SetTex( sys_tex[TEX_WORLD].num );
 
   if( w > h ) while( w>0 && w<400 ) {
-    SJGL_Blit( &(RECT){offs,  16,16,16}, c, d, 0 );
+    SJGL_Blit( &(REC){offs,  16,16,16}, c, d, 0 );
     c += 16;
     w -= 16;
     offs = w==16 ? 32 : 16;
   } else      while( h>0 && h<400 ) {
-    SJGL_Blit( &(RECT){  48,offs,16,16}, c, d, 0 );
+    SJGL_Blit( &(REC){  48,offs,16,16}, c, d, 0 );
     d += 16;
     h -= 16;
     offs = h==16 ? 32 : 16;

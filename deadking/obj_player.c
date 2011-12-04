@@ -30,31 +30,31 @@ void obj_player_draw( int objid, Uint32 vidfr, OBJ_t *o, CONTEXT_t *co )
 
   if( pl->facingr ) {
     if( pl->model==4 ) //girl hair
-      SJGL_Blit( &(RECT){80,120,20,15}, c-4, d+(pl->goingd?4:0)+pl->gundown/7, r );
+      SJGL_Blit( &(REC){80,120,20,15}, c-4, d+(pl->goingd?4:0)+pl->gundown/7, r );
 
-    SJGL_Blit( &(RECT){ushift,pl->model*30,20,30}, c, d, r);
+    SJGL_Blit( &(REC){ushift,pl->model*30,20,30}, c, d, r);
 
     if( !pl->stabbing ) //gun
-      SJGL_Blit( &(RECT){ 0+gunshift,150,24,27}, c+5-pl->gunback, d+5+pl->gundown/5, r );
+      SJGL_Blit( &(REC){ 0+gunshift,150,24,27}, c+5-pl->gunback, d+5+pl->gundown/5, r );
   } else {
     if( pl->model==4 ) //girl hair
-      SJGL_Blit( &(RECT){100,120,20,15}, c+4, d+(pl->goingd?4:0)+pl->gundown/7, r );
+      SJGL_Blit( &(REC){100,120,20,15}, c+4, d+(pl->goingd?4:0)+pl->gundown/7, r );
 
-    SJGL_Blit( &(RECT){ushift,pl->model*30,20,30}, c, d, r);
+    SJGL_Blit( &(REC){ushift,pl->model*30,20,30}, c, d, r);
 
     if( !pl->stabbing ) //gun
-      SJGL_Blit( &(RECT){24+gunshift,150,24,27}, c-9+pl->gunback, d+5+pl->gundown/5, r );
+      SJGL_Blit( &(REC){24+gunshift,150,24,27}, c-9+pl->gunback, d+5+pl->gundown/5, r );
   }
 
   if( pl->stabbing ) //up/down stabbing
-    SJGL_Blit( &(RECT){148+(pl->stabbing<0?5:0),150,5,27}, c+8, d-(pl->stabbing<0?15:-15), r );
+    SJGL_Blit( &(REC){148+(pl->stabbing<0?5:0),150,5,27}, c+8, d-(pl->stabbing<0?15:-15), r );
 
   // draw shadow
   V shadow = (V){pl->pos.x, co->bsy*co->y, pl->pos.z};
   int sc = POINT2NATIVE_X(shadow) - 10;
   int sd = POINT2NATIVE_Y(shadow) - 5;
   SJGL_SetTex( sys_tex[TEX_PERSON].num );
-  SJGL_Blit( &(RECT){0,246,20,10}, sc, sd, r-1 );
+  SJGL_Blit( &(REC){0,246,20,10}, sc, sd, r-1 );
 }
 
 void obj_player_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob )

@@ -18,7 +18,7 @@ void obj_amigosword_draw( int objid, Uint32 vidfr, OBJ_t *o, CONTEXT_t *co )
   int posx = TILE2NATIVE_X(co,sw->pos.x/16,0,sw->pos.y/16);
   int posy = TILE2NATIVE_Y(co,sw->pos.x/16,0,sw->pos.y/16);
   SJGL_SetTex( sys_tex[TEX_AMIGO].num );
-  SJGL_Blit( &(RECT){ 200, 50+50*(hotfr%3), 56, 50 }, posx-25, posy-28, sw->pos.y );
+  SJGL_Blit( &(REC){ 200, 50+50*(hotfr%3), 56, 50 }, posx-25, posy-28, sw->pos.y );
 }
 
 void obj_amigosword_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob )

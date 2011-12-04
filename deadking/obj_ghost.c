@@ -22,7 +22,7 @@ void obj_ghost_draw( int objid, Uint32 vidfr, OBJ_t *o, CONTEXT_t *co )
   int h = TILE2NATIVE_Y(co, gh->pos.x, gh->pos.y, gh->pos.z);
 
   SJGL_SetTex( sys_tex[TEX_PLAYER].num );
-  SJGL_Blit( &(RECT){80,177,16,16}, g, h, NATIVEH );
+  SJGL_Blit( &(REC){80,177,16,16}, g, h, NATIVEH );
 }
 
 void obj_ghost_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob )

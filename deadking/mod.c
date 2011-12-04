@@ -355,11 +355,11 @@ void mod_predraw(Uint32 vidfr)
     }
 
     SJGL_SetTex( ntex );
-    SJGL_Blit( &(RECT){(tile%co->tilex)*co->tilew,
-                       (tile/co->tilex)*co->tileh,
-                       co->tilew,
-                       co->tileh
-                      },
+    SJGL_Blit( &(REC){(tile%co->tilex)*co->tilew,
+                      (tile/co->tilex)*co->tileh,
+                      co->tilew,
+                      co->tileh
+                     },
                TILE2NATIVE_X(co,i,j,k) - co->tileuw/2,
                TILE2NATIVE_Y(co,i,j,k) + co->bsy,      // right now, drawing tiles at the bottom of the cube
                0 );
@@ -391,9 +391,9 @@ void mod_draw(int objid,Uint32 vidfrmod,OBJ_t *o)
 void mod_huddraw(Uint32 vidfr)
 {
   SJGL_SetTex( sys_tex[TEX_HUD].num  );
-  SJGL_Blit( &(RECT){0,0,160,50},   0, NATIVEH-50, 0 );
-  SJGL_Blit( &(RECT){0,0,160,50}, 160, NATIVEH-50, 0 );
-  SJGL_Blit( &(RECT){0,0,160,50}, 320, NATIVEH-50, 0 );
+  SJGL_Blit( &(REC){0,0,160,50},   0, NATIVEH-50, 0 );
+  SJGL_Blit( &(REC){0,0,160,50}, 160, NATIVEH-50, 0 );
+  SJGL_Blit( &(REC){0,0,160,50}, 320, NATIVEH-50, 0 );
 
   MOTHER_t *mo = fr[vidfr%maxframes].objs[0].data;
 
@@ -405,14 +405,14 @@ void mod_huddraw(Uint32 vidfr)
     PERSON_t *pe = fr[vidfr%maxframes].objs[mo->party[i]].data;
 
     #define BAR_W(stat) (pe->stat>0 ? 15+32*pe->stat/pe->max_##stat : 0)
-    SJGL_Blit( &(RECT){0,50+6*0,BAR_W(hp),6}, 57   , NATIVEH-50+13+9*0, 0 );
-    SJGL_Blit( &(RECT){0,50+6*1,BAR_W(mp),6}, 57+51, NATIVEH-50+13+9*0, 0 );
-    SJGL_Blit( &(RECT){0,50+6*2,BAR_W(st),6}, 57   , NATIVEH-50+13+9*1, 0 );
-    SJGL_Blit( &(RECT){0,50+6*3,BAR_W(ap),6}, 57+51, NATIVEH-50+13+9*1, 0 );
-    SJGL_Blit( &(RECT){0,50+6*4,BAR_W(pn),6}, 57   , NATIVEH-50+13+9*2, 0 );
-    SJGL_Blit( &(RECT){0,50+6*5,BAR_W(ml),6}, 57+51, NATIVEH-50+13+9*2, 0 );
-    SJGL_Blit( &(RECT){0,50+6*6,BAR_W(to),6}, 57   , NATIVEH-50+13+9*3, 0 );
-    SJGL_Blit( &(RECT){0,50+6*7,BAR_W(xp),6}, 57+51, NATIVEH-50+13+9*3, 0 );
+    SJGL_Blit( &(REC){0,50+6*0,BAR_W(hp),6}, 57   , NATIVEH-50+13+9*0, 0 );
+    SJGL_Blit( &(REC){0,50+6*1,BAR_W(mp),6}, 57+51, NATIVEH-50+13+9*0, 0 );
+    SJGL_Blit( &(REC){0,50+6*2,BAR_W(st),6}, 57   , NATIVEH-50+13+9*1, 0 );
+    SJGL_Blit( &(REC){0,50+6*3,BAR_W(ap),6}, 57+51, NATIVEH-50+13+9*1, 0 );
+    SJGL_Blit( &(REC){0,50+6*4,BAR_W(pn),6}, 57   , NATIVEH-50+13+9*2, 0 );
+    SJGL_Blit( &(REC){0,50+6*5,BAR_W(ml),6}, 57+51, NATIVEH-50+13+9*2, 0 );
+    SJGL_Blit( &(REC){0,50+6*6,BAR_W(to),6}, 57   , NATIVEH-50+13+9*3, 0 );
+    SJGL_Blit( &(REC){0,50+6*7,BAR_W(xp),6}, 57+51, NATIVEH-50+13+9*3, 0 );
     #undef BAR_W
   }
 }
@@ -457,11 +457,11 @@ void mod_postdraw(Uint32 vidfr)
                                 + ((j-dny)%gh->clipboard_y)*gh->clipboard_x
                                 + ((i-dnx)%gh->clipboard_x)
                                ].data[0];
-    SJGL_Blit( &(RECT){(tile%co->tilex)*co->tilew,
-                       (tile/co->tilex)*co->tileh,
-                       co->tilew,
-                       co->tileh
-                      },
+    SJGL_Blit( &(REC){(tile%co->tilex)*co->tilew,
+                      (tile/co->tilex)*co->tileh,
+                      co->tilew,
+                      co->tileh
+                     },
                TILE2NATIVE_X(co,i,j,k) - co->tileuw/2,
                TILE2NATIVE_Y(co,i,j,k) + co->bsy,      // right now, drawing tiles at the bottom of the cube
                NATIVEH );
@@ -478,7 +478,7 @@ void mod_outerdraw(Uint32 vidfr,int w,int h)
   glPushAttrib(GL_CURRENT_BIT);
 
   SJGL_SetTex( mytex );
-  SJGL_Blit( &(RECT){0,0,256,256}, w-256, 0, 0 );
+  SJGL_Blit( &(REC){0,0,256,256}, w-256, 0, 0 );
 
   CONTEXT_t *co = fr[vidfr%maxframes].objs[mycontext].data;
 
@@ -486,10 +486,10 @@ void mod_outerdraw(Uint32 vidfr,int w,int h)
   glColor4f(1,1,0,0.8f);
   int x = w-256+(mytile%co->tilex)*co->tilew;
   int y =       (mytile/co->tilex)*co->tileh;
-  SJGL_Blit( &(RECT){0,0,co->tilew+4,        2}, x-        2, y-        2, 0 );
-  SJGL_Blit( &(RECT){0,0,co->tilew+4,        2}, x-        2, y+co->tileh, 0 );
-  SJGL_Blit( &(RECT){0,0,          2,co->tileh}, x-        2, y          , 0 );
-  SJGL_Blit( &(RECT){0,0,          2,co->tileh}, x+co->tilew, y          , 0 );
+  SJGL_Blit( &(REC){0,0,co->tilew+4,        2}, x-        2, y-        2, 0 );
+  SJGL_Blit( &(REC){0,0,co->tilew+4,        2}, x-        2, y+co->tileh, 0 );
+  SJGL_Blit( &(REC){0,0,          2,co->tileh}, x-        2, y          , 0 );
+  SJGL_Blit( &(REC){0,0,          2,co->tileh}, x+co->tilew, y          , 0 );
 
   SJF_DrawText( w-256, 260, mytex < tex_count ? textures[mytex].filename : "ERROR! mytex > tex_count" );
 

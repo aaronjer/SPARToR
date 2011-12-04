@@ -59,7 +59,7 @@ void SJGL_SetTex(GLuint tex)
 
 
 //uses GL to do draw a sprite
-int SJGL_Blit(RECT *s, int x, int y, int z)
+int SJGL_Blit(REC *s, int x, int y, int z)
 {
   if( z<0 ) z = (y+s->h)*-z;
 

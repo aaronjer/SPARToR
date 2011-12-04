@@ -18,10 +18,10 @@ void obj_person_draw( int objid, Uint32 vidfr, OBJ_t *o, CONTEXT_t *co )
   int c = POINT2NATIVE_X(pe->pos);
   int d = POINT2NATIVE_Y(pe->pos);
   SJGL_SetTex( sys_tex[TEX_PERSON].num );
-  RECT rect;
+  REC rect;
   int flip = 0;
 
-  #define P_REC(x,y,w,h) (rect = (RECT){(x)*17,(y)*45,(w)*17,(h)*45})
+  #define P_REC(x,y,w,h) (rect = (REC){(x)*17,(y)*45,(w)*17,(h)*45})
   switch( (pe->walkcounter/4) % 4 ) { // entangled_walkcounter
     case 0:
     case 2: switch( pe->dir ) {                      // standing
@@ -73,7 +73,7 @@ void obj_person_draw( int objid, Uint32 vidfr, OBJ_t *o, CONTEXT_t *co )
   SJGL_Blit( &rect, x, y, d );
 
   // draw shadow
-  SJGL_Blit( &(RECT){0 ,502,20,10}, c-10, d-5 , d-1 );
+  SJGL_Blit( &(REC){0 ,502,20,10}, c-10, d-5 , d-1 );
 }
 
 void obj_person_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob )
