@@ -17,6 +17,9 @@
 #include <string.h>
 
 
+const char *create_context(CONTEXT_t *co, const CONTEXT_t *ref, int x, int y, int z);
+
+
 #define B85_1(x) (b85alphabet[((x)              )%85])
 #define B85_2(x) (b85alphabet[((x)/(         85))%85])
 #define B85_3(x) (b85alphabet[((x)/(      85*85))%85])
@@ -210,13 +213,15 @@ int load_context(const char *name,int context,int loadfr)
 
   int x,y,z;
   if( 3 != fscanf(f,"%d %d %d\n",&x,&y,&z) )                      return fail(f,"failed to read dimensions");
-  if( x<1 || x>9000 )                                             return fail(f,"x is out of range");
-  if( y<1 || y>9000 )                                             return fail(f,"y is out of range");
-  if( z<1 || z>9000 )                                             return fail(f,"z is out of range");
 
-  int volume = x * y * z;
-  CB *map  = malloc( (sizeof *map ) * volume );
-  CB *dmap = malloc( (sizeof *dmap) * volume );
+  const char *error = NULL;
+  CONTEXT_t tmp_co;
+
+  if( (error = create_context(&tmp_co,NULL,x,y,z)) )                return fail(f,error);
+
+  CB *map  = tmp_co.map;
+  CB *dmap = tmp_co.dmap;
+  int volume = x*y*z;
 
   for( i=0; i<volume; i++ ) {
     Uint32  tile, flags = 0;
@@ -258,3 +263,43 @@ int load_context(const char *name,int context,int loadfr)
   return 0;
 }
 
+
+// allocate the map, dmap for a new context, copying data from a reference context if not NULL
+const char *create_context(CONTEXT_t *co, const CONTEXT_t *ref, int x, int y, int z)
+{
+  if( x<1 || x>9000 )  return "x is out of range";
+  if( y<1 || y>9000 )  return "y is out of range";
+  if( z<1 || z>9000 )  return "z is out of range";
+
+  if( ref )
+    *co = *ref;
+  else
+    memset( co, 0, sizeof *co );
+  co->x = x;
+  co->y = y;
+  co->z = z;
+
+  int volume = x * y * z;
+
+  co->map  = malloc( (sizeof *co->map ) * volume );
+  co->dmap = malloc( (sizeof *co->dmap) * volume );
+
+  int i, j, k;
+
+  // copy block data if possible, or set to blank
+  for( i=0; i<x; i++ ) for( j=0; j<y; j++ ) for( k=0; k<z; k++ ) {
+    int offs_co = co->x*co->y*k + co->x*j + i;
+
+    if( ref && i < ref->x && j < ref->y && k < ref->z ) {
+      int offs_ref = ref->x*ref->y*k + ref->x*j + i;
+
+      co->map [ offs_co ] = ref->map [ offs_ref ];
+      co->dmap[ offs_co ] = ref->dmap[ offs_ref ];
+    } else {
+      memset( co->map  + offs_co, 0, sizeof co->map [ offs_co ] );
+      memset( co->dmap + offs_co, 0, sizeof co->dmap[ offs_co ] );
+    }
+  }
+
+  return NULL;
+}

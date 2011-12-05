@@ -306,6 +306,9 @@ int mod_command(char *q)
     }else if( strcmp(q,"model")==0 ){
       setmodel = atoi(strtok(NULL," ")); // FIXME: lame hack
       return 0;
+    }else if( strcmp(q,"bounds")==0 ){
+      //CONTEXT_t *co = fr[hotfr%maxframes].objs[1].data; //FIXME: get correct context!
+      return 0;
     }
   HARDER
   return 1;
