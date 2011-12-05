@@ -59,10 +59,12 @@ void inputinit()
 
 void putcmd(int device,int sym,int press)
 {
-  if( cbread%250==(cbwrite+1)%250 )
+  if( cbread%250==(cbwrite+1)%250 ) // full
     return;
+
   if( mod_mkcmd( cmdbuf+cbwrite, device, sym, press ) )
     return;
+
   cbwrite = (cbwrite+1)%250;
 }
 

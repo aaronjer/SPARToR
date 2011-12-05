@@ -45,6 +45,9 @@ enum { CMDT_NONE = 0,
        CMDT_1BACK,
        CMDT_0BACK,
 
+       CMDT_0CON,
+       CMDT_1CON,
+
        CMDT_1EPANT, //editing controls...
        CMDT_0EPANT,
        CMDT_1EPREV,

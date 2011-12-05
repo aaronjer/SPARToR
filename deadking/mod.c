@@ -34,6 +34,7 @@ INPUTNAME_t inputnames[] = {{"left"       ,CMDT_1LEFT ,CMDT_0LEFT },
                             {"se"         ,CMDT_1SE   ,CMDT_0SE   },
                             {"select"     ,CMDT_1SEL  ,CMDT_0SEL  },
                             {"back"       ,CMDT_1BACK ,CMDT_0BACK },
+                         /* {"cons-cmd"   ,CMDT_1CON  ,CMDT_0CON  }, this may not be necessary, it may even be dangerous */
                             {"edit-paint" ,CMDT_1EPANT,CMDT_0EPANT},
                             {"edit-prev"  ,CMDT_1EPREV,CMDT_0EPREV},
                             {"edit-next"  ,CMDT_1ENEXT,CMDT_0ENEXT},
@@ -75,6 +76,7 @@ static struct {
 static int    editmode = 0;
 static int    mytile   = 0;
 static size_t mytex    = 2;
+static FCMD_t magic_c;      // magical storage for an extra command, triggered from console
 
 
 void mod_setup(Uint32 setupfr)
@@ -219,6 +221,16 @@ int mod_mkcmd(FCMD_t *c,int device,int sym,int press)
   short hash = press<<15 | device<<8 | sym;
   CONTEXT_t *co = fr[hotfr%maxframes].objs[mycontext].data;
 
+  // apply magic command?
+  if( !sym ) {
+    if( magic_c.datasz ) {
+      memcpy(c, &magic_c, sizeof magic_c);
+      memset(&magic_c, 0, sizeof magic_c);
+      return 0;
+    }
+    return -1;
+  }
+
   for(i=0; i<binds_size; i++)
     if( binds[i].hash==hash ) {
       memset( c, 0, sizeof *c );
@@ -294,6 +306,13 @@ int mod_mkcmd(FCMD_t *c,int device,int sym,int press)
 }
 
 
+int safe_atoi(const char *s)
+{
+  if( !s ) return 0;
+  return atoi(s);
+}
+
+
 int mod_command(char *q)
 {
   TRY
@@ -304,10 +323,29 @@ int mod_command(char *q)
       v_center = editmode ? 0 : 1;
       return 0;
     }else if( strcmp(q,"model")==0 ){
-      setmodel = atoi(strtok(NULL," ")); // FIXME: lame hack
+      setmodel = safe_atoi(strtok(NULL," ")); // FIXME: lame hack
       return 0;
     }else if( strcmp(q,"bounds")==0 ){
-      //CONTEXT_t *co = fr[hotfr%maxframes].objs[1].data; //FIXME: get correct context!
+      size_t n = 0;
+      int x = safe_atoi(strtok(NULL," "));
+      int y = safe_atoi(strtok(NULL," "));
+      int z = safe_atoi(strtok(NULL," "));
+
+      if( !x || !y || !z ) {
+        CONTEXT_t *co = fr[hotfr%maxframes].objs[mycontext].data; // FIXME is mycontext always set here?
+        SJC_Write("The current bounds are (X,Y,Z): %d %d %d", co->x, co->y, co->z);
+        return 0;
+      }
+
+      memset(&magic_c,0,sizeof magic_c);
+      packbytes(magic_c.data,'b',&n,1);
+      packbytes(magic_c.data,  x,&n,4);
+      packbytes(magic_c.data,  y,&n,4);
+      packbytes(magic_c.data,  z,&n,4);
+      magic_c.datasz = n;
+      magic_c.flags |= CMDF_DATA;
+      magic_c.cmd = CMDT_0CON; // secret command type for doing crap like this!
+      putcmd(0,0,0);
       return 0;
     }
   HARDER
@@ -344,7 +382,8 @@ void mod_predraw(Uint32 vidfr)
   glClear(GL_COLOR_BUFFER_BIT);
 
   //draw context
-  CONTEXT_t *co = fr[vidfr%maxframes].objs[1].data; //FIXME: get correct context!
+  CONTEXT_t *co = fr[vidfr%maxframes].objs[mycontext].data; // FIXME: is mycontext always set here?
+
   for( k=0; k<co->z; k++ ) for( j=0; j<co->y; j++ ) for( i=0; i<co->x; i++ ) {
     int pos = co->x*co->y*k + co->x*j + i;
     int tile;

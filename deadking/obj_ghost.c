@@ -11,6 +11,8 @@
  **/
 
 #include "obj_.h"
+#include "saveload.h"
+
 
 void obj_ghost_draw( int objid, Uint32 vidfr, OBJ_t *o, CONTEXT_t *co )
 {
@@ -38,6 +40,30 @@ void obj_ghost_adv( int objid, Uint32 a, Uint32 b, OBJ_t *oa, OBJ_t *ob )
 
   FCMD_t *c = fr[b].cmds + gh->client;
   switch( c->cmd ) {
+    case CMDT_0CON: { //FIXME: edit rights!
+      size_t n = 0;
+      char letter = (char)unpackbytes(c->data,MAXCMDDATA,&n,1);
+      int  x      = (int) unpackbytes(c->data,MAXCMDDATA,&n,4);
+      int  y      = (int) unpackbytes(c->data,MAXCMDDATA,&n,4);
+      int  z      = (int) unpackbytes(c->data,MAXCMDDATA,&n,4);
+
+      if( letter!='b' ) { SJC_Write("Unknown edit command!"); break; }
+
+      CONTEXT_t *co = fr[b].objs[ob->context].data;
+      CONTEXT_t tmp;
+
+      const char *error = create_context(&tmp, co, x, y, z);
+
+      if( error ) {
+        SJC_Write("%s", error);
+        break;
+      }
+
+      memcpy(co, &tmp, sizeof tmp);
+
+      // do NOT free co->map, co->dmap, it will get GC'd as it rolls off the buffer! really!
+      break;
+    }
     case CMDT_0EPANT: { //FIXME: UNSAFE check for edit rights, data values
       size_t n = 0;
       int  i, j, k;
