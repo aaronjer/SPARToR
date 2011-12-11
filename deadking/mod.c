@@ -384,7 +384,7 @@ void mod_predraw(Uint32 vidfr)
   //draw context
   CONTEXT_t *co = fr[vidfr%maxframes].objs[mycontext].data; // FIXME: is mycontext always set here?
 
-  for( k=0; k<co->z; k++ ) for( j=0; j<co->y; j++ ) for( i=0; i<co->x; i++ ) {
+  for( k=0; k<co->z; k++ ) for( j=co->y-1; j>=0; j-- ) for( i=0; i<co->x; i++ ) {
     int pos = co->x*co->y*k + co->x*j + i;
     int tile;
     size_t ntex;
@@ -396,14 +396,16 @@ void mod_predraw(Uint32 vidfr)
       ntex = co->dmap[ pos ].data[1];
     }
 
+    int height = (co->y-1) * co->bsy;
+
     SJGL_SetTex( ntex );
     SJGL_Blit( &(REC){(tile%co->tilex)*co->tilew,
                       (tile/co->tilex)*co->tileh,
                       co->tilew,
                       co->tileh
                      },
-               TILE2NATIVE_X(co,i,j,k) - co->tileuw/2,
-               TILE2NATIVE_Y(co,i,j,k) + co->bsy,      // right now, drawing tiles at the bottom of the cube
+               TILE2NATIVE_X(co,i,height,k) - co->tileuw/2,
+               TILE2NATIVE_Y(co,i,height,k) + co->bsy,      // right now, drawing tiles at the bottom of the block
                0 );
   }
 }

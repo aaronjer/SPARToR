@@ -6,7 +6,7 @@
 #include "SDL_net.h"
 #include "SDL_image.h"
 
-#define VERSION "0.1n?"
+#define VERSION "0.1p"
 
 #define TICKSAFRAME 30
 
