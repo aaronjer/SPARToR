@@ -39,11 +39,12 @@
 #define NATIVE2TILE_Z(co,x,y)   ((ISO_SHIFTY(co,y)-ISO_SHIFTX(co,x)/2)/(co)->tileuh)
 
 
-#define TEX_PLAYER 0
-#define TEX_WORLD  1
-#define TEX_AMIGO  2
-#define TEX_PERSON 3
-#define TEX_HUD    4
+#define TEX_TOOL   0
+#define TEX_PLAYER 1
+#define TEX_WORLD  2
+#define TEX_AMIGO  3
+#define TEX_PERSON 4
+#define TEX_HUD    5
 
 
 extern SYS_TEX_T  sys_tex[];

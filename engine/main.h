@@ -42,6 +42,7 @@
 #define CBF_SOLID (1<< 0) //solid
 #define CBF_PLAT  (1<< 1) //platform
 #define CBF_NULL  (1<< 2) //(dmap only) delta data not present
+#define CBF_VIS   (1<< 3) //is visible
 
 
 typedef struct{

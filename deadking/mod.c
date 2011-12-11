@@ -16,7 +16,8 @@
 #include "sjglob.h"
 
 
-SYS_TEX_T sys_tex[] = {{"/player.png"     ,0},
+SYS_TEX_T sys_tex[] = {{"/tool.png"       ,0},
+                       {"/player.png"     ,0},
                        {"/slugtunnel.png" ,0},
                        {"/amigo.png"      ,0},
                        {"/persons.png"    ,0},
@@ -388,10 +389,15 @@ void mod_predraw(Uint32 vidfr)
     int pos = co->x*co->y*k + co->x*j + i;
     int tile;
     size_t ntex;
+
     if( co->dmap[ pos ].flags & CBF_NULL ) {
-      tile = co->map[  pos ].data[0];
-      ntex = co->map[  pos ].data[1];
+      if( !(co->map[ pos ].flags & CBF_VIS) )
+        continue;
+      tile = co->map[ pos ].data[0];
+      ntex = co->map[ pos ].data[1];
     } else {
+      if( !(co->dmap[ pos ].flags & CBF_VIS) )
+        continue;
       tile = co->dmap[ pos ].data[0]; 
       ntex = co->dmap[ pos ].data[1];
     }
@@ -496,7 +502,7 @@ void mod_postdraw(Uint32 vidfr)
   int tile = mytile;
 
   for( k=dnz; k<=upz; k++ ) for( j=dny; j<=upy; j++ ) for( i=dnx; i<=upx; i++ ) {
-    if( mytile==0x5F && gh && gh->clipboard_data && (upy-dny||upx-dnx) ) // PSTE tool texture
+    if( mytile==TOOL_PSTE && gh && gh->clipboard_data && (upy-dny||upx-dnx) )
       tile = gh->clipboard_data[  ((k-dnz)%gh->clipboard_z)*gh->clipboard_y*gh->clipboard_x
                                 + ((j-dny)%gh->clipboard_y)*gh->clipboard_x
                                 + ((i-dnx)%gh->clipboard_x)
