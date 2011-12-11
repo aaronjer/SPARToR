@@ -26,6 +26,9 @@
 
 #define COUNTOF(ident) ((sizeof (ident)) / (sizeof *(ident)))
 
+// num tiles in a tex
+#define TILEX 11
+#define TILEY 21
 
 // macros for translating to/from isometric:
 #define TILE2NATIVE_X(co,x,y,z) (((x)-(z))*(co)->tileuw/2      )

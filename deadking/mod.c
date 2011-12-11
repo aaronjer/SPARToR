@@ -39,6 +39,7 @@ INPUTNAME_t inputnames[] = {{"left"       ,CMDT_1LEFT ,CMDT_0LEFT },
                             {"edit-paint" ,CMDT_1EPANT,CMDT_0EPANT},
                             {"edit-prev"  ,CMDT_1EPREV,CMDT_0EPREV},
                             {"edit-next"  ,CMDT_1ENEXT,CMDT_0ENEXT},
+                            {"edit-texup" ,CMDT_1EPGUP,CMDT_0EPGUP},
                             {"edit-texdn" ,CMDT_1EPGDN,CMDT_0EPGDN}};
 int numinputnames = COUNTOF(inputnames);
 
@@ -109,6 +110,7 @@ void mod_setup(Uint32 setupfr)
   MAYBE_BIND(INP_MBUT,4            ,EPREV);
   MAYBE_BIND(INP_MBUT,5            ,ENEXT);
   MAYBE_BIND(INP_KEYB,SDLK_PAGEDOWN,EPGDN);
+  MAYBE_BIND(INP_KEYB,SDLK_PAGEUP  ,EPGUP);
   #undef MAYBE_BIND
 
   //make the mother object
@@ -120,8 +122,8 @@ void mod_setup(Uint32 setupfr)
   CONTEXT_t *co = fr[setupfr].objs[1].data;
   co->bsx = co->bsy = co->bsz = 16;
   co->x   = co->y   = co->z   = 15;
-  co->tilex = 5;
-  co->tiley = 24;
+  co->tilex = TILEX;
+  co->tiley = TILEY;
   co->tilew = 46;
   co->tileh = 24;
   co->tileuw = 48;
@@ -240,17 +242,27 @@ int mod_mkcmd(FCMD_t *c,int device,int sym,int press)
       if( c->cmd==CMDT_0EPREV || c->cmd==CMDT_0ENEXT ) //these shouldn't really happen and wouldn't mean anything
         return -1;
 
-      if( c->cmd==CMDT_1EPREV || c->cmd==CMDT_1ENEXT ) { //select previous/next tile
-        if( c->cmd==CMDT_1EPREV )
-          mytile += mytile%16==15 ? -15 : 1;
-        else
-          mytile = (mytile+16)%256;
+      if( c->cmd==CMDT_1EPREV ) { //select previous tile
+        mytile = (mytile + TILEX*TILEY - 1) % (TILEX*TILEY);
         return -1;
       }
 
-      if( c->cmd==CMDT_1EPGDN || c->cmd==CMDT_0EPGDN ) { //change current texture
-        if( c->cmd==CMDT_0EPGDN )
-          mytex = (mytex + 1) % tex_count;
+      if( c->cmd==CMDT_1ENEXT ) { //select next tile
+        mytile = (mytile + 1) % (TILEX*TILEY);
+        return -1;
+      }
+
+      if( c->cmd==CMDT_0EPGUP || c->cmd==CMDT_0EPGDN )
+        return -1;
+
+      if( c->cmd==CMDT_1EPGUP ) { //prev texture file
+        mytex = (mytex + tex_count - 1) % tex_count;
+        return -1;
+      }
+
+      if( c->cmd==CMDT_1EPGDN ) { //next texture file
+        mytex = (mytex + 1) % tex_count;
+        return -1;
       }
 
       if( c->cmd==CMDT_1EPANT || c->cmd==CMDT_0EPANT ) { //edit-paint command
@@ -264,8 +276,9 @@ int mod_mkcmd(FCMD_t *c,int device,int sym,int press)
         if( !editmode || !i_hasmouse )
           return -1;
 
-        if( i_mousex >= v_w-256 && i_mousey < 256 ) { //click in texture selector
-          mytile = (i_mousex-(v_w-256))/co->tilew + (i_mousey/co->tileh)*co->tilex;
+        if( i_mousex >= v_w-NATIVE_TEX_SZ && i_mousey < NATIVE_TEX_SZ ) { //click in texture selector
+          if( c->cmd==CMDT_1EPANT )
+            mytile = (i_mousex-(v_w-NATIVE_TEX_SZ))/co->tilew + (i_mousey/co->tileh)*co->tilex;
           return -1;
         }
 
@@ -286,8 +299,10 @@ int mod_mkcmd(FCMD_t *c,int device,int sym,int press)
           downz = tilez;
           return -1; //finish cmd later...
         }
+
         if( dnx<0 || dny<0 || dnz<0 )
           return -1; //no mousedown? no cmd
+
         size_t n = 0;
         packbytes(c->data,   'p',&n,1);
         packbytes(c->data,   dnx,&n,4);
@@ -527,21 +542,23 @@ void mod_outerdraw(Uint32 vidfr,int w,int h)
 
   glPushAttrib(GL_CURRENT_BIT);
 
+  int sz = NATIVE_TEX_SZ;
+
   SJGL_SetTex( mytex );
-  SJGL_Blit( &(REC){0,0,256,256}, w-256, 0, 0 );
+  SJGL_Blit( &(REC){0,0,sz,sz}, w-sz, 0, 0 );
 
   CONTEXT_t *co = fr[vidfr%maxframes].objs[mycontext].data;
 
   glBindTexture(GL_TEXTURE_2D,0);
   glColor4f(1,1,0,0.8f);
-  int x = w-256+(mytile%co->tilex)*co->tilew;
-  int y =       (mytile/co->tilex)*co->tileh;
+  int x = w-sz+(mytile%co->tilex)*co->tilew;
+  int y =      (mytile/co->tilex)*co->tileh;
   SJGL_Blit( &(REC){0,0,co->tilew+4,        2}, x-        2, y-        2, 0 );
   SJGL_Blit( &(REC){0,0,co->tilew+4,        2}, x-        2, y+co->tileh, 0 );
   SJGL_Blit( &(REC){0,0,          2,co->tileh}, x-        2, y          , 0 );
   SJGL_Blit( &(REC){0,0,          2,co->tileh}, x+co->tilew, y          , 0 );
 
-  SJF_DrawText( w-256, 260, mytex < tex_count ? textures[mytex].filename : "ERROR! mytex > tex_count" );
+  SJF_DrawText( w-sz, sz+4, mytex < tex_count ? textures[mytex].filename : "ERROR! mytex > tex_count" );
 
   glPopAttrib();
 }

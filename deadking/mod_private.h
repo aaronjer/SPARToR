@@ -64,6 +64,8 @@ enum { CMDT_NONE = 0,
        CMDT_0EPREV,
        CMDT_1ENEXT,
        CMDT_0ENEXT,
+       CMDT_1EPGUP,
+       CMDT_0EPGUP,
        CMDT_1EPGDN,
        CMDT_0EPGDN };
 
