@@ -170,6 +170,10 @@ static void ghost_paint( FCMD_t *c, GHOST_t *gh, PLAYER_t *pl, CONTEXT_t *co )
       co->dmap[pos].flags &= ~CBF_VIS;
       break;
 
+    case TOOL_VIS:
+      co->map[pos].flags |= CBF_VIS;
+      break;
+
     }
     // END LAME HACK
   }

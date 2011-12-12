@@ -26,7 +26,8 @@ enum { TOOL_NUL = 0,
        TOOL_COPY,
        TOOL_PSTE,
        TOOL_OBJ,
-       TOOL_ERAS };
+       TOOL_ERAS,
+       TOOL_VIS };
 
 
 //cmd types
