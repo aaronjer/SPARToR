@@ -40,7 +40,10 @@ INPUTNAME_t inputnames[] = {{"left"       ,CMDT_1LEFT ,CMDT_0LEFT },
                             {"edit-prev"  ,CMDT_1EPREV,CMDT_0EPREV},
                             {"edit-next"  ,CMDT_1ENEXT,CMDT_0ENEXT},
                             {"edit-texup" ,CMDT_1EPGUP,CMDT_0EPGUP},
-                            {"edit-texdn" ,CMDT_1EPGDN,CMDT_0EPGDN}};
+                            {"edit-texdn" ,CMDT_1EPGDN,CMDT_0EPGDN},
+                            {"edit-lay0"  ,CMDT_1ELAY0,CMDT_0ELAY0},
+                            {"edit-lay1"  ,CMDT_1ELAY1,CMDT_0ELAY1},
+                            {"edit-lay2"  ,CMDT_1ELAY2,CMDT_0ELAY2}};
 int numinputnames = COUNTOF(inputnames);
 
 
@@ -63,6 +66,8 @@ int    mycontext;
 int    downx = -1; //position of mousedown at beginning of edit cmd
 int    downy = -1;
 int    downz = -1;
+int    ylayer = 0; // tile layer
+int    showlayer = 0;
 
 int    setmodel; //FIXME REMOVE! change local player model
 CB    *hack_map; //FIXME remove hack_map and _dmap someday
@@ -111,6 +116,9 @@ void mod_setup(Uint32 setupfr)
   MAYBE_BIND(INP_MBUT,5            ,ENEXT);
   MAYBE_BIND(INP_KEYB,SDLK_PAGEDOWN,EPGDN);
   MAYBE_BIND(INP_KEYB,SDLK_PAGEUP  ,EPGUP);
+  MAYBE_BIND(INP_KEYB,SDLK_0       ,ELAY0);
+  MAYBE_BIND(INP_KEYB,SDLK_1       ,ELAY1);
+  MAYBE_BIND(INP_KEYB,SDLK_2       ,ELAY2);
   #undef MAYBE_BIND
 
   //make the mother object
@@ -224,6 +232,9 @@ int mod_mkcmd(FCMD_t *c,int device,int sym,int press)
   short hash = press<<15 | device<<8 | sym;
   CONTEXT_t *co = fr[hotfr%maxframes].objs[mycontext].data;
 
+  if( !editmode )
+    return -1;
+
   // apply magic command?
   if( !sym ) {
     if( magic_c.datasz ) {
@@ -265,6 +276,14 @@ int mod_mkcmd(FCMD_t *c,int device,int sym,int press)
         return -1;
       }
 
+      if( c->cmd==CMDT_0ELAY0 || c->cmd==CMDT_0ELAY1 || c->cmd==CMDT_0ELAY2 ) {
+        showlayer = 0;
+        return -1;
+      }
+      if( c->cmd==CMDT_1ELAY0 ) { ylayer = 0; showlayer = 1; return -1; }
+      if( c->cmd==CMDT_1ELAY1 ) { ylayer = 1; showlayer = 1; return -1; }
+      if( c->cmd==CMDT_1ELAY2 ) { ylayer = 2; showlayer = 1; return -1; }
+
       if( c->cmd==CMDT_1EPANT || c->cmd==CMDT_0EPANT ) { //edit-paint command
         int dnx = downx;
         int dny = downy;
@@ -290,7 +309,7 @@ int mod_mkcmd(FCMD_t *c,int device,int sym,int press)
 
         //map to game coordinates
         int tilex = NATIVE2TILE_X(co,posx,posy);
-        int tiley = NATIVE2TILE_Y(co,posx,posy);
+        int tiley = ylayer; //NATIVE2TILE_Y(co,posx,posy);
         int tilez = NATIVE2TILE_Z(co,posx,posy);
 
         if( c->cmd==CMDT_1EPANT ) {
@@ -400,10 +419,13 @@ void mod_predraw(Uint32 vidfr)
   //draw context
   CONTEXT_t *co = fr[vidfr%maxframes].objs[mycontext].data; // FIXME: is mycontext always set here?
 
-  for( k=0; k<co->z; k++ ) for( j=co->y-1; j>=0; j-- ) for( i=0; i<co->x; i++ ) {
+  for( k=0; k<co->z; k++ ) for( j=0; j<co->y; j++ ) for( i=0; i<co->x; i++ ) {
     int pos = co->x*co->y*k + co->x*j + i;
     int tile;
     size_t ntex;
+
+    if( showlayer && ylayer!=j )
+      continue;
 
     if( co->dmap[ pos ].flags & CBF_NULL ) {
       if( !(co->map[ pos ].flags & CBF_VIS) )
@@ -559,6 +581,7 @@ void mod_outerdraw(Uint32 vidfr,int w,int h)
   SJGL_Blit( &(REC){0,0,          2,co->tileh}, x+co->tilew, y          , 0 );
 
   SJF_DrawText( w-sz, sz+4, mytex < tex_count ? textures[mytex].filename : "ERROR! mytex > tex_count" );
+  SJF_DrawText( w-sz, sz+14, "Layer %d", ylayer );
 
   glPopAttrib();
 }

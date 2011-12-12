@@ -68,7 +68,13 @@ enum { CMDT_NONE = 0,
        CMDT_1EPGUP,
        CMDT_0EPGUP,
        CMDT_1EPGDN,
-       CMDT_0EPGDN };
+       CMDT_0EPGDN,
+       CMDT_1ELAY0,
+       CMDT_0ELAY0,
+       CMDT_1ELAY1,
+       CMDT_0ELAY1,
+       CMDT_1ELAY2,
+       CMDT_0ELAY2 };
 
 
 extern int    myghost;

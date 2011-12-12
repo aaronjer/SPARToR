@@ -28,7 +28,7 @@ extern SJF_t SJF;
 
 void SJF_Init();
 void SJF_DrawChar(int x, int y, char ch);
-void SJF_DrawText(int x, int y, const char *str);
+void SJF_DrawText(int x, int y, const char *str, ...);
 int SJF_TextExtents(const char *str);
 
 #endif

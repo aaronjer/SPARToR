@@ -188,12 +188,20 @@ void SJF_DrawChar(int x, int y, char ch)
 
 
 //draws a message in system text at location in GL
-void SJF_DrawText(int x, int y, const char *str)
+void SJF_DrawText(int x, int y, const char *str, ...)
 {
   SDL_Rect s = (SDL_Rect){ 0, 0, 0, 12 };
   SDL_Rect d = (SDL_Rect){ x, y, 0, 12 };
 
   if( !str ) str = "(null)";
+
+  char buf[800];
+  va_list args;
+  va_start(args, str);
+  vsnprintf(buf, 800, str, args);
+  va_end(args);
+
+  str = buf;
 
   glBindTexture(GL_TEXTURE_2D,0); //FIXME: hack 4 win
   glBindTexture(GL_TEXTURE_2D,SJF.tex);

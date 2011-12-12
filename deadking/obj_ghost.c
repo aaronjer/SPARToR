@@ -87,6 +87,8 @@ static void ghost_paint( FCMD_t *c, GHOST_t *gh, PLAYER_t *pl, CONTEXT_t *co )
   int  value  = (int) unpackbytes(c->data,MAXCMDDATA,&n,1);
   int  ntex   = (int) unpackbytes(c->data,MAXCMDDATA,&n,1);
 
+SJC_Write("dn %d %d %d / up %d %d %d", dnx,dny,dnz,upx,upy,upz); // FIXME: kill me!
+
   if( letter!='p' ) { SJC_Write("Unknown edit command!"); return; }
 
   int is_tool = (ntex == sys_tex[TEX_TOOL].num);
