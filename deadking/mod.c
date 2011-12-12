@@ -566,7 +566,12 @@ void mod_outerdraw(Uint32 vidfr,int w,int h)
 
   int sz = NATIVE_TEX_SZ;
 
+  glBindTexture(GL_TEXTURE_2D,0);
+  glColor4f(0.1,0.1,0.1,0.8f);
+  SJGL_Blit( &(REC){0,0,sz,sz}, w-sz, 0, 0 );
+
   SJGL_SetTex( mytex );
+  glColor4f(1,1,1,1);
   SJGL_Blit( &(REC){0,0,sz,sz}, w-sz, 0, 0 );
 
   CONTEXT_t *co = fr[vidfr%maxframes].objs[mycontext].data;
