@@ -232,9 +232,6 @@ int mod_mkcmd(FCMD_t *c,int device,int sym,int press)
   short hash = press<<15 | device<<8 | sym;
   CONTEXT_t *co = fr[hotfr%maxframes].objs[mycontext].data;
 
-  if( !editmode )
-    return -1;
-
   // apply magic command?
   if( !sym ) {
     if( magic_c.datasz ) {
@@ -249,6 +246,9 @@ int mod_mkcmd(FCMD_t *c,int device,int sym,int press)
     if( binds[i].hash==hash ) {
       memset( c, 0, sizeof *c );
       c->cmd = binds[i].cmd;
+
+      if( !editmode )
+        return 0;
 
       if( c->cmd==CMDT_0EPREV || c->cmd==CMDT_0ENEXT ) //these shouldn't really happen and wouldn't mean anything
         return -1;
@@ -292,7 +292,7 @@ int mod_mkcmd(FCMD_t *c,int device,int sym,int press)
         if( c->cmd==CMDT_0EPANT ) //always clear mousedown pos on mouseup
           downx = downy = downz = -1;
 
-        if( !editmode || !i_hasmouse )
+        if( !i_hasmouse )
           return -1;
 
         if( i_mousex >= v_w-NATIVE_TEX_SZ && i_mousey < NATIVE_TEX_SZ ) { //click in texture selector

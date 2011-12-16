@@ -15,6 +15,7 @@
 #include "SDL_net.h"
 #include "mod.h"
 #include "video.h"
+#include "sprite.h"
 #include "main.h"
 #include "console.h"
 #include "font.h"
@@ -433,6 +434,8 @@ int make_sure_texture_is_loaded(const char *texfile)
     for( k=0; k<num_sys_tex; k++ )
       if( strstr( textures[j].filename, sys_tex[k].name ) )
         sys_tex[k].num = j;
+
+    load_sprites(j);
 
     return j;
   }
